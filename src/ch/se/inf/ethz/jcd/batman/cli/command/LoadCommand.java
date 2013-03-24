@@ -47,6 +47,8 @@ public class LoadCommand implements PrioritizedObserver<String> {
 					
 					// TODO
 					cli.writeln(String.format("command 'load' called for path '%s'", hostPath));
+					
+					cli.setInputPrefix(hostPath.getFileName().toString());
 				}
 			}
 		}
