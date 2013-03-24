@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.cli;
 
 import ch.se.inf.ethz.jcd.batman.cli.command.CommandNotFound;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 
 /**
@@ -17,6 +18,7 @@ public class Main {
 		cli.addObserver(new StopCommand());
 		cli.addObserver(new CommandNotFound());
 		cli.addObserver(new CreateCommand());
+		cli.addObserver(new LoadCommand());
 		
 		// start command line interface
 		cli.start();
