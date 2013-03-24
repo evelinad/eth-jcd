@@ -1,3 +1,6 @@
+# general #
+*~
+
 # eclipse #
 .checkstyle
 .classpath
@@ -9,3 +12,8 @@
 *.jar
 *.war
 *.ear
+
+# svn #
+.svn
+README_SVN.txt
+
