@@ -122,6 +122,6 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	private void readCommand() {
 		String line = cli.readLine("%s%s", inputPrefix, CLI_INPUT_PREFIX_END);
 		
-		notifyAll(line);
+		notifyAll(line.trim());
 	}
 }
