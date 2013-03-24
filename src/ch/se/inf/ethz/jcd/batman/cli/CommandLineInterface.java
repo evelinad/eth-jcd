@@ -98,13 +98,20 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	}
 	
 	/**
-	 * Sets the prefix used for user input
+	 * Sets the prefix used for user input. If the given
+	 * prefix is null, the input prefix will be reset to it's
+	 * default.
 	 * 
 	 * @see getInputPrefix
+	 * @see CLI_INPUT_PREFIX_NO_DISK
 	 * @param prefix new input prefix to use
 	 */
 	public void setInputPrefix(String prefix) {
-		inputPrefix = prefix;
+		if(prefix != null) {
+			inputPrefix = prefix;
+		} else {
+			inputPrefix = CLI_INPUT_PREFIX_NO_DISK;
+		}
 	}
 	
 	/**
