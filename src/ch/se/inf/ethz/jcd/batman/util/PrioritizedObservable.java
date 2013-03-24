@@ -1,8 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 
 /**
  * Implements an Observable as part of the Observer Design-Pattern.
@@ -15,8 +16,9 @@ import java.util.TreeSet;
  * @param <T> type of the data object used in notifyAll
  */
 public class PrioritizedObservable<T> {
-	private SortedSet<PrioritizedObserver<T>> observers;
+	private List<PrioritizedObserver<T>> observers;
 	private boolean handled;
+	private ObserverComperator comperator;
 	
 	/**
 	 * Comparator implementation to compare integers and sort them in ascending order.
@@ -40,7 +42,8 @@ public class PrioritizedObservable<T> {
 	}
 	
 	public PrioritizedObservable() {
-		observers = new TreeSet<PrioritizedObserver<T>>(new ObserverComperator());
+		observers = new ArrayList<PrioritizedObserver<T>>();
+		comperator = new ObserverComperator();
 	}
 	
 	/**
@@ -50,6 +53,7 @@ public class PrioritizedObservable<T> {
 	 */
 	public void addObserver(PrioritizedObserver<T> observer) {
 		observers.add(observer);
+		Collections.sort(observers, comperator);
 	}
 	
 	/**
