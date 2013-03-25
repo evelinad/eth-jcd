@@ -1,13 +1,10 @@
-package ch.se.inf.ethz.jcd.batman.cli.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 
-import ch.se.inf.ethz.jcd.batman.cli.vdisk.directory.IDirectory;
-import ch.se.inf.ethz.jcd.batman.cli.vdisk.pstratetgy.IPlacementStrategy;
-import ch.se.inf.ethz.jcd.batman.cli.vdisk.pstratetgy.PlacementStrategyFactory;
 
 public class VirtualDisk implements IVirtualDisk {
 
@@ -41,14 +38,14 @@ public class VirtualDisk implements IVirtualDisk {
 			file = new RandomAccessFile(f, "rw");
 			
 			/*
-			 * 0x00 8byte Version
-			 * 0x08 1byte PlacementStrategy
-			 * 0x09 5byte MagicNumber
+			 * 0x00 5byte MagicNumber
+			 * 0x05 8byte Version
+			 * 0x0D 1byte PlacementStrategy
 			 * 0x0E - 0xFF currently not used
 			 */
+			file.write(MAGIC_NUMBER);
 			file.write(VERSION.getBytes());
 			file.write(pStrategyType);
-			file.write(MAGIC_NUMBER);
 			file.setLength(getSuperblockSize());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -64,7 +61,7 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 	
 	@Override
-	public IDirectory getRootDirectory() {
+	public IVirtualDirectory getRootDirectory() {
 		return pStrategy.getRootDirectory();
 	}
 	

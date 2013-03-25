@@ -1,10 +1,9 @@
-package ch.se.inf.ethz.jcd.batman.cli.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk;
 
-import ch.se.inf.ethz.jcd.batman.cli.vdisk.directory.IDirectory;
 
 public interface IVirtualDisk {
 
-	IDirectory getRootDirectory ();
+	IVirtualDirectory getRootDirectory ();
 	
 	void setMaxSize (long maxSize);
 	

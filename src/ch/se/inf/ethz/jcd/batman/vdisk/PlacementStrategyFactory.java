@@ -1,8 +1,7 @@
-package ch.se.inf.ethz.jcd.batman.cli.vdisk.pstratetgy;
+package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.RandomAccessFile;
 
-import ch.se.inf.ethz.jcd.batman.cli.vdisk.VirtualDisk;
 
 public final class PlacementStrategyFactory {
 
