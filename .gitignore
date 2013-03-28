@@ -4,7 +4,6 @@
 # eclipse #
 .checkstyle
 .classpath
-.project
 .settings
 
 # java #
