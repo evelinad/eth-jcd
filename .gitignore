@@ -3,7 +3,6 @@
 
 # eclipse #
 .checkstyle
-.classpath
 .settings
 
 # java #
