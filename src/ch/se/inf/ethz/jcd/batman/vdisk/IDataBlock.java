@@ -10,11 +10,15 @@ public interface IDataBlock {
 	
 	void write (long pos, byte[] b) throws IOException;
 	
+	void write (long pos, byte[] b, int offset, int length) throws IOException;
+	
 	void write (long pos, long l) throws IOException;
 	
 	byte read (long pos) throws IOException;
 	
-	long read (long pos, byte[] b) throws IOException;
+	int read (long pos, byte[] b) throws IOException;
+	
+	int read (long pos, byte[] b, int offset, int length) throws IOException;
 	
 	long readLong (long pos) throws IOException;
 	

@@ -213,6 +213,20 @@ public class VirtualDisk implements IVirtualDisk {
 		file.seek(pos);
 		return file.read(b);
 	}
+
+	@Override
+	public void write(long pos, byte[] b, int offset, int length)
+			throws IOException {
+		file.seek(pos);
+		file.write(b, offset, length);
+	}
+
+	@Override
+	public int read(long pos, byte[] b, int offset, int length)
+			throws IOException {
+		file.seek(pos);
+		return file.read(b, offset, length);
+	}
 	
 	
 	

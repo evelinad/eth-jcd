@@ -20,6 +20,8 @@ public interface IVirtualDiskSpace {
 	
 	void write (long pos, byte b);
 	
+	void write (long pos, long l);
+	
 	void write (long pos, byte[] b);
 	
 	byte read ();

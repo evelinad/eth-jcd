@@ -79,6 +79,10 @@ public class DataBlock implements IDataBlock {
 		disk.write(blockPosition + pos, ByteBuffer.allocate(8).putLong(l).array());
 	}
 	
+	private void writeRealPosition (long pos, byte[] b, int offset, int length) throws IOException {
+		disk.write(blockPosition + pos, b, offset, length);
+	}
+	
 	private byte readRealPosition (long pos) throws IOException {
 		return disk.read(blockPosition + pos);
 	}
@@ -91,6 +95,10 @@ public class DataBlock implements IDataBlock {
 		byte[] longInBytes = new byte[LONG_LENGTH];
 		disk.read(blockPosition + pos, longInBytes);
 		return ByteBuffer.wrap(longInBytes).getLong();
+	}
+	
+	private int readRealPosition (long pos, byte[] b, int offset, int length) throws IOException {
+		return disk.read(blockPosition + pos, b, offset, length);
 	}
 	
 	private void checkDataRange (long pos, int length) {
@@ -124,7 +132,7 @@ public class DataBlock implements IDataBlock {
 	}
 
 	@Override
-	public long read(long pos, byte[] b) throws IOException {
+	public int read(long pos, byte[] b) throws IOException {
 		checkDataRange(pos, b.length);
 		return readRealPosition(pos + METADATA_START_SIZE, b);
 	}
@@ -168,6 +176,20 @@ public class DataBlock implements IDataBlock {
 	public void setDataSize(long size) throws IOException {
 		this.dataSize = size;
 		updateDataSize();
+	}
+
+	@Override
+	public void write(long pos, byte[] b, int offset, int length)
+			throws IOException {
+		checkDataRange(pos, length);
+		writeRealPosition(pos + METADATA_START_SIZE, b, offset, length);
+	}
+
+	@Override
+	public int read(long pos, byte[] b, int offset, int length)
+			throws IOException {
+		checkDataRange(pos, length);
+		return readRealPosition(pos + METADATA_START_SIZE, b, offset, length);
 	}
 
 }

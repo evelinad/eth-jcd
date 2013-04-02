@@ -23,10 +23,14 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	void write (long pos, byte b) throws IOException;
 	
 	void write (long pos, byte[] b) throws IOException;
+
+	void write (long pos, byte[] b, int offset, int length) throws IOException;
 	
 	byte read (long pos) throws IOException;
 	
 	int read (long pos, byte[] b) throws IOException;
+
+	int read (long pos, byte[] b, int offset, int length) throws IOException;
 	
 	IVirtualDirectory createDirectory (IVirtualDirectory parent, String name);
 	

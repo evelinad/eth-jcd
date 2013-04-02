@@ -44,6 +44,23 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		blocks = new ArrayList<DataBlock>();
 	}
 	
+	private VirtualDiskSpacePosition calculatePosition (long position) {
+		VirtualDiskSpacePosition vDiskPosition = new VirtualDiskSpacePosition();
+		vDiskPosition.setPosition(position);
+		int index = 0;
+		for (; index < blocks.size(); index++) {
+			DataBlock block = blocks.get(index);
+			if (block.getDataSize() < position) {
+				position -= block.getDataSize();
+			} else {
+				break;
+			}
+		}
+		vDiskPosition.setBlockIndex(index);
+		vDiskPosition.setBlockPosition(position);
+		return vDiskPosition;
+	}
+	
 	@Override
 	public long getVirtualDiskPosition() {
 		return blocks.get(0).getBlockPosition();
@@ -80,74 +97,92 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 
 	@Override
 	public void seek(long pos) {
-		// TODO Auto-generated method stub
-
+		position = calculatePosition(pos);
 	}
 
 	@Override
 	public void write(byte b) {
-		// TODO Auto-generated method stub
-
+		write(position, b);
 	}
 
 	@Override
 	public void write(long l) {
-		// TODO Auto-generated method stub
-
+		write(position, l);
 	}
 
 	@Override
 	public void write(byte[] b) {
-		// TODO Auto-generated method stub
-
+		write(position, b);
 	}
 
 	@Override
 	public void write(long pos, byte b) {
-		// TODO Auto-generated method stub
-
+		write(calculatePosition(pos), b);
 	}
 
 	@Override
+	public void write(long pos, long l) {
+		write(calculatePosition(pos), l);
+	}
+	
+	@Override
 	public void write(long pos, byte[] b) {
-		// TODO Auto-generated method stub
-
+		write(calculatePosition(pos), b);
 	}
 
 	@Override
 	public byte read() {
-		// TODO Auto-generated method stub
-		return 0;
+		return read(position);
 	}
 
 	@Override
 	public long read(byte[] b) {
-		// TODO Auto-generated method stub
-		return 0;
+		return read(position, b);
 	}
 
 	@Override
 	public long readLong() {
-		// TODO Auto-generated method stub
-		return 0;
+		return read(position);
 	}
 
 	@Override
 	public byte read(long pos) {
-		// TODO Auto-generated method stub
-		return 0;
+		return read(calculatePosition(pos));
 	}
 
 	@Override
 	public long read(long pos, byte[] b) {
-		// TODO Auto-generated method stub
-		return 0;
+		return read(calculatePosition(pos), b);
 	}
 
 	@Override
 	public long readLong(long pos) {
-		// TODO Auto-generated method stub
+		return readLong(calculatePosition(pos));
+	}
+	
+	private void write (VirtualDiskSpacePosition pos, byte b) {
+		
+	}
+	
+	private void write (VirtualDiskSpacePosition pos, long l) {
+		
+	}
+	
+	private void write (VirtualDiskSpacePosition pos, byte[] b) {
+		
+	}
+	
+	private byte read (VirtualDiskSpacePosition pos) {
 		return 0;
 	}
+	
+	private long read (VirtualDiskSpacePosition pos, byte[] b) {
+		return 0;
+	}
+	
+	private long readLong (VirtualDiskSpacePosition pos) {
+		return 0;
+	}
+
 
 }
