@@ -15,3 +15,5 @@
 .svn
 README_SVN.txt
 
+# latex #
+*.tks
