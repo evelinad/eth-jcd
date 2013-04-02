@@ -83,7 +83,7 @@ public class PrioritizedObservable<T> {
 	 * Indicates that the current change, about which all observers
 	 * are being notified, was handled by at least one of the observers.
 	 * 
-	 * @see isHandled
+	 * @see #isHandled
 	 */
 	public void setHandled() {
 		handled = true;

@@ -9,7 +9,7 @@ package ch.se.inf.ethz.jcd.batman.util;
  */
 public interface PrioritizedObserver<T> {
 	/**
-	 * Will be called by {@link PrioritizedObservable.notifyAll}, informing
+	 * Will be called by {@link PrioritizedObservable#notifyAll(Object)}, informing
 	 * the observer about some change.
 	 * 
 	 * @param observable the PrioritizedObservable instance calling the observer

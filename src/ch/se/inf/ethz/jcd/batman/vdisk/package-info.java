@@ -6,7 +6,7 @@
  * higher abstraction to hide details.
  * 
  * It is not recommended to use this classes directly but rather to use
- * {@link ch.se.inf.ethz.jcd.batman.io}.
+ * <i>ch.se.inf.ethz.jcd.batman.io</i>.
  */
 
 package ch.se.inf.ethz.jcd.batman.vdisk;
