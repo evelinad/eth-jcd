@@ -1,12 +1,13 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
-import java.util.List;
 
 
 public interface IVirtualDirectory extends IVirtualDiskEntry {
 	
+	void removeMember (IVirtualDiskEntry member) throws VirtualDiskException;
+	
 	void addMember (IVirtualDiskEntry member);
 	
-	List<IVirtualDiskEntry> getMembers ();
+	IVirtualDiskEntry getFirstMember ();
 	
 }
