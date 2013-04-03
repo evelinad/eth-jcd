@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 /**
  * Represents a directory on the virtual disk.
  * 
@@ -10,7 +12,6 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
  * 
  */
 public interface IVirtualDirectory extends IVirtualDiskEntry {
-
 	/**
 	 * Removes the given member from the list.
 	 * 
@@ -19,7 +20,8 @@ public interface IVirtualDirectory extends IVirtualDiskEntry {
 	 * @throws VirtualDiskException
 	 *             TODO
 	 */
-	void removeMember(IVirtualDiskEntry member) throws VirtualDiskException;
+	void removeMember(IVirtualDiskEntry member) throws VirtualDiskException,
+			IOException;
 
 	/**
 	 * Adds the given member to the list.
@@ -27,7 +29,7 @@ public interface IVirtualDirectory extends IVirtualDiskEntry {
 	 * @param member
 	 *            member to add to the list
 	 */
-	void addMember(IVirtualDiskEntry member);
+	void addMember(IVirtualDiskEntry member) throws IOException;
 
 	/**
 	 * Returns the first member of the list.
@@ -36,5 +38,4 @@ public interface IVirtualDirectory extends IVirtualDiskEntry {
 	 * @return the first member of the list.
 	 */
 	IVirtualDiskEntry getFirstMember();
-
 }

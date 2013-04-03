@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 /**
  * Represents an entry inside the virtual disk. This is the basic interface that
  * is extended by directories ({@link IVirtualDirectory}) and files (
@@ -17,7 +19,7 @@ public interface IVirtualDiskEntry {
 	 * @param name
 	 *            the name of the virtual disk entry
 	 */
-	void setName(String name);
+	void setName(String name) throws IOException;
 
 	/**
 	 * Returns the name of the virtual disk entry.
@@ -87,7 +89,7 @@ public interface IVirtualDiskEntry {
 	 * @param entry
 	 *            the new next entry
 	 */
-	void setNextEntry(IVirtualDiskEntry entry);
+	void setNextEntry(IVirtualDiskEntry entry) throws IOException;
 
 	/**
 	 * Returns the timestamp of the virtual disk entry.
@@ -99,9 +101,10 @@ public interface IVirtualDiskEntry {
 	/**
 	 * Sets the timestamp to the given timestamp.
 	 * 
-	 * @param timestamp new timestamp for the virtual disk entry
+	 * @param timestamp
+	 *            new timestamp for the virtual disk entry
 	 */
-	void setTimestamp(long timestamp);
+	void setTimestamp(long timestamp) throws IOException;
 
 	/**
 	 * Deletes the virtual disk entry.
@@ -121,8 +124,8 @@ public interface IVirtualDiskEntry {
 	/**
 	 * Returns the position of the entry inside the virtual disk.
 	 * 
-	 * The returned position is relative to the virtual disk beginning.
-	 * Position 0 would be the first byte of the virtual disk.
+	 * The returned position is relative to the virtual disk beginning. Position
+	 * 0 would be the first byte of the virtual disk.
 	 * 
 	 * @return the position of the entry inside the virtual disk
 	 */

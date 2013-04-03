@@ -3,6 +3,8 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /*
@@ -47,7 +49,7 @@ public class VirtualDisk implements IVirtualDisk {
 		return null;
 	}
 	
-	public static VirtualDisk create (String path, long maxSize) {
+	public static VirtualDisk create (String path, long maxSize) throws IOException {
 		return new VirtualDisk(path, maxSize);
 	}
 	
@@ -63,27 +65,22 @@ public class VirtualDisk implements IVirtualDisk {
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
 	
-	public VirtualDisk(String path, long maxSize) {
+	public VirtualDisk(String path, long maxSize) throws IOException {
 		setMaxSize(maxSize);
-		try {
-			File f = new File(path);
-			if (f.exists()) {
-				throw new IllegalArgumentException("Can't create Virtual Diks at " + path + ". File already exists");
-			}
-			file = new RandomAccessFile(f, "rw");
-			
-			/*
-			 * 0x00 8byte   MagicNumber
-			 * 0x08 8byte   Reserved
-			 * 0x10 112byte FreeLists
-			 */
-			file.write(MAGIC_NUMBER);
-			initializeFreeList();
-			createRootDirectory();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		File f = new File(path);
+		if (f.exists()) {
+			throw new IllegalArgumentException("Can't create Virtual Diks at " + path + ". File already exists");
 		}
+		file = new RandomAccessFile(f, "rw");
+		
+		/*
+		 * 0x00 8byte   MagicNumber
+		 * 0x08 8byte   Reserved
+		 * 0x10 112byte FreeLists
+		 */
+		file.write(MAGIC_NUMBER);
+		initializeFreeList();
+		createRootDirectory();
 	}
 	
 	/*
@@ -115,26 +112,15 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 	
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (file != null) {
-			try {
-				file.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			file.close();
 		}
 	}
 
 	@Override
-	public void setMaxSize(long maxSize) {
-		long fileLength = 0;
-		try {
-			fileLength = file.length();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void setMaxSize(long maxSize) throws IOException {
+		long fileLength = file.length();
 		if (fileLength > maxSize || getMinSize() > maxSize) {
 			throw new IllegalArgumentException("Virtual file system can't be smaller than " + Math.max(maxSize, getMinSize()));
 		}
@@ -147,14 +133,8 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public long getSize() {
-		try {
-			return file.length();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return 0;
+	public long getSize() throws IOException {
+		return file.length();
 	}
 
 	@Override
@@ -174,18 +154,12 @@ public class VirtualDisk implements IVirtualDisk {
 
 	@Override
 	public IVirtualDirectory createDirectory(IVirtualDirectory parent,
-			String name) {
+			String name) throws IOException {
 		return new VirtualDirectory(this, parent, name);
 	}
 
 	@Override
 	public IVirtualFile createFile(IVirtualDirectory parent, String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IVirtualDiskSpace getFreeSpace(long size) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -226,6 +200,28 @@ public class VirtualDisk implements IVirtualDisk {
 			throws IOException {
 		file.seek(pos);
 		return file.read(b, offset, length);
+	}
+
+	@Override
+	public void freeBlock(IDataBlock block) throws IOException {
+		long next = block.getNextBlock();
+		freeRange(block.getBlockPosition(), block.getDiskSize());
+		while (next != 0) {
+			IDataBlock toFreeBlock = DataBlock.load(this, next);
+			next = toFreeBlock.getNextBlock();
+			freeRange(toFreeBlock.getBlockPosition(), toFreeBlock.getDiskSize());
+		}
+		
+	}
+
+	private void freeRange (long position, long length) {
+		
+	}
+	
+	@Override
+	public IDataBlock[] allocateBlock(long size) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

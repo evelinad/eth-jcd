@@ -8,17 +8,19 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 
 	IVirtualDirectory getRootDirectory ();
 	
-	void setMaxSize (long maxSize);
+	void setMaxSize (long maxSize) throws IOException;
 	
 	long getMinSize ();
 	
 	long getMaxSize ();
 	
-	long getSize ();
+	long getSize () throws IOException;
 	
 	int getSuperblockSize (); 
 	
-	IVirtualDiskSpace getFreeSpace (long size);
+	void freeBlock (IDataBlock block) throws IOException;
+	
+	IDataBlock[] allocateBlock (long size);
 	
 	void write (long pos, byte b) throws IOException;
 	
@@ -32,7 +34,7 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 
 	int read (long pos, byte[] b, int offset, int length) throws IOException;
 	
-	IVirtualDirectory createDirectory (IVirtualDirectory parent, String name);
+	IVirtualDirectory createDirectory (IVirtualDirectory parent, String name) throws IOException;
 	
 	IVirtualFile createFile (IVirtualDirectory parent, String name);
 	

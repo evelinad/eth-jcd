@@ -59,8 +59,12 @@ public class DataBlock implements IDataBlock {
 		long size = getDiskSize() | IN_USE_MASK;
 		writeRealPosition(0, size);
 		writeRealPosition(getDiskSize() - BLOCK_LENGTH_SIZE, size);
-		writeRealPosition(BLOCK_LENGTH_SIZE, next);
+		updateNextBlock();
 		updateDataSize();
+	}
+	
+	private void updateNextBlock () throws IOException {
+		writeRealPosition(BLOCK_LENGTH_SIZE, next);
 	}
 	
 	private void updateDataSize () throws IOException {
@@ -190,6 +194,12 @@ public class DataBlock implements IDataBlock {
 			throws IOException {
 		checkDataRange(pos, length);
 		return readRealPosition(pos + METADATA_START_SIZE, b, offset, length);
+	}
+
+	@Override
+	public void setNextBlock(long nextBlock) throws IOException {
+		this.next = nextBlock;
+		updateNextBlock();
 	}
 
 }
