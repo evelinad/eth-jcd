@@ -5,6 +5,25 @@ import java.nio.ByteBuffer;
 
 public abstract class VirtualBlock implements IVirtualBlock {
 
+	public static final IVirtualBlock loadPreviousBlock (IVirtualDisk disk, long position) throws IOException {
+		long previousBlockSize = removeMetaFlagFromSize(disk.read(position - BLOCK_LENGTH_SIZE));
+		return loadBlock(disk, position - previousBlockSize);
+	}
+	
+	public static final IVirtualBlock loadNextBlock (IVirtualDisk disk, long position) throws IOException {
+		long currentBlockSize = removeMetaFlagFromSize(disk.read(position));
+		return loadBlock(disk, position + currentBlockSize);
+	}
+	
+	public static final IVirtualBlock loadBlock (IVirtualDisk disk, long position) throws IOException {
+		byte size = disk.read(position);
+		if (checkIfAllocatedFlagSet(size)) {
+			return DataBlock.load(disk, position);
+		} else {
+			return FreeBlock.loadBlock(disk, position);
+		}
+	}
+	
 	public static final long getSizeOfNextBlock (IVirtualDisk disk, long position) throws IOException {
 		long currentBlockSize = removeMetaFlagFromSize(disk.read(position));
 		return removeMetaFlagFromSize(disk.read(position + currentBlockSize));

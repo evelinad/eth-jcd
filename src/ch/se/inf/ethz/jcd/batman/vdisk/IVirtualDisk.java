@@ -20,7 +20,7 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	
 	void freeBlock (IDataBlock block) throws IOException;
 	
-	IDataBlock[] allocateBlock (long size);
+	IDataBlock[] allocateBlock (long size) throws IOException;
 	
 	void write (long pos, byte b) throws IOException;
 	

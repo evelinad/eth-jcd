@@ -7,42 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/*
- * 
- * FileEntry 64 bytes
- * 0x00  1 Entry Type
- * 0x01  1 Continuous Entries
- * 0x02  8 Time Stamp
- * 0x0A  8 Starting Block of File
- * 0x12  8 BlockNr of next File/Directory
- * 0x1A 38 FileName (last byte reserved for block end if no continuous entries)
- * 
- * Continuous Entry 
- * 0x00 64 File/Directory name extended (last byte reserved for block end if last continuous entries)
- * 
- * FreeBlock Start 64 bytes
- * 0x00 8  Size and free identifier
- * 0x00 56 Free
- * 
- * FreeBlock Middle 64 bytes
- * 0x00 64 Free
- * 
- * FreeBlock End 64 bytes
- * 0x00 63 Free
- * 0xFF 1  Size and free identifier
- * 
- * DataBlock Start 64 bytes
- * 0x00 8  Size and free identifier
- * 0x08 8  Block Number of next block
- * 0x00 48 Data
- * 
- * DataBlock Middle 64 bytes
- * 0x00 64 Data
- * 
- * DataBlock End 64 bytes
- * 0x00 63 Data
- * 0xFF 1  Size and free/data block identifier 
- */
 public class VirtualDisk implements IVirtualDisk {
 
 	public static VirtualDisk load (String path) {
@@ -60,6 +24,7 @@ public class VirtualDisk implements IVirtualDisk {
 	private static final int NR_FREE_LISTS = 22;
 	private static final int FREE_LIST_SIZE = NR_FREE_LISTS*POSITION_SIZE;
 	private static final String ROOT_DIRECTORY_NAME = "root";
+	private static final long MIN_BLOCK_SIZE = 128;
 	
 	private long maxSize;
 	private RandomAccessFile file;
@@ -81,7 +46,15 @@ public class VirtualDisk implements IVirtualDisk {
 		 */
 		file.write(MAGIC_NUMBER);
 		initializeFreeList();
+		extend(getMaxSize() - getSize());
 		createRootDirectory();
+	}
+	
+	private void extend (long amount) throws IOException {
+		long freeBlockPosition = getSize();
+		file.setLength( + amount);
+		IFreeBlock newSpace = FreeBlock.create(this, freeBlockPosition, amount, 0, 0);
+		addFreeBlockToList(newSpace);
 	}
 	
 	/*
@@ -216,21 +189,111 @@ public class VirtualDisk implements IVirtualDisk {
 		
 	}
 
-	private void freeRange (long position, long length) {
-		//check if previous or/and next is free
-		
-		//remove them from the free lists if they are free
-		//add the them as one block to the belonging free list
+	private void removeFreeBlockFromList (IFreeBlock block) throws IOException {
+		if (block.getPreviousBlock() == 0) {
+			//First block in the list
+			int freeListIndex = getFreeListIndex(block.getDiskSize());
+			freeLists.set(freeListIndex, block.getNextBlock());
+		} else {
+			//Middle/end block
+			IFreeBlock previousBlock = FreeBlock.load(this, block.getPreviousBlock());
+			if (block.getNextBlock() != 0) {
+				IFreeBlock nextBlock = FreeBlock.load(this, block.getNextBlock());
+				previousBlock.setNextBlock(nextBlock.getBlockPosition());
+				nextBlock.setPreviousBlock(previousBlock.getBlockPosition());
+			} else {
+				previousBlock.setNextBlock(0);
+			}
+		}
 	}
 	
-	private int getFreeListsIndex(long length) {
-		return 0;
+	private void addFreeBlockToList (IFreeBlock block) throws IOException {
+		int freeListIndex = getFreeListIndex(block.getDiskSize());
+		long firstFreeListEntry = freeLists.get(freeListIndex);
+		if (firstFreeListEntry != 0) {
+			IFreeBlock previousFirstBlock = FreeBlock.load(this, firstFreeListEntry);
+			previousFirstBlock.setPreviousBlock(block.getBlockPosition());
+			block.setNextBlock(previousFirstBlock.getBlockPosition());
+		} else {
+			block.setNextBlock(0);
+		}
+		freeLists.set(freeListIndex, block.getBlockPosition());
+	}
+
+	private int getFreeListIndex(long length) {
+		int index = (int) (Math.log(length/MIN_BLOCK_SIZE)/Math.log(2));
+		return ((index > FREE_LIST_SIZE - 1) ? FREE_LIST_SIZE - 1 : index);
+	}
+	
+	private boolean isFirstBlock (long position, long size) {
+		return position <= SUPERBLOCK_SIZE;
+	}
+	
+	private boolean isLastBlock (long position, long size) throws IOException {
+		return (position + size) >= getSize();
+	}
+	
+	private void freeRange (long position, long size) throws IOException {
+		//check if previous or/and next is free
+		long freeBlockStart = position;
+		long freeBlockSize = size;
+		if (!isFirstBlock(position, size)) {
+			IVirtualBlock previousBlock = VirtualBlock.loadPreviousBlock(this, position);
+			if (previousBlock instanceof IFreeBlock) {
+				freeBlockStart -= previousBlock.getDiskSize();
+				freeBlockSize += previousBlock.getDiskSize();
+				removeFreeBlockFromList((IFreeBlock) previousBlock);
+			}
+		}
+		if (!isLastBlock(position, size)) {
+			IVirtualBlock nextBlock = VirtualBlock.loadNextBlock(this, position);
+			if (nextBlock instanceof IFreeBlock) {
+				freeBlockSize += nextBlock.getDiskSize();
+				removeFreeBlockFromList((IFreeBlock) nextBlock);
+			}
+		}
+		addFreeBlockToList(FreeBlock.create(this, freeBlockStart, freeBlockSize, 0, 0));
+	}
+	
+	private boolean isBlockSplittable (IFreeBlock block, long size) {
+		return (block.getDiskSize() - size) >= MIN_BLOCK_SIZE;
+	}
+	
+	private IDataBlock splitBlock (IFreeBlock freeBlock, long size, long metaDataSize) throws IOException {
+		IDataBlock dataBlock = DataBlock.create(this, freeBlock.getBlockPosition(), size, size - metaDataSize, 0);
+		IFreeBlock newFreeBlock = FreeBlock.create(this, freeBlock.getBlockPosition() + size, freeBlock.getDiskSize() - size, 0, 0);
+		addFreeBlockToList(newFreeBlock);
+		return dataBlock;
 	}
 	
 	@Override
-	public IDataBlock[] allocateBlock(long size) {
-		// TODO Auto-generated method stub
-		return null;
+	public IDataBlock[] allocateBlock(long size) throws IOException {
+		//TODO connect smaller blocks if no larger block is available
+		//TODO remove MetadataSize from data block
+		size += DataBlock.METADATA_SIZE;
+		List<IDataBlock> allocatedBlocks = new ArrayList<IDataBlock>();
+		boolean blocksAllocated = false;
+		for (int freeListIndex = getFreeListIndex(size); freeListIndex < FREE_LIST_SIZE && !blocksAllocated; freeListIndex++) {
+			long nextEntry = freeLists.get(freeListIndex);
+			while (nextEntry != 0) {
+				IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
+				if (freeBlock.getDiskSize() > size) {
+					removeFreeBlockFromList(freeBlock);
+					if (isBlockSplittable(freeBlock, size)) {
+						allocatedBlocks.add(splitBlock(freeBlock, size, DataBlock.METADATA_SIZE));
+					} else {
+						allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), size - DataBlock.METADATA_SIZE, 0));
+					}
+					blocksAllocated = true;
+					break;
+				}
+				nextEntry = freeBlock.getNextBlock();
+			}
+		}
+		if (!blocksAllocated) {
+			throw new OutOfDiskSpaceException();
+		}
+		return allocatedBlocks.toArray(new IDataBlock[allocatedBlocks.size()]);
 	}
 	
 	private void readFreeLists () throws IOException {
