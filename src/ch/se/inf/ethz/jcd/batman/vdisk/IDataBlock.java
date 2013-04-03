@@ -5,6 +5,12 @@ import java.io.IOException;
 /**
  * Represents a block containing metadata and data on the virtual disk.
  * 
+ * <i>Metadata</i> includes information about the block itself, how it relates
+ * to other virtual disk entries and more.
+ * 
+ * <i>Data</i> is the information stored inside the block. This can for example
+ * be part of the content of a file on the virtual disk.
+ * 
  */
 public interface IDataBlock {
 
@@ -153,9 +159,11 @@ public interface IDataBlock {
 	 * @return the size in bytes of the whole block on the virtual disk.
 	 */
 	long getDiskSize();
-	
-	public void write(long pos, byte[] b, int offset, int length) throws IOException;
 
-	public int read(long pos, byte[] b, int offset, int length) throws IOException;
+	public void write(long pos, byte[] b, int offset, int length)
+			throws IOException;
+
+	public int read(long pos, byte[] b, int offset, int length)
+			throws IOException;
 
 }
