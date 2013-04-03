@@ -26,11 +26,13 @@ public class IVirtualDiskTest {
 
 	@Parameterized.Parameters
 	public static Collection<Object[]> getImplementations() throws IOException {
-		File diskA = new File(TEST_DISK_DIR, "A.disk");
-		disks.add(diskA);
+		// create disk a
+	    File diskAFile = new File(TEST_DISK_DIR, "A.disk");
+		disks.add(diskAFile);
+		
+		IVirtualDisk diskA = VirtualDisk.create(diskAFile.getPath(), TEST_DISK_SIZE);
 
-		Object[][] instances = { new Object[] { new VirtualDisk(
-				diskA.getPath(), TEST_DISK_SIZE) } };
+		Object[][] instances = { {diskA} };
 
 		return Arrays.asList(instances);
 	}
