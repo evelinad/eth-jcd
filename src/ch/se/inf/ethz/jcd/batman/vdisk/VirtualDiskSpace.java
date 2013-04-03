@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +39,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		
 	}
 	
+	private static final int BYTE_LENGTH = 1;
+	private static final int LONG_LENGTH = 8;
+	
 	private List<DataBlock> blocks;
 	private VirtualDiskSpacePosition position;
 	
@@ -47,18 +52,37 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	private VirtualDiskSpacePosition calculatePosition (long position) {
 		VirtualDiskSpacePosition vDiskPosition = new VirtualDiskSpacePosition();
 		vDiskPosition.setPosition(position);
+		long blockPosition = position;
 		int index = 0;
 		for (; index < blocks.size(); index++) {
 			DataBlock block = blocks.get(index);
-			if (block.getDataSize() < position) {
-				position -= block.getDataSize();
+			if (block.getDataSize() < blockPosition) {
+				blockPosition -= block.getDataSize();
 			} else {
 				break;
 			}
 		}
 		vDiskPosition.setBlockIndex(index);
-		vDiskPosition.setBlockPosition(position);
+		vDiskPosition.setBlockPosition(blockPosition);
 		return vDiskPosition;
+	}
+	
+	private VirtualDiskSpacePosition addPosition (VirtualDiskSpacePosition base, long add) {
+		VirtualDiskSpacePosition newPosition = new VirtualDiskSpacePosition();
+		newPosition.setPosition(base.getPosition() + add);
+		int index = base.getBlockIndex();
+		long blockPosition = base.getBlockPosition() + add;
+		for (; index < blocks.size(); index++) {
+			DataBlock block = blocks.get(index);
+			if (block.getDataSize() < blockPosition) {
+				blockPosition -= block.getDataSize();
+			} else {
+				break;
+			}
+		}
+		newPosition.setBlockIndex(index);
+		newPosition.setBlockPosition(blockPosition);
+		return newPosition;
 	}
 	
 	@Override
@@ -101,87 +125,139 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 
 	@Override
-	public void write(byte b) {
+	public void write(byte b) throws IOException {
 		write(position, b);
+		position = addPosition(position, BYTE_LENGTH);
 	}
 
 	@Override
-	public void write(long l) {
+	public void write(long l) throws IOException {
 		write(position, l);
+		position = addPosition(position, LONG_LENGTH);
 	}
 
 	@Override
-	public void write(byte[] b) {
+	public void write(byte[] b) throws IOException {
 		write(position, b);
+		position = addPosition(position, b.length);
 	}
 
 	@Override
-	public void write(long pos, byte b) {
+	public void write(long pos, byte b) throws IOException {
 		write(calculatePosition(pos), b);
 	}
 
 	@Override
-	public void write(long pos, long l) {
+	public void write(long pos, long l) throws IOException {
 		write(calculatePosition(pos), l);
 	}
 	
 	@Override
-	public void write(long pos, byte[] b) {
+	public void write(long pos, byte[] b) throws IOException {
 		write(calculatePosition(pos), b);
 	}
 
 	@Override
-	public byte read() {
-		return read(position);
+	public byte read() throws IOException {
+		byte b = read(position);
+		position = addPosition(position, BYTE_LENGTH);
+		return b;
 	}
 
 	@Override
-	public long read(byte[] b) {
-		return read(position, b);
+	public int read(byte[] b) throws IOException {
+		int l = read(position, b);
+		position = addPosition(position, b.length);
+		return l;
 	}
 
 	@Override
-	public long readLong() {
-		return read(position);
+	public long readLong() throws IOException {
+		long l = readLong(position);
+		position = addPosition(position, LONG_LENGTH);
+		return l;
 	}
 
 	@Override
-	public byte read(long pos) {
+	public byte read(long pos) throws IOException {
 		return read(calculatePosition(pos));
 	}
 
 	@Override
-	public long read(long pos, byte[] b) {
+	public int read(long pos, byte[] b) throws IOException {
 		return read(calculatePosition(pos), b);
 	}
 
 	@Override
-	public long readLong(long pos) {
+	public long readLong(long pos) throws IOException {
 		return readLong(calculatePosition(pos));
 	}
 	
-	private void write (VirtualDiskSpacePosition pos, byte b) {
-		
+	private long getRemainingSpace(IDataBlock block, long blockPosition) {
+		return block.getDataSize()-blockPosition;
 	}
 	
-	private void write (VirtualDiskSpacePosition pos, long l) {
-		
+	private long getRemainingSpace(VirtualDiskSpacePosition pos) {
+		return getRemainingSpace(blocks.get(pos.getBlockIndex()), pos.getBlockPosition());
 	}
 	
-	private void write (VirtualDiskSpacePosition pos, byte[] b) {
-		
+	private IDataBlock getDataBlock (VirtualDiskSpacePosition pos) {
+		return blocks.get(pos.getBlockIndex());
 	}
 	
-	private byte read (VirtualDiskSpacePosition pos) {
-		return 0;
+	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
+		blocks.get(pos.getBlockIndex()).write(pos.getBlockPosition(), b);
 	}
 	
-	private long read (VirtualDiskSpacePosition pos, byte[] b) {
-		return 0;
+	private void write (VirtualDiskSpacePosition pos, long l) throws IOException {
+		write(pos, ByteBuffer.allocate(8).putLong(l).array());
 	}
 	
-	private long readLong (VirtualDiskSpacePosition pos) {
-		return 0;
+	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
+		int bytesWritten = 0;
+		while (bytesWritten != b.length) {
+			long remainingSpace = getRemainingSpace(pos);
+			int bytesToWrite = b.length - bytesWritten;
+			int currentBytesWritten = 0;
+			if (bytesToWrite <= remainingSpace) {
+				getDataBlock(pos).write(pos.getBlockPosition(), b, bytesWritten, bytesToWrite);
+				currentBytesWritten = bytesToWrite;
+			} else {
+				getDataBlock(pos).write(pos.getBlockPosition(), b, bytesWritten, (int) remainingSpace);
+				currentBytesWritten = (int) remainingSpace;
+			}
+			bytesWritten += currentBytesWritten;
+			pos = addPosition(pos, currentBytesWritten);
+		}
+	}
+	
+	private byte read (VirtualDiskSpacePosition pos) throws IOException {
+		return blocks.get(pos.getBlockIndex()).read(pos.getBlockPosition());
+	}
+	
+	private int read (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
+		int bytesRead = 0;
+		while (bytesRead != b.length) {
+			long remainingSpace = getRemainingSpace(pos);
+			int bytesToRead = b.length - bytesRead;
+			int currentBytesRead = 0;
+			if (bytesToRead <= remainingSpace) {
+				getDataBlock(pos).read(pos.getBlockPosition(), b, bytesRead, bytesToRead);
+				currentBytesRead = bytesToRead;
+			} else {
+				getDataBlock(pos).read(pos.getBlockPosition(), b, bytesRead, (int) remainingSpace);
+				currentBytesRead = (int) remainingSpace;
+			}
+			bytesRead += currentBytesRead;
+			pos = addPosition(pos, currentBytesRead);
+		}
+		return bytesRead;
+	}
+	
+	private long readLong (VirtualDiskSpacePosition pos) throws IOException {
+		byte[] longInBytes = new byte[LONG_LENGTH];
+		read(pos, longInBytes);
+		return ByteBuffer.wrap(longInBytes).getLong();
 	}
 
 

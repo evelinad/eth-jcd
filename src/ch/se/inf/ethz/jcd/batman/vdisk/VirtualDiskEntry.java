@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
 	private IVirtualDisk disk;
@@ -18,12 +20,12 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 	
 	@Override
-	public void setName(String name) {
+	public void setName(String name) throws IOException {
 		this.name = name;
 		updateName();
 	}
 	
-	protected abstract void updateName ();
+	protected abstract void updateName () throws IOException;
 	
 	@Override
 	public String getName() {
@@ -56,12 +58,12 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 	
 	@Override
-	public void setNextEntry(IVirtualDiskEntry next) {
+	public void setNextEntry(IVirtualDiskEntry next) throws IOException {
 		this.next = next;
 		updateNextEntry();
 	}
 	
-	protected abstract void updateNextEntry();
+	protected abstract void updateNextEntry() throws IOException;
 	
 	@Override
 	public long getTimestamp() {
@@ -69,12 +71,12 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 
 	@Override
-	public void setTimestamp(long timestamp) {
+	public void setTimestamp(long timestamp) throws IOException {
 		this.timestamp = timestamp;
 		updateTimestamp();
 	}
 	
-	protected abstract void updateTimestamp ();
+	protected abstract void updateTimestamp () throws IOException;
 	
 	public IVirtualDisk getDisk () {
 		return disk;

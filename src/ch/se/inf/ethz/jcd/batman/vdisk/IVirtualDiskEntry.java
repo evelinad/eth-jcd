@@ -1,9 +1,11 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 
 public interface IVirtualDiskEntry {
 
-	void setName (String name);
+	void setName (String name) throws IOException;
 	
 	String getName ();
 
@@ -17,11 +19,11 @@ public interface IVirtualDiskEntry {
 	
 	IVirtualDiskEntry getNextEntry ();
 	
-	void setNextEntry (IVirtualDiskEntry entry);
+	void setNextEntry (IVirtualDiskEntry entry) throws IOException;
 	
 	long getTimestamp ();
 	
-	void setTimestamp (long timestamp);
+	void setTimestamp (long timestamp) throws IOException;
 	
 	void delete ();
 	

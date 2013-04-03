@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 
 
 /* 
@@ -26,13 +28,13 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	private IVirtualDiskSpace space;
 	private IVirtualDiskEntry firstMember;
 	
-	protected VirtualDirectory(IVirtualDisk disk, IVirtualDirectory parent, String name) {
+	protected VirtualDirectory(IVirtualDisk disk, IVirtualDirectory parent, String name) throws IOException {
 		super(disk, parent, name);
 		space = disk.getFreeSpace(calculateSize());
 		updateAll();
 	}
 	
-	private void updateAll() {
+	private void updateAll() throws IOException {
 		updateEntryType();
 		updateTimestamp();
 		updateNextEntry();
@@ -40,30 +42,30 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 		updateName();
 	}
 	
-	protected void updateEntryType() {
+	protected void updateEntryType() throws IOException {
 		space.seek(ENTRY_TYPE_POS);
 		space.write(DIRECTORY_ENTRY);
 	}
 	
-	protected void updateTimestamp() {
+	protected void updateTimestamp() throws IOException {
 		space.seek(TIMESTAMP_POS);
 		space.write(getTimestamp());
 	}
 	
-	protected void updateNextEntry() {
+	protected void updateNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		IVirtualDiskEntry next = getNextEntry();
 		space.write((next == null) ? 0 : next.getPosition());
 	}
 	
-	protected void updateFirstMember() {
+	protected void updateFirstMember() throws IOException {
 		space.seek(FIRST_MEMBER_POS);
 		IVirtualDiskEntry first = getFirstMember();
 		space.write((first == null) ? 0 : first.getPosition());
 	
 	}
 	
-	protected void updateName() {
+	protected void updateName() throws IOException {
 		space.changeSize(calculateSize());
 		space.seek(NAME_POS);
 		space.write(getName().getBytes());
@@ -78,7 +80,7 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	}
 	
 	@Override
-	public void addMember(IVirtualDiskEntry member) {
+	public void addMember(IVirtualDiskEntry member) throws IOException {
 		member.setParent(this);
 		member.setNextEntry(firstMember);
 		member.setPreviousEntry(null);
@@ -102,7 +104,7 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	}
 
 	@Override
-	public void removeMember(IVirtualDiskEntry member) throws VirtualDiskException {
+	public void removeMember(IVirtualDiskEntry member) throws IOException {
 		if (member.getParent() == this) {
 			if (member.getPreviousEntry() == null) {
 				firstMember = member.getNextEntry();

@@ -47,7 +47,7 @@ public class VirtualDisk implements IVirtualDisk {
 		return null;
 	}
 	
-	public static VirtualDisk create (String path, long maxSize) {
+	public static VirtualDisk create (String path, long maxSize) throws IOException {
 		return new VirtualDisk(path, maxSize);
 	}
 	
@@ -63,27 +63,22 @@ public class VirtualDisk implements IVirtualDisk {
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
 	
-	public VirtualDisk(String path, long maxSize) {
+	public VirtualDisk(String path, long maxSize) throws IOException {
 		setMaxSize(maxSize);
-		try {
-			File f = new File(path);
-			if (f.exists()) {
-				throw new IllegalArgumentException("Can't create Virtual Diks at " + path + ". File already exists");
-			}
-			file = new RandomAccessFile(f, "rw");
-			
-			/*
-			 * 0x00 8byte   MagicNumber
-			 * 0x08 8byte   Reserved
-			 * 0x10 112byte FreeLists
-			 */
-			file.write(MAGIC_NUMBER);
-			initializeFreeList();
-			createRootDirectory();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		File f = new File(path);
+		if (f.exists()) {
+			throw new IllegalArgumentException("Can't create Virtual Diks at " + path + ". File already exists");
 		}
+		file = new RandomAccessFile(f, "rw");
+		
+		/*
+		 * 0x00 8byte   MagicNumber
+		 * 0x08 8byte   Reserved
+		 * 0x10 112byte FreeLists
+		 */
+		file.write(MAGIC_NUMBER);
+		initializeFreeList();
+		createRootDirectory();
 	}
 	
 	/*
@@ -115,26 +110,15 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 	
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (file != null) {
-			try {
-				file.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			file.close();
 		}
 	}
 
 	@Override
-	public void setMaxSize(long maxSize) {
-		long fileLength = 0;
-		try {
-			fileLength = file.length();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void setMaxSize(long maxSize) throws IOException {
+		long fileLength = file.length();
 		if (fileLength > maxSize || getMinSize() > maxSize) {
 			throw new IllegalArgumentException("Virtual file system can't be smaller than " + Math.max(maxSize, getMinSize()));
 		}
@@ -147,14 +131,8 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public long getSize() {
-		try {
-			return file.length();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return 0;
+	public long getSize() throws IOException {
+		return file.length();
 	}
 
 	@Override
@@ -174,7 +152,7 @@ public class VirtualDisk implements IVirtualDisk {
 
 	@Override
 	public IVirtualDirectory createDirectory(IVirtualDirectory parent,
-			String name) {
+			String name) throws IOException {
 		return new VirtualDirectory(this, parent, name);
 	}
 
@@ -185,7 +163,7 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public IVirtualDiskSpace getFreeSpace(long size) {
+	public IVirtualDiskSpace getFreeSpace(long size) throws VirtualDiskException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.IOException;
+
 public interface IVirtualDiskSpace {
 
 	long getVirtualDiskPosition();
@@ -12,29 +14,29 @@ public interface IVirtualDiskSpace {
 	
 	void seek (long pos);
 	
-	void write (byte b);
+	void write (byte b) throws IOException;
 
-	void write (long l);
+	void write (long l) throws IOException;
 	
-	void write (byte[] b);
+	void write (byte[] b) throws IOException;
 	
-	void write (long pos, byte b);
+	void write (long pos, byte b) throws IOException;
 	
-	void write (long pos, long l);
+	void write (long pos, long l) throws IOException;
 	
-	void write (long pos, byte[] b);
+	void write (long pos, byte[] b) throws IOException;
 	
-	byte read ();
+	byte read () throws IOException;
 	
-	long read (byte[] b);
+	int read (byte[] b) throws IOException;
 	
-	long readLong ();
+	long readLong () throws IOException;
 	
-	byte read (long pos);
+	byte read (long pos) throws IOException;
 	
-	long read (long pos, byte[] b);
+	int read (long pos, byte[] b) throws IOException;
 	
-	long readLong (long pos);
+	long readLong (long pos) throws IOException;
 
 	long getDiskSize();
 }
