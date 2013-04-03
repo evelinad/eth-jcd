@@ -22,10 +22,8 @@ public interface IVirtualBlock {
 	long getBlockPosition();
 	
 	/**
-	 * Returns the size in bytes of the block on the disk. This includes the
-	 * meta data of the block.
+	 * Returns the size in bytes of the block on the disk.
 	 * 
-	 * @see #getDataSize()
 	 * @return the size in bytes of the whole block on the virtual disk.
 	 */
 	long getDiskSize();
