@@ -44,7 +44,7 @@ public class IVirtualDiskTest {
 	}
 
 	// fields
-	private IVirtualDisk disk;
+	private final IVirtualDisk disk;
 
 	// constructors
 	public IVirtualDiskTest(IVirtualDisk disk) {
@@ -54,7 +54,7 @@ public class IVirtualDiskTest {
 	// tests
 	@Test
 	public void sizeCorrectTest() throws IOException {
-		assertEquals(disk.getSize(), TEST_DISK_SIZE);
+		assertEquals(disk.getMaxSize(), TEST_DISK_SIZE);
 	}
 
 	@Test
