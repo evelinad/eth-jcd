@@ -15,13 +15,19 @@ import java.io.IOException;
  */
 public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirectory {
 	
-	private static final int DEFAULT_SIZE = 25;
+	private static final int ENTRY_TYP_SIZE = 1;
+	private static final int TIMESTAMP_SIZE = 8;
+	private static final int NEXT_ENTRY_SIZE = 8;
+	private static final int FIRST_MEMBER_SIZE = 8;
+	
 	
 	private static final int ENTRY_TYPE_POS = 0;
-	private static final int TIMESTAMP_POS = 1;
-	private static final int NEXT_ENTRY_POS = 9;
-	private static final int FIRST_MEMBER_POS = 17;
-	private static final int NAME_POS = 25;
+	private static final int TIMESTAMP_POS = ENTRY_TYP_SIZE;
+	private static final int NEXT_ENTRY_POS = TIMESTAMP_POS + TIMESTAMP_SIZE;
+	private static final int FIRST_MEMBER_POS = NEXT_ENTRY_POS + NEXT_ENTRY_SIZE;
+	private static final int NAME_POS = FIRST_MEMBER_POS + FIRST_MEMBER_SIZE;
+	
+	private static final int DEFAULT_SIZE = NAME_POS;
 	
 	private static final byte DIRECTORY_ENTRY = 1;
 	
@@ -69,7 +75,7 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 		space.changeSize(calculateSize());
 		space.seek(NAME_POS);
 		space.write(getName().getBytes());
-		space.write('\0');
+		space.write(String.valueOf('\0').getBytes());
 	}
 
 	@Override

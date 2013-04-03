@@ -108,7 +108,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 
 	private void truncate (long amount) throws IOException {
 		IDataBlock freeBlock = null;
-		for (int i = blocks.size() - 1; amount <= 0 || i >= 0; i--) {
+		for (int i = blocks.size() - 1; amount <= 0 && i >= 0; i--) {
 			IDataBlock block =  blocks.get(i);
 			long dataSize = block.getDataSize();
 			if (amount > dataSize) {
@@ -149,7 +149,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private IDataBlock getLastBlock () {
-		return blocks.get(blocks.size()-1);
+		return (blocks.isEmpty() ? null : blocks.get(blocks.size()-1));
 	}
 	
 	@Override
@@ -273,6 +273,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		int bytesWritten = 0;
 		while (bytesWritten != b.length) {
 			long remainingSpace = getRemainingSpace(pos);
+			if (remainingSpace == 0) {
+				throw new VirtualDiskException("DiskSpace too small!");
+			}
 			int bytesToWrite = b.length - bytesWritten;
 			int currentBytesWritten = 0;
 			if (bytesToWrite <= remainingSpace) {

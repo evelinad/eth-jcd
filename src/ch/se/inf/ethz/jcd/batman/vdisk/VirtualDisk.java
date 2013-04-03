@@ -60,13 +60,9 @@ public class VirtualDisk implements IVirtualDisk {
 	/*
 	 * Initialize the segregated free lists
 	 * There is a class for each two power size
-	 * 1 : 1-2
-	 * 2 : 3-4
-	 * 3 : 5-8
-	 * ....
-	 * 20 : 524229-1048576
-	 * 21 : 1048577-2097152
-	 * 22 : 2097153-infinity
+	 * 1 : 128-255
+	 * ...
+	 * 22 : 128*2^22-infinity
 	 */
 	private void initializeFreeList () throws IOException {
 		file.seek(FREE_LISTS_POSITION);
@@ -95,7 +91,7 @@ public class VirtualDisk implements IVirtualDisk {
 
 	@Override
 	public void setMaxSize(long maxSize) throws IOException {
-		long fileLength = file.length();
+		long fileLength = (file == null) ? 0 : file.length();
 		if (fileLength > maxSize || getMinSize() > maxSize) {
 			throw new IllegalArgumentException("Virtual file system can't be smaller than " + Math.max(maxSize, getMinSize()));
 		}
@@ -221,6 +217,9 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	private int getFreeListIndex(long length) {
+		if (length < MIN_BLOCK_SIZE) {
+			length = MIN_BLOCK_SIZE;
+		}
 		int index = (int) (Math.log(length/MIN_BLOCK_SIZE)/Math.log(2));
 		return ((index > FREE_LIST_SIZE - 1) ? FREE_LIST_SIZE - 1 : index);
 	}
@@ -259,18 +258,21 @@ public class VirtualDisk implements IVirtualDisk {
 		return (block.getDiskSize() - size) >= MIN_BLOCK_SIZE;
 	}
 	
-	private IDataBlock splitBlock (IFreeBlock freeBlock, long size, long metaDataSize) throws IOException {
-		IDataBlock dataBlock = DataBlock.create(this, freeBlock.getBlockPosition(), size, size - metaDataSize, 0);
+	private IDataBlock splitBlock (IFreeBlock freeBlock, long size, long dataSize) throws IOException {
+		IDataBlock dataBlock = DataBlock.create(this, freeBlock.getBlockPosition(), size, dataSize, 0);
 		IFreeBlock newFreeBlock = FreeBlock.create(this, freeBlock.getBlockPosition() + size, freeBlock.getDiskSize() - size, 0, 0);
 		addFreeBlockToList(newFreeBlock);
 		return dataBlock;
 	}
 	
 	@Override
-	public IDataBlock[] allocateBlock(long size) throws IOException {
+	public IDataBlock[] allocateBlock(long dataSize) throws IOException {
 		//TODO connect smaller blocks if no larger block is available
 		//TODO remove MetadataSize from data block
-		size += DataBlock.METADATA_SIZE;
+		long size = dataSize + DataBlock.METADATA_SIZE;
+		if (size < MIN_BLOCK_SIZE) {
+			size = MIN_BLOCK_SIZE;
+		}
 		List<IDataBlock> allocatedBlocks = new ArrayList<IDataBlock>();
 		boolean blocksAllocated = false;
 		for (int freeListIndex = getFreeListIndex(size); freeListIndex < FREE_LIST_SIZE && !blocksAllocated; freeListIndex++) {
@@ -280,9 +282,9 @@ public class VirtualDisk implements IVirtualDisk {
 				if (freeBlock.getDiskSize() > size) {
 					removeFreeBlockFromList(freeBlock);
 					if (isBlockSplittable(freeBlock, size)) {
-						allocatedBlocks.add(splitBlock(freeBlock, size, DataBlock.METADATA_SIZE));
+						allocatedBlocks.add(splitBlock(freeBlock, size, dataSize));
 					} else {
-						allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), size - DataBlock.METADATA_SIZE, 0));
+						allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), dataSize, 0));
 					}
 					blocksAllocated = true;
 					break;
