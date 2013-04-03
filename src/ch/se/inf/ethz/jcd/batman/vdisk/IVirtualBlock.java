@@ -1,6 +1,15 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
-
+/**
+ * Represents a block on the virtual disk.
+ * 
+ * This interface provides the common contract that all kinds of blocks have to
+ * provide to the outside world.
+ * 
+ * @see IDataBlock
+ * @see IFreeBlock
+ *
+ */
 public interface IVirtualBlock {
 
 	/**
