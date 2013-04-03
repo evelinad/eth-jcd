@@ -30,7 +30,7 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	
 	protected VirtualDirectory(IVirtualDisk disk, IVirtualDirectory parent, String name) throws IOException {
 		super(disk, parent, name);
-		space = disk.getFreeSpace(calculateSize());
+		space = new VirtualDiskSpace(disk, calculateSize());
 		updateAll();
 	}
 	

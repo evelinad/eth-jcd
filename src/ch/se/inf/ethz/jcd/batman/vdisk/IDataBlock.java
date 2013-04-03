@@ -158,4 +158,6 @@ public interface IDataBlock {
 
 	public int read(long pos, byte[] b, int offset, int length) throws IOException;
 
+	void setNextBlock(long nextBlock) throws IOException;
+
 }

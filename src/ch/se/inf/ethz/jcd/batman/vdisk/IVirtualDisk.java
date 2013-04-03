@@ -18,7 +18,9 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	
 	int getSuperblockSize (); 
 	
-	IVirtualDiskSpace getFreeSpace (long size) throws VirtualDiskException;
+	void freeBlock (IDataBlock block) throws IOException;
+	
+	IDataBlock[] allocateBlock (long size);
 	
 	void write (long pos, byte b) throws IOException;
 	

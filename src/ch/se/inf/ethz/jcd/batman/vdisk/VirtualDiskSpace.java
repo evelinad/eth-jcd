@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,11 +43,13 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	private static final int BYTE_LENGTH = 1;
 	private static final int LONG_LENGTH = 8;
 	
-	private List<DataBlock> blocks;
+	private IVirtualDisk disk;
+	private List<IDataBlock> blocks = new ArrayList<IDataBlock>();
 	private VirtualDiskSpacePosition position;
 	
-	public VirtualDiskSpace() {
-		blocks = new ArrayList<DataBlock>();
+	public VirtualDiskSpace(IVirtualDisk disk, long size) throws IOException {
+		this.disk = disk;
+		changeSize(size);
 	}
 	
 	private VirtualDiskSpacePosition calculatePosition (long position) {
@@ -55,7 +58,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		long blockPosition = position;
 		int index = 0;
 		for (; index < blocks.size(); index++) {
-			DataBlock block = blocks.get(index);
+			IDataBlock block = blocks.get(index);
 			if (block.getDataSize() < blockPosition) {
 				blockPosition -= block.getDataSize();
 			} else {
@@ -73,7 +76,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		int index = base.getBlockIndex();
 		long blockPosition = base.getBlockPosition() + add;
 		for (; index < blocks.size(); index++) {
-			DataBlock block = blocks.get(index);
+			IDataBlock block = blocks.get(index);
 			if (block.getDataSize() < blockPosition) {
 				blockPosition -= block.getDataSize();
 			} else {
@@ -91,15 +94,68 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 
 	@Override
-	public void changeSize(long newSize) {
-		// TODO Auto-generated method stub
-		
+	public void changeSize(long newSize) throws IOException {
+		if (newSize < 1) {
+			throw new IllegalArgumentException("Virtual space can't be smaller than 1");
+		}
+		long currentSize = getSize();
+		if (currentSize < newSize) {
+			extend(newSize - currentSize);
+		} else {
+			truncate(currentSize - newSize);
+		}
 	}
 
+	private void truncate (long amount) throws IOException {
+		IDataBlock freeBlock = null;
+		for (int i = blocks.size() - 1; amount <= 0 || i >= 0; i--) {
+			IDataBlock block =  blocks.get(i);
+			long dataSize = block.getDataSize();
+			if (amount > dataSize) {
+				blocks.remove(i);
+				amount -= dataSize;
+				freeBlock = block;
+			} else {
+				block.setDataSize(dataSize - amount);
+				amount = 0;
+			}
+		}
+		if (freeBlock != null) {
+			disk.freeBlock(freeBlock);
+		}
+	}
+	
+	private void extend (long amount) throws IOException {
+		//Use the the last block if there is still some free space
+		IDataBlock lastBlock = getLastBlock();
+		if (lastBlock != null) {
+			long freeSize = lastBlock.getFreeSize();
+			if (freeSize >= 0) {
+				long extendSize = Math.min(amount, freeSize);
+				lastBlock.setDataSize(lastBlock.getDataSize() + extendSize);
+				amount -= extendSize;
+			}
+		}
+		//Request the rest from the disk and add it to the list
+		if (amount > 0) {
+			IDataBlock[] allocatetBlocks = disk.allocateBlock(amount);
+			if (lastBlock != null) {
+				lastBlock.setNextBlock(allocatetBlocks[0].getBlockPosition());
+			}
+			for (int i = 0; i < allocatetBlocks.length; i++) {
+				blocks.add(allocatetBlocks[i]);
+			}
+		}
+	}
+	
+	private IDataBlock getLastBlock () {
+		return blocks.get(blocks.size()-1);
+	}
+	
 	@Override
 	public long getSize() {
 		long size = 0;
-		for (DataBlock block : blocks) {
+		for (IDataBlock block : blocks) {
 			size += block.getDataSize();
 		}
 		return size;
@@ -108,7 +164,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	@Override
 	public long getDiskSize() {
 		long diskSize = 0;
-		for (DataBlock block : blocks) {
+		for (IDataBlock block : blocks) {
 			diskSize += block.getDiskSize();
 		}
 		return diskSize;

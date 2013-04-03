@@ -3,6 +3,8 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /*
@@ -163,12 +165,6 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public IVirtualDiskSpace getFreeSpace(long size) throws VirtualDiskException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void write(long pos, byte b) throws IOException {
 		file.seek(pos);
 		file.write(b);
@@ -204,6 +200,28 @@ public class VirtualDisk implements IVirtualDisk {
 			throws IOException {
 		file.seek(pos);
 		return file.read(b, offset, length);
+	}
+
+	@Override
+	public void freeBlock(IDataBlock block) throws IOException {
+		long next = block.getNextBlock();
+		freeRange(block.getBlockPosition(), block.getDiskSize());
+		while (next != 0) {
+			IDataBlock toFreeBlock = DataBlock.load(this, next);
+			next = toFreeBlock.getNextBlock();
+			freeRange(toFreeBlock.getBlockPosition(), toFreeBlock.getDiskSize());
+		}
+		
+	}
+
+	private void freeRange (long position, long length) {
+		
+	}
+	
+	@Override
+	public IDataBlock[] allocateBlock(long size) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

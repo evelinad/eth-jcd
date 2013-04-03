@@ -6,7 +6,7 @@ public interface IVirtualDiskSpace {
 
 	long getVirtualDiskPosition();
 	
-	void changeSize (long newSize);
+	void changeSize (long newSize) throws IOException;
 	
 	long getSize ();
 	
