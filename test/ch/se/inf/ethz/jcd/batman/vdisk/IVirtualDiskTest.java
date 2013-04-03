@@ -62,7 +62,6 @@ public class IVirtualDiskTest {
 		assertNotNull(disk.getRootDirectory());
 		assertNull(disk.getRootDirectory().getNextEntry());
 		assertNull(disk.getRootDirectory().getPreviousEntry());
-		assertEquals(disk.getRootDirectory().getName(), "/");
 		assertTrue(disk.getRootDirectory().exists());
 	}
 
