@@ -44,7 +44,7 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	 */
 	private static final String CLI_OUTPUT_PREFIX = "=> ";
 	
-	private Console cli;
+	private final Console cli;
 	private String inputPrefix;
 	private boolean running;
 	
@@ -52,10 +52,6 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 		inputPrefix = CLI_INPUT_PREFIX_NO_DISK;
 		running = false;
 		cli = System.console();
-		
-		if(cli == null) {
-			throw new RuntimeException("No console available.");
-		}
 	}
 	
 	/**
@@ -107,10 +103,10 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	 * @param prefix new input prefix to use
 	 */
 	public void setInputPrefix(String prefix) {
-		if(prefix != null) {
-			inputPrefix = prefix;
-		} else {
+		if(prefix == null) {
 			inputPrefix = CLI_INPUT_PREFIX_NO_DISK;
+		} else {
+			inputPrefix = prefix;
 		}
 	}
 	

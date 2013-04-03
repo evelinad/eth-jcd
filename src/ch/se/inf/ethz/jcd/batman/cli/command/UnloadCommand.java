@@ -13,7 +13,7 @@ public class UnloadCommand implements PrioritizedObserver<String> {
 	
 	@Override
 	public void update(PrioritizedObservable<String> observable, String data) {
-		assert(observable instanceof CommandLineInterface);
+		assert observable instanceof CommandLineInterface;
 		CommandLineInterface cli = (CommandLineInterface)observable;
 		
 		String[] lineParts = data.split(" ");

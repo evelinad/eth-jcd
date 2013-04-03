@@ -16,7 +16,7 @@ public class CommandNotFound implements PrioritizedObserver<String> {
 	@Override
 	public void update(PrioritizedObservable<String> obs, String data) {
 		if(!obs.isHandled()) {
-			assert(obs instanceof CommandLineInterface);
+			assert obs instanceof CommandLineInterface;
 			CommandLineInterface cli = (CommandLineInterface) obs;
 
 			cli.writeln(String.format("command '%s' not found.", data));

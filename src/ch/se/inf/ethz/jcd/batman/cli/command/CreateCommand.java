@@ -24,7 +24,7 @@ public class CreateCommand implements PrioritizedObserver<String> {
 	
 	@Override
 	public void update(PrioritizedObservable<String> observable, String data) {
-		assert(observable instanceof CommandLineInterface);
+		assert observable instanceof CommandLineInterface;
 		CommandLineInterface cli = (CommandLineInterface)observable;
 		
 		String[] lineParts = data.split(" ");
@@ -33,9 +33,7 @@ public class CreateCommand implements PrioritizedObserver<String> {
 				cli.setHandled();
 				
 				// parse parameters
-				if(lineParts.length != 3) {
-					cli.writeln("not the right amount of parameters provided.");
-				} else {
+				if(lineParts.length == 3) {
 					// extract path
 					Path hostPath = null;
 					try {
@@ -56,6 +54,8 @@ public class CreateCommand implements PrioritizedObserver<String> {
 					
 					// TODO
 					cli.writeln(String.format("command 'create' called for path '%s' and size '%s'", hostPath, size));
+				} else {
+					cli.writeln("not the right amount of parameters provided.");
 				}
 			}
 		}

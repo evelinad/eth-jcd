@@ -16,9 +16,9 @@ import java.util.List;
  * @param <T> type of the data object used in notifyAll
  */
 public class PrioritizedObservable<T> {
-	private List<PrioritizedObserver<T>> observers;
+	private final List<PrioritizedObserver<T>> observers;
+	private final ObserverComperator comperator;
 	private boolean handled;
-	private ObserverComperator comperator;
 	
 	/**
 	 * Comparator implementation to compare integers and sort them in ascending order.

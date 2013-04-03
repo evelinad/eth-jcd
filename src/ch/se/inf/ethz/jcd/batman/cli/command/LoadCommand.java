@@ -24,7 +24,7 @@ public class LoadCommand implements PrioritizedObserver<String> {
 	
 	@Override
 	public void update(PrioritizedObservable<String> observable, String data) {
-		assert(observable instanceof CommandLineInterface);
+		assert observable instanceof CommandLineInterface;
 		CommandLineInterface cli = (CommandLineInterface)observable;
 		
 		String[] lineParts = data.split(" ");
@@ -33,9 +33,7 @@ public class LoadCommand implements PrioritizedObserver<String> {
 				cli.setHandled();
 				
 				// parse parameters
-				if(lineParts.length != 2) {
-					cli.writeln("not the right amount of parameters provided.");
-				} else {
+				if(lineParts.length == 2) {
 					// extract path
 					Path hostPath = null;
 					try {
@@ -49,6 +47,8 @@ public class LoadCommand implements PrioritizedObserver<String> {
 					cli.writeln(String.format("command 'load' called for path '%s'", hostPath));
 					
 					cli.setInputPrefix(hostPath.getFileName().toString());
+				} else {
+					cli.writeln("not the right amount of parameters provided.");
 				}
 			}
 		}

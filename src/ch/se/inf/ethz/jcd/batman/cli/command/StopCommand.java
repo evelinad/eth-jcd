@@ -15,7 +15,7 @@ public class StopCommand implements PrioritizedObserver<String> {
 
 	@Override
 	public void update(PrioritizedObservable<String> obs, String line) {
-		assert(obs instanceof CommandLineInterface);
+		assert obs instanceof CommandLineInterface;
 		CommandLineInterface cli = (CommandLineInterface)obs;
 		
 		for(String commandStr : COMMAND_STRINGS) {
