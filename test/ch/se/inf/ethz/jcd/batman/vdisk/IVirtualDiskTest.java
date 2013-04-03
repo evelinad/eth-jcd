@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,7 +25,7 @@ public class IVirtualDiskTest {
 	private static List<File> disks = new ArrayList<File>();
 
 	@Parameterized.Parameters
-	public static Collection<Object[]> getImplementations() {
+	public static Collection<Object[]> getImplementations() throws IOException {
 		File diskA = new File(TEST_DISK_DIR, "A.disk");
 		disks.add(diskA);
 
@@ -52,7 +53,7 @@ public class IVirtualDiskTest {
 
 	// tests
 	@Test
-	public void sizeCorrectTest() {
+	public void sizeCorrectTest() throws IOException {
 		assertEquals(disk.getSize(), TEST_DISK_SIZE);
 	}
 
@@ -71,9 +72,10 @@ public class IVirtualDiskTest {
 	 * / ---> /A/ ---> /A/C/
 	 * |---> /B/
 	 * </code>
+	 * @throws IOException 
 	 */
 	@Test
-	public void creatDirectoryStructure() {
+	public void creatDirectoryStructure() throws IOException {
 		String subDir1Name = "A";
 		String subDir2Name = "B";
 		String subSubDirName = "C";
