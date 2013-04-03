@@ -12,16 +12,7 @@ import java.io.IOException;
  * be part of the content of a file on the virtual disk.
  * 
  */
-public interface IDataBlock {
-
-	/**
-	 * Returns the position (address) of the block inside the virtual disk.
-	 * 
-	 * Address 0 would be the first byte inside the virtual disk.
-	 * 
-	 * @return the address of the block
-	 */
-	long getBlockPosition();
+public interface IDataBlock extends IVirtualBlock {
 
 	/**
 	 * Writes the content of the provided byte b at position pos.
@@ -149,16 +140,6 @@ public interface IDataBlock {
 	 * @throws IOException
 	 */
 	void setDataSize(long size) throws IOException;
-
-	/**
-	 * Returns the size in bytes of the block on the disk. This includes the
-	 * size of the saved data itself and the metadata needed for managing the
-	 * data block.
-	 * 
-	 * @see #getDataSize()
-	 * @return the size in bytes of the whole block on the virtual disk.
-	 */
-	long getDiskSize();
 
 	public void write(long pos, byte[] b, int offset, int length)
 			throws IOException;

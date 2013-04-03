@@ -64,6 +64,7 @@ public class VirtualDisk implements IVirtualDisk {
 	private long maxSize;
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
+	private List<Long> freeLists = new ArrayList<Long>();
 	
 	public VirtualDisk(String path, long maxSize) throws IOException {
 		setMaxSize(maxSize);
@@ -98,6 +99,7 @@ public class VirtualDisk implements IVirtualDisk {
 		file.seek(FREE_LISTS_POSITION);
 		for (int i = 0; i < FREE_LIST_SIZE; i++) {
 			file.write(0);
+			freeLists.add(Long.valueOf(0));
 		}
 	}
 	
@@ -215,7 +217,14 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	private void freeRange (long position, long length) {
+		//check if previous or/and next is free
 		
+		//remove them from the free lists if they are free
+		//add the them as one block to the belonging free list
+	}
+	
+	private int getFreeListsIndex(long length) {
+		return 0;
 	}
 	
 	@Override
@@ -224,6 +233,12 @@ public class VirtualDisk implements IVirtualDisk {
 		return null;
 	}
 	
-	
+	private void readFreeLists () throws IOException {
+		file.seek(FREE_LISTS_POSITION);
+		freeLists.clear();
+		for (int i = 0; i < FREE_LIST_SIZE; i++) {
+			freeLists.add(file.readLong());
+		}
+	}
 	
 }
