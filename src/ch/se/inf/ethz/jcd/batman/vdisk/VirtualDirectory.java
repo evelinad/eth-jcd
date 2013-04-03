@@ -7,7 +7,7 @@ import java.io.IOException;
 /* 
  * DirectoryEntry 64 bytes
  * 0x00 1  Entry Type
- * 0x01 8  Timestamp
+ * 0x01 8  time stamp
  * 0x09 8  BlockNr of next File/Directory in this Directory
  * 0x11 8  Starting Directory/File of this directory
  * 0x19 n  Directory name
@@ -19,7 +19,6 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	private static final int TIMESTAMP_SIZE = 8;
 	private static final int NEXT_ENTRY_SIZE = 8;
 	private static final int FIRST_MEMBER_SIZE = 8;
-	
 	
 	private static final int ENTRY_TYPE_POS = 0;
 	private static final int TIMESTAMP_POS = ENTRY_TYP_SIZE;

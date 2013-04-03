@@ -4,47 +4,77 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
 public class VirtualDisk implements IVirtualDisk {
 
-	public static VirtualDisk load (String path) {
-		return null;
+	public static VirtualDisk load (String path) throws IOException {
+		VirtualDisk virtualDisk = new VirtualDisk(path);
+		virtualDisk.loadDisk();
+		return virtualDisk;
 	}
 	
 	public static VirtualDisk create (String path, long maxSize) throws IOException {
-		return new VirtualDisk(path, maxSize);
+		VirtualDisk virtualDisk = new VirtualDisk(path);
+		virtualDisk.createDisk(maxSize);
+		return virtualDisk;
 	}
 	
 	private static final byte[] MAGIC_NUMBER = new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xC0, (byte) 0xFF, (byte) 0xEE, 0x00, 0x00, 0x00};
 	private static final int SUPERBLOCK_SIZE = 192;  
-	private static final int FREE_LISTS_POSITION = 16;
+	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
-	private static final int NR_FREE_LISTS = 22;
+	private static final int NR_FREE_LISTS = 21;
 	private static final int FREE_LIST_SIZE = NR_FREE_LISTS*POSITION_SIZE;
 	private static final String ROOT_DIRECTORY_NAME = "root";
 	private static final long MIN_BLOCK_SIZE = 128;
+	private static final int MAX_SIZE_POS = 8;
 	
 	private long maxSize;
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
 	private List<Long> freeLists = new ArrayList<Long>();
+	private String path;
 	
-	public VirtualDisk(String path, long maxSize) throws IOException {
+	/*
+	 * 0x00 8byte   MagicNumber
+	 * 0x08 8byte	Max Size
+	 * 0x10 8byte   Reserved
+	 * 0x18 104byte FreeLists
+	 */
+	private VirtualDisk(String path) {
+		this.path = path;
+	}
+	
+	private void loadDisk () throws IOException {
+		File f = new File(path);
+		if (!f.exists()) {
+			throw new IllegalArgumentException("Can't load Virtual Disk at " + path + ". File does not exist.");
+		}
+		file = new RandomAccessFile(f, "rw");
+		if (file.length() < SUPERBLOCK_SIZE) {
+			throw new IllegalArgumentException("Can't load Virtual Dsik " + path + ". Corrupt data.");
+		}
+		byte[] magicNumber = new byte[MAGIC_NUMBER.length];
+		file.read(magicNumber);
+		if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+			throw new IllegalArgumentException("Can't load Virtual Dsik " + path + ". Wrong file type.");
+		}
+		setMaxSize(file.readLong());
+		readFreeLists();
+	}
+	
+	private void createDisk (long maxSize) throws IOException {
 		setMaxSize(maxSize);
 		File f = new File(path);
 		if (f.exists()) {
-			throw new IllegalArgumentException("Can't create Virtual Diks at " + path + ". File already exists");
+			throw new IllegalArgumentException("Can't create Virtual Disk at " + path + ". File already exists.");
 		}
 		file = new RandomAccessFile(f, "rw");
-		
-		/*
-		 * 0x00 8byte   MagicNumber
-		 * 0x08 8byte   Reserved
-		 * 0x10 112byte FreeLists
-		 */
 		file.write(MAGIC_NUMBER);
+		file.writeLong(maxSize);
 		initializeFreeList();
 		extend(getMaxSize() - getSize());
 		createRootDirectory();
@@ -62,7 +92,7 @@ public class VirtualDisk implements IVirtualDisk {
 	 * There is a class for each two power size
 	 * 1 : 128-255
 	 * ...
-	 * 22 : 128*2^22-infinity
+	 * 21 : 128*2^21-infinity
 	 */
 	private void initializeFreeList () throws IOException {
 		file.seek(FREE_LISTS_POSITION);

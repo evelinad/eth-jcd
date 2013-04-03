@@ -101,7 +101,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		long currentSize = getSize();
 		if (currentSize < newSize) {
 			extend(newSize - currentSize);
-		} else {
+		} else if (currentSize > newSize) {
 			truncate(currentSize - newSize);
 		}
 	}
