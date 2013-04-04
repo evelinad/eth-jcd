@@ -174,9 +174,12 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public IVirtualFile createFile(IVirtualDirectory parent, String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public IVirtualFile createFile(IVirtualDirectory parent, String name, long size) throws IOException {
+		IVirtualFile file = VirtualFile.create(this, name, size);
+		if (parent != null) {
+			parent.addMember(file);
+		}
+		return file;
 	}
 
 	@Override

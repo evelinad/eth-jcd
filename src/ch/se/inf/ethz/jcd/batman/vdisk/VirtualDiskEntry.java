@@ -9,6 +9,8 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 		IVirtualDiskSpace space = VirtualDiskSpace.load(disk, position);
 		if (VirtualDirectory.isDirectory(space)) {
 			return VirtualDirectory.load(disk, space);
+		} else if (VirtualFile.isFile(space)) {
+			return VirtualFile.load(disk, space);
 		} else {
 			throw new VirtualDiskException("Unsupported disk entry");
 		}

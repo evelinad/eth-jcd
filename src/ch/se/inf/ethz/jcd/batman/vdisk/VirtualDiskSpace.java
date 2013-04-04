@@ -135,7 +135,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 
 	private void truncate (long amount) throws IOException {
 		IDataBlock freeBlock = null;
-		for (int i = blocks.size() - 1; amount <= 0 && i >= 0; i--) {
+		for (int i = blocks.size() - 1; amount > 0 && i >= 0; i--) {
 			IDataBlock block =  blocks.get(i);
 			long dataSize = block.getDataSize();
 			if (amount > dataSize) {

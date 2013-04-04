@@ -36,6 +36,6 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	
 	IVirtualDirectory createDirectory (IVirtualDirectory parent, String name) throws IOException;
 	
-	IVirtualFile createFile (IVirtualDirectory parent, String name);
+	IVirtualFile createFile (IVirtualDirectory parent, String name, long size) throws IOException;
 	
 }
