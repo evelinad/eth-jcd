@@ -262,14 +262,23 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
-		blocks.get(pos.getBlockIndex()).write(pos.getBlockPosition(), b);
+		allocateSpace(pos, BYTE_LENGTH);
+		getDataBlock(pos).write(pos.getBlockPosition(), b);
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, long l) throws IOException {
 		write(pos, ByteBuffer.allocate(8).putLong(l).array());
 	}
 	
+	private void allocateSpace(VirtualDiskSpacePosition pos,long length) throws IOException {
+		long remainingSpace = getRemainingSpace(pos);
+		if (remainingSpace < length) {
+			extend(length-remainingSpace);
+		}
+	}
+	
 	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
+		allocateSpace(pos, b.length);
 		int bytesWritten = 0;
 		while (bytesWritten != b.length) {
 			long remainingSpace = getRemainingSpace(pos);
@@ -291,14 +300,19 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private byte read (VirtualDiskSpacePosition pos) throws IOException {
-		return blocks.get(pos.getBlockIndex()).read(pos.getBlockPosition());
+		if (getRemainingSpace(pos) <= 0) {
+			throw new VirtualDiskException("End of VirtualSpace reached.");
+		}
+		return getDataBlock(pos).read(pos.getBlockPosition());
 	}
 	
 	private int read (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
+		long readableBytes = getRemainingSpace(pos);
+		int readLength = (int) Math.min(b.length, readableBytes);
 		int bytesRead = 0;
-		while (bytesRead != b.length) {
+		while (bytesRead != readLength) {
 			long remainingSpace = getRemainingSpace(pos);
-			int bytesToRead = b.length - bytesRead;
+			int bytesToRead = readLength - bytesRead;
 			int currentBytesRead = 0;
 			if (bytesToRead <= remainingSpace) {
 				getDataBlock(pos).read(pos.getBlockPosition(), b, bytesRead, bytesToRead);
@@ -318,6 +332,5 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		read(pos, longInBytes);
 		return ByteBuffer.wrap(longInBytes).getLong();
 	}
-
 
 }
