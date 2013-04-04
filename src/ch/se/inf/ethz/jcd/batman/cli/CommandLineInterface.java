@@ -1,8 +1,12 @@
 package ch.se.inf.ethz.jcd.batman.cli;
 
+import java.io.BufferedReader;
 import java.io.Console;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
  * This class implements an interface for the command line (CLI).
@@ -44,21 +48,23 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	 */
 	private static final String CLI_OUTPUT_PREFIX = "=> ";
 	
-	private final Console cli;
+	private final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 	private String inputPrefix;
 	private boolean running;
+	private IVirtualDisk disk;
 	
 	public CommandLineInterface() 	{		
 		inputPrefix = CLI_INPUT_PREFIX_NO_DISK;
 		running = false;
-		cli = System.console();
+		disk = null;
 	}
 	
 	/**
 	 * Starts the workflow described at class level. A call to stop() will
 	 * stop the workflow.
+	 * @throws IOException 
 	 */
-	public void start() {
+	public void start() throws IOException {
 		running = true;
 		
 		while(running) {
@@ -80,8 +86,8 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	 * @param text text to write into the console
 	 */
 	public void write(String text) {
-		cli.writer().print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
-		cli.writer().flush();
+	    System.out.print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
+		System.out.flush();
 	}
 	
 	/**
@@ -121,10 +127,20 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	
 	/**
 	 * Reads the input given by the user and calls all observers.
+	 * @throws IOException 
 	 */
-	private void readCommand() {
-		String line = cli.readLine("%s%s", inputPrefix, CLI_INPUT_PREFIX_END);
+	private void readCommand() throws IOException {
+	    write(String.format("%s%s", inputPrefix, CLI_INPUT_PREFIX_END));
+		String line = in.readLine();
 		
 		notifyAll(line.trim());
+	}
+	
+	public IVirtualDisk getDisk() {
+	    return disk;
+	}
+	
+	public void setDisk(IVirtualDisk disk) {
+	    this.disk = disk;
 	}
 }
