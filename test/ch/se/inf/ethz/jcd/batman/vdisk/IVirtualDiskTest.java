@@ -175,4 +175,20 @@ public class IVirtualDiskTest {
 		assertFalse(subSubDir2.exists());
 		assertNull(disk.getRootDirectory().getFirstMember());
 	}
+	
+	@Test
+	public void sameDirectoryNameExceptionTest() throws IOException {
+	    IVirtualDirectory dir = disk.createDirectory(disk.getRootDirectory(), "samename");
+	    
+	    boolean exceptionCatched = false;
+	    try {
+	        disk.createDirectory(disk.getRootDirectory(), "samename");
+	    } catch (VirtualDiskException ex) {
+	        exceptionCatched = true;
+	    } finally {
+	        dir.delete();
+	        
+	        assertTrue(exceptionCatched);
+	    }
+	}
 }
