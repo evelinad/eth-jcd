@@ -33,8 +33,8 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	private IVirtualDiskSpace space;
 	private IVirtualDiskEntry firstMember;
 	
-	protected VirtualDirectory(IVirtualDisk disk, IVirtualDirectory parent, String name) throws IOException {
-		super(disk, parent, name);
+	protected VirtualDirectory(IVirtualDisk disk, String name) throws IOException {
+		super(disk, name);
 		space = new VirtualDiskSpace(disk, calculateSize());
 		updateAll();
 	}
@@ -86,28 +86,17 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	
 	@Override
 	public void addMember(IVirtualDiskEntry member) throws IOException {
+		if (member.getParent() != null) {
+			member.getParent().removeMember(member);
+		}
 		member.setParent(this);
 		member.setNextEntry(firstMember);
 		member.setPreviousEntry(null);
 		firstMember.setPreviousEntry(member);
 		firstMember = member;
-		updateFirstMember();
+		updateFirstMember();	
 	}
-
-	@Override
-	public IVirtualDiskEntry getFirstMember() {
-		return firstMember;
-	}
-
-	private long calculateSize () {
-		return DEFAULT_SIZE + getName().getBytes().length + 1;
-	}
-
-	@Override
-	public long getPosition() {
-		return space.getVirtualDiskPosition();
-	}
-
+	
 	@Override
 	public void removeMember(IVirtualDiskEntry member) throws IOException {
 		if (member.getParent() == this) {
@@ -127,6 +116,20 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 				"Unable to remove " + member.getName() + " from " + this.getName() + ". " + member.getName() + " is not a member of " + this.getName()
 			);
 		}
+	}
+	
+	@Override
+	public IVirtualDiskEntry getFirstMember() {
+		return firstMember;
+	}
+
+	private long calculateSize () {
+		return DEFAULT_SIZE + getName().getBytes().length + 1;
+	}
+
+	@Override
+	public long getPosition() {
+		return space.getVirtualDiskPosition();
 	}
 	
 }

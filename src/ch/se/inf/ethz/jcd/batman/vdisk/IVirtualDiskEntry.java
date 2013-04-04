@@ -42,8 +42,10 @@ public interface IVirtualDiskEntry {
 	 * 
 	 * @param directory
 	 *            the parent of the virtual disk entry
+	 * @throws VirtualDiskException 
+	 * @throws IOException 
 	 */
-	void setParent(IVirtualDirectory directory);
+	void setParent(IVirtualDirectory directory) throws VirtualDiskException, IOException;
 
 	/**
 	 * Returns the previous virtual disk entry.

@@ -12,17 +12,34 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	private long timestamp;
 	private FileState state;
 	
-	public VirtualDiskEntry (IVirtualDisk disk, IVirtualDirectory parent, String name) {
+	public VirtualDiskEntry (IVirtualDisk disk, String name) throws IOException {
 		this.disk = disk;
-		this.parent = parent;
 		this.name = name;
 		state = FileState.CREATED;
 	}
 	
+	/**
+	 * Checks if the name is already in use in the given directory. If so an exception is thrown.
+	 * 
+	 * @param directory the directory to check
+	 * @param name the name to check
+	 * @throws VirtualDiskException if the name is already in use
+	 */
+	protected void checkNameFree (IVirtualDirectory parent, String name) throws VirtualDiskException {
+		IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryEntrys(parent);
+		for (IVirtualDiskEntry entry : directoryEntrys) {
+			if (entry.getName().equals(name)) {
+				throw new VirtualDiskException("Name already in use");
+			}
+		}
+	}
+	
 	@Override
 	public void setName(String name) throws IOException {
+		checkNameFree(parent, name);
 		this.name = name;
-		updateName();
+		updateName();	
+		
 	}
 	
 	protected abstract void updateName () throws IOException;
@@ -38,7 +55,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 
 	@Override
-	public void setParent(IVirtualDirectory parent) {
+	public void setParent(IVirtualDirectory parent) throws IOException {
 		this.parent = parent;
 	}
 	

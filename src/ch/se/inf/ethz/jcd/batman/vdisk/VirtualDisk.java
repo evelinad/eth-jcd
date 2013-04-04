@@ -156,7 +156,11 @@ public class VirtualDisk implements IVirtualDisk {
 	@Override
 	public IVirtualDirectory createDirectory(IVirtualDirectory parent,
 			String name) throws IOException {
-		return new VirtualDirectory(this, parent, name);
+		IVirtualDirectory directory = new VirtualDirectory(this, name);
+		if (parent != null) {
+			parent.addMember(directory);
+		}
+		return directory;
 	}
 
 	@Override
