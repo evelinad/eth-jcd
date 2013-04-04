@@ -21,6 +21,10 @@ public class VirtualDiskTest {
     @Before
     public void setUp() throws Exception {
         diskFile = new File(TEST_DISK_DIR, "virtualDiskTest.vdisk");
+        if(diskFile.exists()) {
+            diskFile.delete();
+        }
+        
         disk = VirtualDisk.create(diskFile.getPath(), TEST_DISK_SIZE);
     }
 

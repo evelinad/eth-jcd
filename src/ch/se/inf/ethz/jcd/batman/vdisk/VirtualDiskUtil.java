@@ -1,14 +1,15 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 
 public class VirtualDiskUtil {
 
-	public static IVirtualDiskEntry[] getDirectoryEntrys (IVirtualDirectory directory) throws IOException {
-		List<IVirtualDiskEntry> members = new ArrayList<IVirtualDiskEntry>();
+	public static Collection<IVirtualDiskEntry> getDirectoryMembers (IVirtualDirectory directory) throws IOException {
+		List<IVirtualDiskEntry> members = new LinkedList<IVirtualDiskEntry>();
 		for (
 			IVirtualDiskEntry currentMember = directory.getFirstMember();
 			currentMember != null;
@@ -16,10 +17,10 @@ public class VirtualDiskUtil {
 		) {
 			members.add(currentMember);
 		}
-		return members.toArray(new IVirtualDiskEntry[members.size()]);
+		return members;
 	}
 	
-	public static IVirtualDiskEntry getDirectoryEntry (IVirtualDirectory directory, String name) throws IOException {
+	public static IVirtualDiskEntry getDirectoryMember (IVirtualDirectory directory, String name) throws IOException {
 		for (
 			IVirtualDiskEntry currentMember = directory.getFirstMember();
 			currentMember != null;

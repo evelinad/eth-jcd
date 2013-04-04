@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
@@ -53,7 +54,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	 */
 	protected void checkNameFree (IVirtualDirectory parent, String name) throws IOException {
 		if (parent != null) {
-			IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryEntrys(parent);
+			Collection<IVirtualDiskEntry> directoryEntrys = VirtualDiskUtil.getDirectoryMembers(parent);
 			for (IVirtualDiskEntry entry : directoryEntrys) {
 				if (entry.getName().equals(name)) {
 					throw new VirtualDiskException("Name already in use");
