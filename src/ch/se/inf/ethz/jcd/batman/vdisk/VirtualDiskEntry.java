@@ -100,6 +100,8 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	public IVirtualDiskEntry getNextEntry() throws IOException {
 		if (!nextEntryLoaded) {
 			next = loadNextEntry();
+			next.setParent(this.getParent());
+			next.setPreviousEntry(this);
 			nextEntryLoaded = true;
 		}
 		return next;
@@ -132,7 +134,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 	
 	@Override
-	public void delete () {
+	public void delete () throws IOException {
 		state = FileState.DELETED;
 	}
 
@@ -150,7 +152,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	protected String loadString (IVirtualDiskSpace space, long position) throws IOException {
 		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 		byte lastByteRead;
-		while ((lastByteRead = space.read()) != '\0') {
+		while ((lastByteRead = space.read(position++)) != '\0') {
 			byteArray.write(lastByteRead);
 		}
 		return new String(byteArray.toByteArray(), CHARSET_NAME);

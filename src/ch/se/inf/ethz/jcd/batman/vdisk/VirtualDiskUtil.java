@@ -19,4 +19,17 @@ public class VirtualDiskUtil {
 		return members.toArray(new IVirtualDiskEntry[members.size()]);
 	}
 	
+	public static IVirtualDiskEntry getDirectoryEntry (IVirtualDirectory directory, String name) throws IOException {
+		for (
+			IVirtualDiskEntry currentMember = directory.getFirstMember();
+			currentMember != null;
+			currentMember = currentMember.getNextEntry()
+		) {
+			if (currentMember.getName().equals(name)) {
+				return currentMember;
+			}
+		}
+		return null;
+	}
+	
 }

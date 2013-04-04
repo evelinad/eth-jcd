@@ -360,4 +360,11 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return ByteBuffer.wrap(longInBytes).getLong();
 	}
 
+	@Override
+	public void free() throws IOException {
+		for (IDataBlock block : blocks) {
+			disk.freeBlock(block);
+		}
+	}
+
 }

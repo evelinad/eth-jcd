@@ -114,8 +114,9 @@ public interface IVirtualDiskEntry {
 	 * 
 	 * For details how this is exactly executed read the documentation of the
 	 * specific implementations.
+	 * @throws IOException 
 	 */
-	void delete();
+	void delete() throws IOException;
 
 	/**
 	 * Indicates if the virtual disk entry is still on the disk or was deleted.

@@ -6,40 +6,46 @@ import java.nio.ByteBuffer;
 public abstract class VirtualBlock implements IVirtualBlock {
 
 	public static final IVirtualBlock loadPreviousBlock (IVirtualDisk disk, long position) throws IOException {
-		long previousBlockSize = removeMetaFlagFromSize(disk.read(position - BLOCK_LENGTH_SIZE));
+		long previousBlockSize = removeMetaFlagFromSize(readLong(disk, position - BLOCK_LENGTH_SIZE));
 		return loadBlock(disk, position - previousBlockSize);
 	}
 	
 	public static final IVirtualBlock loadNextBlock (IVirtualDisk disk, long position) throws IOException {
-		long currentBlockSize = removeMetaFlagFromSize(disk.read(position));
+		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
 		return loadBlock(disk, position + currentBlockSize);
 	}
 	
 	public static final IVirtualBlock loadBlock (IVirtualDisk disk, long position) throws IOException {
-		byte size = disk.read(position);
+		long size = readLong(disk, position);
 		if (checkIfAllocatedFlagSet(size)) {
 			return DataBlock.load(disk, position);
 		} else {
-			return FreeBlock.loadBlock(disk, position);
+			return FreeBlock.load(disk, position);
 		}
 	}
 	
 	public static final long getSizeOfNextBlock (IVirtualDisk disk, long position) throws IOException {
-		long currentBlockSize = removeMetaFlagFromSize(disk.read(position));
-		return removeMetaFlagFromSize(disk.read(position + currentBlockSize));
+		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
+		return removeMetaFlagFromSize(readLong(disk, position + currentBlockSize));
 	}
 	
 	public static final long getSizeOfPreviousBlock (IVirtualDisk disk, long position) throws IOException {
-		return removeMetaFlagFromSize(disk.read(position - BLOCK_LENGTH_SIZE));
+		return removeMetaFlagFromSize(readLong(disk, position - BLOCK_LENGTH_SIZE));
 	}
 	
 	public static final boolean checkIfPreviousFree (IVirtualDisk disk, long position) throws IOException {
-		return checkIfAllocatedFlagSet(disk.read(position - BLOCK_LENGTH_SIZE));
+		return checkIfAllocatedFlagSet(readLong(disk, position - BLOCK_LENGTH_SIZE));
 	}
 	
 	public static final boolean checkIfNextFree (IVirtualDisk disk, long position) throws IOException {
-		long currentBlockSize = removeMetaFlagFromSize(disk.read(position));
-		return checkIfAllocatedFlagSet(disk.read(position + currentBlockSize));
+		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
+		return checkIfAllocatedFlagSet(readLong(disk, position + currentBlockSize));
+	}
+	
+	private static final long readLong (IVirtualDisk disk, long pos) throws IOException {
+		byte[] longInBytes = new byte[LONG_LENGTH];
+		disk.read(pos, longInBytes);
+		return ByteBuffer.wrap(longInBytes).getLong();
 	}
 	
 	protected static final long setAllocatedFlag (long l, boolean allocated) {

@@ -55,4 +55,6 @@ public interface IVirtualDiskSpace {
 	long readLong(long pos) throws IOException;
 
 	long getDiskSize();
+	
+	void free() throws IOException;
 }

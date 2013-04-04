@@ -64,7 +64,7 @@ public class IVirtualDiskTest {
 	}
 
 	@Test
-	public void rootDirectoryInitialStateTest() {
+	public void rootDirectoryInitialStateTest() throws IOException {
 		assertNotNull(disk.getRootDirectory());
 		assertNull(disk.getRootDirectory().getNextEntry());
 		assertNull(disk.getRootDirectory().getPreviousEntry());

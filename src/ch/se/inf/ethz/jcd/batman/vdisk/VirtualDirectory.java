@@ -96,9 +96,10 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	
 	protected void loadFirstMember() throws IOException {
 		space.seek(FIRST_MEMBER_POS);
-		long firstMember = space.readLong();
-		this.firstMember = VirtualDiskEntry.load(getDisk(), firstMember);
-		this.firstMemberLoaded = true;
+		long firstMemberPos = space.readLong();
+		firstMember = VirtualDiskEntry.load(getDisk(), firstMemberPos);
+		firstMember.setParent(this);
+		firstMemberLoaded = true;
 	}
 	
 	protected String loadName() throws IOException {
@@ -141,14 +142,21 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	}
 	
 	@Override
-	public void delete() {
+	public void delete() throws IOException {
 		super.delete();
-		//TODO
-		//Delete all files which are part of this directory and afterwards free space
+		//Delete all files which are part of this directory and afterwards free directory space
+		for (IVirtualDiskEntry entry : VirtualDiskUtil.getDirectoryEntrys(this)) {
+			entry.delete();
+		}
+		if (getParent() != null) {
+			getParent().removeMember(this);
+		}
+		space.free();
 	}
 	
 	@Override
 	public void addMember(IVirtualDiskEntry member) throws IOException {
+		checkNameFree(this, member.getName());
 		if (member.getParent() != null) {
 			member.getParent().removeMember(member);
 		}
@@ -171,7 +179,9 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 				}
 			} else {
 				member.getPreviousEntry().setNextEntry(member.getNextEntry());
-				member.getNextEntry().setPreviousEntry(member.getPreviousEntry());
+				if (member.getNextEntry() != null) {
+					member.getNextEntry().setPreviousEntry(member.getPreviousEntry());
+				}
 			}
 			member.setParent(null);
 			member.setNextEntry(null);

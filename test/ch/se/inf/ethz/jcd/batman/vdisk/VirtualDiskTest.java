@@ -16,7 +16,7 @@ public class VirtualDiskTest {
     private static final long TEST_DISK_SIZE = 1024 * 300; // 300 KByte
 
     private File diskFile;
-    private VirtualDisk disk;
+    private IVirtualDisk disk;
 
     @Before
     public void setUp() throws Exception {
