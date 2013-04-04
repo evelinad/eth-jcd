@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
+//TODO dont set file to max size at the beginning
+//TODO implement block search properly
 public class VirtualDisk implements IVirtualDisk {
 
 	public static IVirtualDisk load (String path) throws IOException {
