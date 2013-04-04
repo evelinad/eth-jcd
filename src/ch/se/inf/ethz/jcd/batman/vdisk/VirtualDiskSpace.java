@@ -337,7 +337,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		long readableBytes = getRemainingSpace(pos);
 		int readLength = (int) Math.min(b.length, readableBytes);
 		int bytesRead = 0;
-		while (bytesRead != readLength) {
+		while (bytesRead < readLength) {
 			long remainingSpace = getRemainingSpace(pos);
 			int bytesToRead = readLength - bytesRead;
 			int currentBytesRead = 0;
