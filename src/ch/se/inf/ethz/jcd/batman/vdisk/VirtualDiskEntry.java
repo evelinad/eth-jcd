@@ -53,7 +53,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	 */
 	protected void checkNameFree (IVirtualDirectory parent, String name) throws IOException {
 		if (parent != null) {
-			IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryEntrys(parent);
+			IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryMembers(parent);
 			for (IVirtualDiskEntry entry : directoryEntrys) {
 				if (entry.getName().equals(name)) {
 					throw new VirtualDiskException("Name already in use");

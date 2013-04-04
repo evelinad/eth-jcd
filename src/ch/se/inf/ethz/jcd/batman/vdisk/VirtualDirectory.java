@@ -145,7 +145,7 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	public void delete() throws IOException {
 		super.delete();
 		//Delete all files which are part of this directory and afterwards free directory space
-		for (IVirtualDiskEntry entry : VirtualDiskUtil.getDirectoryEntrys(this)) {
+		for (IVirtualDiskEntry entry : VirtualDiskUtil.getDirectoryMembers(this)) {
 			entry.delete();
 		}
 		if (getParent() != null) {

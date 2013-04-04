@@ -7,7 +7,7 @@ import java.util.List;
 
 public class VirtualDiskUtil {
 
-	public static IVirtualDiskEntry[] getDirectoryEntrys (IVirtualDirectory directory) throws IOException {
+	public static IVirtualDiskEntry[] getDirectoryMembers (IVirtualDirectory directory) throws IOException {
 		List<IVirtualDiskEntry> members = new ArrayList<IVirtualDiskEntry>();
 		for (
 			IVirtualDiskEntry currentMember = directory.getFirstMember();
@@ -19,7 +19,7 @@ public class VirtualDiskUtil {
 		return members.toArray(new IVirtualDiskEntry[members.size()]);
 	}
 	
-	public static IVirtualDiskEntry getDirectoryEntry (IVirtualDirectory directory, String name) throws IOException {
+	public static IVirtualDiskEntry getDirectoryMember (IVirtualDirectory directory, String name) throws IOException {
 		for (
 			IVirtualDiskEntry currentMember = directory.getFirstMember();
 			currentMember != null;
