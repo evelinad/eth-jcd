@@ -5,6 +5,8 @@ import java.io.IOException;
 
 
 public interface IVirtualDisk extends AutoCloseable, Closeable {
+    
+    char PATH_SEPARATOR = '/';
 
 	IVirtualDirectory getRootDirectory ();
 	
