@@ -1,5 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -7,6 +8,8 @@ import java.nio.file.Path;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 
 /**
  * Provides a command to load a disk.
@@ -37,14 +40,23 @@ public class LoadCommand implements PrioritizedObserver<String> {
 					// extract path
 					Path hostPath = null;
 					try {
-						hostPath = FileSystems.getDefault().getPath(lineParts[1]);
+						hostPath = FileSystems.getDefault().getPath(lineParts[1]).toAbsolutePath();
 					} catch (InvalidPathException ex) {
 						cli.writeln(String.format("provided path is not valid: %s", ex.getMessage()));
 						return;
 					}
 					
-					// TODO
-					cli.writeln(String.format("command 'load' called for path '%s'", hostPath));
+					IVirtualDisk disk = null;
+					try {
+                        disk = VirtualDisk.load(hostPath.toString());
+                    } catch (IOException ex) {
+                        cli.writeln(String.format(
+                                "following exception occured: %s",
+                                ex.getMessage()));
+                        return;
+                    }
+					
+					cli.setDisk(disk);
 					
 					cli.setInputPrefix(hostPath.getFileName().toString());
 				} else {

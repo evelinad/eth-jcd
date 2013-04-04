@@ -1,8 +1,11 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
+import java.io.IOException;
+
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
  * Implements a quit command that can be used to end the CLI.
@@ -21,6 +24,18 @@ public class StopCommand implements PrioritizedObserver<String> {
 		for(String commandStr : COMMAND_STRINGS) {
 			if(line.equalsIgnoreCase(commandStr)) {
 				cli.writeln("exiting...");
+				
+				IVirtualDisk disk = cli.getDisk();
+				if(disk != null) {
+				    try {
+                        disk.close();
+                    } catch (IOException ex) {
+                        cli.writeln(String.format(
+                                "following exception occured: %s",
+                                ex.getMessage()));
+                    }
+				}
+				
 				cli.stop();
 				cli.setHandled();
 			}
