@@ -10,13 +10,13 @@ import java.util.List;
 
 public class VirtualDisk implements IVirtualDisk {
 
-	public static VirtualDisk load (String path) throws IOException {
+	public static IVirtualDisk load (String path) throws IOException {
 		VirtualDisk virtualDisk = new VirtualDisk(path);
 		virtualDisk.loadDisk();
 		return virtualDisk;
 	}
 	
-	public static VirtualDisk create (String path, long maxSize) throws IOException {
+	public static IVirtualDisk create (String path, long maxSize) throws IOException {
 		VirtualDisk virtualDisk = new VirtualDisk(path);
 		virtualDisk.createDisk(maxSize);
 		return virtualDisk;
@@ -24,13 +24,13 @@ public class VirtualDisk implements IVirtualDisk {
 	
 	private static final byte[] MAGIC_NUMBER = new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xC0, (byte) 0xFF, (byte) 0xEE, 0x00, 0x00, 0x00};
 	private static final int SUPERBLOCK_SIZE = 192;  
-	private static final int FREE_LISTS_POSITION = 24;
+	private static final int FREE_LISTS_POSITION = 32;
 	private static final int POSITION_SIZE = 8;
-	private static final int NR_FREE_LISTS = 21;
+	private static final int NR_FREE_LISTS = 20;
 	private static final int FREE_LIST_SIZE = NR_FREE_LISTS*POSITION_SIZE;
 	private static final String ROOT_DIRECTORY_NAME = "root";
 	private static final long MIN_BLOCK_SIZE = 128;
-	private static final int MAX_SIZE_POS = 8;
+	private static final long ROOT_DIRECTORY_POSITION = 16;
 	
 	private long maxSize;
 	private RandomAccessFile file;
@@ -41,8 +41,9 @@ public class VirtualDisk implements IVirtualDisk {
 	/*
 	 * 0x00 8byte   MagicNumber
 	 * 0x08 8byte	Max Size
-	 * 0x10 8byte   Reserved
-	 * 0x18 104byte FreeLists
+	 * 0x10 8byte   Root Directory
+	 * 0x18 8byte   Reserved
+	 * 0x20 160byte FreeLists
 	 */
 	private VirtualDisk(String path) {
 		this.path = path;
@@ -64,6 +65,13 @@ public class VirtualDisk implements IVirtualDisk {
 		}
 		setMaxSize(file.readLong());
 		readFreeLists();
+		loadRootDirectory();
+	}
+	
+	private void loadRootDirectory () throws IOException {
+		file.seek(ROOT_DIRECTORY_POSITION);
+		long rootDirectoryPosition = file.readLong();
+		rootDirectory = VirtualDirectory.load(this, rootDirectoryPosition);
 	}
 	
 	private void createDisk (long maxSize) throws IOException {
@@ -104,6 +112,8 @@ public class VirtualDisk implements IVirtualDisk {
 	
 	private void createRootDirectory() throws IOException {
 		rootDirectory = createDirectory(null, ROOT_DIRECTORY_NAME);
+		file.seek(ROOT_DIRECTORY_POSITION);
+		file.writeLong(rootDirectory.getPosition());
 	}
 	
 	@Override
@@ -156,7 +166,7 @@ public class VirtualDisk implements IVirtualDisk {
 	@Override
 	public IVirtualDirectory createDirectory(IVirtualDirectory parent,
 			String name) throws IOException {
-		IVirtualDirectory directory = new VirtualDirectory(this, name);
+		IVirtualDirectory directory = VirtualDirectory.create(this, name);
 		if (parent != null) {
 			parent.addMember(directory);
 		}

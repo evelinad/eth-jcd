@@ -2,12 +2,23 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VirtualDiskSpace implements IVirtualDiskSpace {
 
+	public static IVirtualDiskSpace load (IVirtualDisk disk, long position) throws IOException {
+		VirtualDiskSpace virtualSpace = new VirtualDiskSpace(disk);
+		virtualSpace.load(position);
+		return virtualSpace;
+	}
+	
+	public static IVirtualDiskSpace create (IVirtualDisk disk, long size) throws IOException {
+		VirtualDiskSpace virtualSpace = new VirtualDiskSpace(disk);
+		virtualSpace.create(size);
+		return virtualSpace;
+	}
+	
 	private static class VirtualDiskSpacePosition {
 		
 		private long position;
@@ -47,9 +58,25 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	private List<IDataBlock> blocks = new ArrayList<IDataBlock>();
 	private VirtualDiskSpacePosition position;
 	
-	public VirtualDiskSpace(IVirtualDisk disk, long size) throws IOException {
+	private VirtualDiskSpace(IVirtualDisk disk) throws IOException {
 		this.disk = disk;
+		this.position = new VirtualDiskSpacePosition();
+	}
+	
+	private void create (long size) throws IOException {
 		changeSize(size);
+	}
+	
+	private void load (long position) throws IOException {
+		IDataBlock block;
+		for (
+			block = DataBlock.load(disk, position); 
+			block.getNextBlock() != 0;
+			block = DataBlock.load(disk, block.getNextBlock())
+		) {
+			blocks.add(block);
+		}
+		blocks.add(block);
 	}
 	
 	private VirtualDiskSpacePosition calculatePosition (long position) {

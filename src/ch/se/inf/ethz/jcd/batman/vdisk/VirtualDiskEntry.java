@@ -1,22 +1,46 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
+	public static IVirtualDiskEntry load (IVirtualDisk disk, long position) throws IOException {
+		IVirtualDiskSpace space = VirtualDiskSpace.load(disk, position);
+		if (VirtualDirectory.isDirectory(space)) {
+			return VirtualDirectory.load(disk, space);
+		} else {
+			throw new VirtualDiskException("Unsupported disk entry");
+		}
+	}
+	
+	private static final String CHARSET_NAME = "UTF-8";
+	
 	private IVirtualDisk disk;
 	private IVirtualDirectory parent;
 	private IVirtualDiskEntry previous;
 	private IVirtualDiskEntry next;
+	private boolean nextEntryLoaded;
 	private String name;
 	private long timestamp;
 	private FileState state;
 	
-	public VirtualDiskEntry (IVirtualDisk disk, String name) throws IOException {
+	public VirtualDiskEntry (IVirtualDisk disk) throws IOException {
 		this.disk = disk;
-		this.name = name;
 		state = FileState.CREATED;
 	}
+	
+	protected void create (String name) throws IOException {
+		this.name = name;
+		nextEntryLoaded = true;
+	}
+	
+	protected void load () throws IOException {
+		this.name = loadName();
+		nextEntryLoaded = false;
+	}
+	
+	protected abstract String loadName() throws IOException;
 	
 	/**
 	 * Checks if the name is already in use in the given directory. If so an exception is thrown.
@@ -25,11 +49,13 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	 * @param name the name to check
 	 * @throws VirtualDiskException if the name is already in use
 	 */
-	protected void checkNameFree (IVirtualDirectory parent, String name) throws VirtualDiskException {
-		IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryEntrys(parent);
-		for (IVirtualDiskEntry entry : directoryEntrys) {
-			if (entry.getName().equals(name)) {
-				throw new VirtualDiskException("Name already in use");
+	protected void checkNameFree (IVirtualDirectory parent, String name) throws IOException {
+		if (parent != null) {
+			IVirtualDiskEntry[] directoryEntrys = VirtualDiskUtil.getDirectoryEntrys(parent);
+			for (IVirtualDiskEntry entry : directoryEntrys) {
+				if (entry.getName().equals(name)) {
+					throw new VirtualDiskException("Name already in use");
+				}
 			}
 		}
 	}
@@ -38,8 +64,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	public void setName(String name) throws IOException {
 		checkNameFree(parent, name);
 		this.name = name;
-		updateName();	
-		
+		updateName();
 	}
 	
 	protected abstract void updateName () throws IOException;
@@ -69,14 +94,21 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 		this.previous = previous;
 	}
 
+	protected abstract IVirtualDiskEntry loadNextEntry() throws IOException;
+	
 	@Override
-	public IVirtualDiskEntry getNextEntry() {
+	public IVirtualDiskEntry getNextEntry() throws IOException {
+		if (!nextEntryLoaded) {
+			next = loadNextEntry();
+			nextEntryLoaded = true;
+		}
 		return next;
 	}
 	
 	@Override
 	public void setNextEntry(IVirtualDiskEntry next) throws IOException {
 		this.next = next;
+		nextEntryLoaded = true;
 		updateNextEntry();
 	}
 	
@@ -107,5 +139,25 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	@Override
 	public boolean exists () {
 		return state == FileState.CREATED;
+	}
+	
+	protected void saveString (IVirtualDiskSpace space, long position, String string) throws IOException {
+		byte[] encodedString = string.getBytes(CHARSET_NAME);
+		space.write(position, encodedString);
+		space.write(position + encodedString.length, String.valueOf('\0').getBytes(CHARSET_NAME));
+	}
+	
+	protected String loadString (IVirtualDiskSpace space, long position) throws IOException {
+		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+		byte lastByteRead;
+		while ((lastByteRead = space.read()) != '\0') {
+			byteArray.write(lastByteRead);
+		}
+		return new String(byteArray.toByteArray(), CHARSET_NAME);
+	}
+	
+	protected long calculateStringSpace (String string) throws IOException {
+		return (string != null) ? string.getBytes(CHARSET_NAME).length : 0 +
+				String.valueOf('\0').getBytes(CHARSET_NAME).length;
 	}
 }

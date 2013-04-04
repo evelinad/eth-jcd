@@ -11,9 +11,30 @@ import java.io.IOException;
  * 0x09 8  BlockNr of next File/Directory in this Directory
  * 0x11 8  Starting Directory/File of this directory
  * 0x19 n  Directory name
- * 
  */
 public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirectory {
+	
+	public static IVirtualDirectory load (IVirtualDisk disk, long position) throws IOException {
+		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
+		virtualDirectory.load(VirtualDiskSpace.load(disk, position));
+		return virtualDirectory;
+	}
+	
+	protected static IVirtualDirectory load (IVirtualDisk disk, IVirtualDiskSpace space) throws IOException {
+		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
+		virtualDirectory.load(space);
+		return virtualDirectory;
+	}
+	
+	public static IVirtualDirectory create (IVirtualDisk disk, String name) throws IOException {
+		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
+		virtualDirectory.create(name);
+		return virtualDirectory;
+	}
+	
+	protected static boolean isDirectory (IVirtualDiskSpace space) throws IOException {
+		return space.read(ENTRY_TYPE_POS) == DIRECTORY_ENTRY;
+	}
 	
 	private static final int ENTRY_TYP_SIZE = 1;
 	private static final int TIMESTAMP_SIZE = 8;
@@ -32,11 +53,56 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	
 	private IVirtualDiskSpace space;
 	private IVirtualDiskEntry firstMember;
+	private boolean firstMemberLoaded = false;
 	
-	protected VirtualDirectory(IVirtualDisk disk, String name) throws IOException {
-		super(disk, name);
-		space = new VirtualDiskSpace(disk, calculateSize());
+	private VirtualDirectory(IVirtualDisk disk) throws IOException {
+		super(disk);
+	}
+	
+	protected void create (String name) throws IOException {
+		space = VirtualDiskSpace.create(getDisk(), calculateSize(name));
+		super.create(name);
+		firstMemberLoaded = true;
 		updateAll();
+	}
+	
+	protected void load (IVirtualDiskSpace space) throws IOException {
+		this.space = space;
+		checkEntryType();
+		super.load();
+		loadTimestamp();
+		loadName();
+		firstMemberLoaded = false;
+	}
+	
+	protected void checkEntryType() throws IOException {
+		space.seek(ENTRY_TYPE_POS);
+		byte directoryEntry = space.read();
+		if (directoryEntry != DIRECTORY_ENTRY) {
+			throw new VirtualDiskException("Can't load directory, invalid entry type");
+		}
+	}
+	
+	protected void loadTimestamp() throws IOException {
+		space.seek(TIMESTAMP_POS);
+		setTimestamp(space.readLong());
+	}
+	
+	protected IVirtualDiskEntry loadNextEntry() throws IOException {
+		space.seek(NEXT_ENTRY_POS);
+		long nextEntry = space.readLong();
+		return VirtualDiskEntry.load(getDisk(), nextEntry);
+	}
+	
+	protected void loadFirstMember() throws IOException {
+		space.seek(FIRST_MEMBER_POS);
+		long firstMember = space.readLong();
+		this.firstMember = VirtualDiskEntry.load(getDisk(), firstMember);
+		this.firstMemberLoaded = true;
+	}
+	
+	protected String loadName() throws IOException {
+		return loadString(space, NAME_POS);
 	}
 	
 	private void updateAll() throws IOException {
@@ -67,16 +133,13 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 		space.seek(FIRST_MEMBER_POS);
 		IVirtualDiskEntry first = getFirstMember();
 		space.write((first == null) ? 0 : first.getPosition());
-	
 	}
 	
 	protected void updateName() throws IOException {
-		space.changeSize(calculateSize());
-		space.seek(NAME_POS);
-		space.write(getName().getBytes());
-		space.write(String.valueOf('\0').getBytes());
+		space.changeSize(calculateSize(getName()));
+		saveString(space, NAME_POS, getName());
 	}
-
+	
 	@Override
 	public void delete() {
 		super.delete();
@@ -90,20 +153,22 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 			member.getParent().removeMember(member);
 		}
 		member.setParent(this);
-		member.setNextEntry(firstMember);
+		member.setNextEntry(getFirstMember());
 		member.setPreviousEntry(null);
-		firstMember.setPreviousEntry(member);
-		firstMember = member;
-		updateFirstMember();	
+		if (getFirstMember() != null) {
+			getFirstMember().setPreviousEntry(member);
+		}
+		setFirstMember(member);
 	}
 	
 	@Override
 	public void removeMember(IVirtualDiskEntry member) throws IOException {
 		if (member.getParent() == this) {
 			if (member.getPreviousEntry() == null) {
-				firstMember = member.getNextEntry();
-				firstMember.setPreviousEntry(null);
-				updateFirstMember();
+				setFirstMember(member.getNextEntry());
+				if (getFirstMember() != null) {
+					getFirstMember().setPreviousEntry(null);	
+				}
 			} else {
 				member.getPreviousEntry().setNextEntry(member.getNextEntry());
 				member.getNextEntry().setPreviousEntry(member.getPreviousEntry());
@@ -118,13 +183,22 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 		}
 	}
 	
+	private void setFirstMember(IVirtualDiskEntry firstMember) throws IOException {
+		this.firstMember = firstMember;
+		this.firstMemberLoaded = true;
+		updateFirstMember();
+	}
+
 	@Override
-	public IVirtualDiskEntry getFirstMember() {
+	public IVirtualDiskEntry getFirstMember() throws IOException {
+		if (!firstMemberLoaded) {
+			loadFirstMember();
+		}
 		return firstMember;
 	}
 
-	private long calculateSize () {
-		return DEFAULT_SIZE + getName().getBytes().length + 1;
+	private long calculateSize (String name) throws IOException {
+		return DEFAULT_SIZE + calculateStringSpace(name);
 	}
 
 	@Override

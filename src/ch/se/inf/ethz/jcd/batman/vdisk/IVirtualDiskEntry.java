@@ -81,8 +81,9 @@ public interface IVirtualDiskEntry {
 	 * this doubly linked list. It returns null if there is no next member.
 	 * 
 	 * @return next member or null if there is none
+	 * @throws IOException 
 	 */
-	IVirtualDiskEntry getNextEntry();
+	IVirtualDiskEntry getNextEntry() throws IOException;
 
 	/**
 	 * Sets the next virtual disk entry.

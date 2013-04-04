@@ -36,6 +36,7 @@ public interface IVirtualDirectory extends IVirtualDiskEntry {
 	 * 
 	 * @see IVirtualDiskEntry#getNextEntry()
 	 * @return the first member of the list.
+	 * @throws IOException 
 	 */
-	IVirtualDiskEntry getFirstMember();
+	IVirtualDiskEntry getFirstMember() throws IOException;
 }
