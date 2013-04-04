@@ -3,32 +3,32 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.IOException;
 
 
-public class DataBlock extends VirtualBlock implements IDataBlock {
+public final class DataBlock extends VirtualBlock implements IDataBlock {
 
-	public static final IDataBlock load (IVirtualDisk disk, long position) throws IOException {
-		DataBlock block = new DataBlock(disk, position, 0, 0, 0);
+	private static final long NEXT_SIZE = 8;
+	private static final long DATA_LENGTH_SIZE = 8;
+
+	private static final long METADATA_START_SIZE = VirtualBlock.METADATA_START_SIZE + NEXT_SIZE + DATA_LENGTH_SIZE;
+	private static final long METADATA_END_SIZE = VirtualBlock.METADATA_END_SIZE;
+	public static final long METADATA_SIZE = METADATA_START_SIZE + METADATA_END_SIZE;
+	public static final long MIN_BLOCK_SIZE = METADATA_SIZE + 1;
+	
+	private transient long next;
+	private long dataSize;
+	
+	public static IDataBlock load (final IVirtualDisk disk, final long position) throws IOException {
+		final DataBlock block = new DataBlock(disk, position, 0, 0, 0);
 		block.readMetadata();
 		return block;
 	}
 	
-	public static final IDataBlock create (IVirtualDisk disk, long position, long size, long dataSize, long next) throws IOException {
-		DataBlock block = new DataBlock(disk, position, size, dataSize, next);
+	public static IDataBlock create (final IVirtualDisk disk, final long position, final long size, final long dataSize, final long next) throws IOException {
+		final DataBlock block = new DataBlock(disk, position, size, dataSize, next);
 		block.updateMetadata();
 		return block;
 	}
 	
-	private static final long NEXT_SIZE = 8;
-	private static final long DATA_LENGTH_SIZE = 8;
-
-	protected static final long METADATA_START_SIZE = VirtualBlock.METADATA_START_SIZE + NEXT_SIZE + DATA_LENGTH_SIZE;
-	protected static final long METADATA_END_SIZE = VirtualBlock.METADATA_END_SIZE;
-	protected static final long METADATA_SIZE = METADATA_START_SIZE + METADATA_END_SIZE;
-	protected static final long MIN_BLOCK_SIZE = METADATA_SIZE + 1;
-	
-	private long next;
-	private long dataSize;
-	
-	private DataBlock(IVirtualDisk disk, long position, long size, long dataSize, long next) throws IOException {
+	private DataBlock(final IVirtualDisk disk, final long position, final long size, final long dataSize, final long next) throws IOException {
 		super(disk, position, size);
 		this.dataSize = dataSize;
 		this.next = next;
@@ -54,44 +54,44 @@ public class DataBlock extends VirtualBlock implements IDataBlock {
 		writeRealPosition(VirtualBlock.METADATA_START_SIZE + NEXT_SIZE, dataSize);
 	}
 		
-	private void checkDataRange (long pos, int length) {
+	private void checkDataRange (final long pos, final int length) {
 		if (pos < 0 || (pos + length) > dataSize) {
-			throw new RuntimeException("Illegal data range");
+			throw new IllegalArgumentException("Illegal data range");
 		}
 	}
 	
 	@Override
-	public void write(long pos, byte b) throws IOException {
+	public void write(final long pos, final byte data) throws IOException {
 		checkDataRange(pos, BYTE_LENGTH);
-		writeRealPosition(pos + METADATA_START_SIZE, b);
+		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
-	public void write(long pos, byte[] b) throws IOException {
-		checkDataRange(pos, b.length);
-		writeRealPosition(pos + METADATA_START_SIZE, b);
+	public void write(final long pos, final byte[] data) throws IOException {
+		checkDataRange(pos, data.length);
+		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
-	public void write(long pos, long l) throws IOException {
+	public void write(final long pos, final long data) throws IOException {
 		checkDataRange(pos, LONG_LENGTH);
-		writeRealPosition(pos + METADATA_START_SIZE, l);
+		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 	
 	@Override
-	public byte read(long pos) throws IOException {
+	public byte read(final long pos) throws IOException {
 		checkDataRange(pos, BYTE_LENGTH);
 		return readRealPosition(pos + METADATA_START_SIZE);
 	}
 
 	@Override
-	public int read(long pos, byte[] b) throws IOException {
-		checkDataRange(pos, b.length);
-		return readRealPosition(pos + METADATA_START_SIZE, b);
+	public int read(final long pos, final byte[] data) throws IOException {
+		checkDataRange(pos, data.length);
+		return readRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
-	public long readLong(long pos) throws IOException {
+	public long readLong(final long pos) throws IOException {
 		checkDataRange(pos, LONG_LENGTH);
 		return readLongRealPosition(pos + METADATA_START_SIZE);
 	}
@@ -116,33 +116,33 @@ public class DataBlock extends VirtualBlock implements IDataBlock {
 	}
 
 	@Override
-	public void setDataSize(long size) throws IOException {
+	public void setDataSize(final long size) throws IOException {
 		this.dataSize = size;
 		updateDataSize();
 	}
 
 	@Override
-	public void write(long pos, byte[] b, int offset, int length)
+	public void write(final long pos, final byte[] b, final int offset, final int length)
 			throws IOException {
 		checkDataRange(pos, length);
 		writeRealPosition(pos + METADATA_START_SIZE, b, offset, length);
 	}
 
 	@Override
-	public int read(long pos, byte[] b, int offset, int length)
+	public int read(final long pos, final byte[] data, final int offset, final int length)
 			throws IOException {
 		checkDataRange(pos, length);
-		return readRealPosition(pos + METADATA_START_SIZE, b, offset, length);
+		return readRealPosition(pos + METADATA_START_SIZE, data, offset, length);
 	}
 
 	@Override
-	public void setNextBlock(long nextBlock) throws IOException {
+	public void setNextBlock(final long nextBlock) throws IOException {
 		this.next = nextBlock;
 		updateNextBlock();
 	}
 
 	@Override
-	protected long setMetaFlagsOnSize(long size) {
+	protected long setMetaFlagsOnSize(final long size) {
 		return VirtualBlock.setAllocatedFlag(size, true);
 	}
 
