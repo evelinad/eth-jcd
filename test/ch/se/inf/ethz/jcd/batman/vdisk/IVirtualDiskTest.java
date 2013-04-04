@@ -28,6 +28,10 @@ public class IVirtualDiskTest {
 	public static Collection<Object[]> getImplementations() throws IOException {
 		// create disk a
 	    File diskAFile = new File(TEST_DISK_DIR, "A.disk");
+	    if(diskAFile.exists()) {
+	        diskAFile.delete();
+	    }
+	    
 		disks.add(diskAFile);
 		
 		IVirtualDisk diskA = VirtualDisk.create(diskAFile.getPath(), TEST_DISK_SIZE);
@@ -90,17 +94,17 @@ public class IVirtualDiskTest {
 		IVirtualDirectory subDir1 = disk.createDirectory(root, subDir1Name);
 		assertNotNull(subDir1);
 		assertTrue(subDir1.exists());
-		assertEquals(subDir1.getName(), subDir1Name);
-		assertEquals(subDir1.getParent(), root);
-		assertEquals(root.getFirstMember(), subDir1);
+		assertEquals(subDir1Name, subDir1.getName());
+		assertEquals(root, subDir1.getParent());
+		assertEquals(subDir1, root.getFirstMember());
 		assertNull(subDir1.getFirstMember());
 
 		// add second sub dir
 		IVirtualDirectory subDir2 = disk.createDirectory(root, subDir2Name);
 		assertNotNull(subDir2);
 		assertTrue(subDir2.exists());
-		assertEquals(subDir2.getName(), subDir2Name);
-		assertEquals(subDir2.getParent(), root);
+		assertEquals(subDir2Name, subDir2.getName());
+		assertEquals(root, subDir2.getParent());
 		assertNull(subDir2.getFirstMember());
 
 		// add sub sub dir
@@ -108,8 +112,8 @@ public class IVirtualDiskTest {
 				subSubDirName);
 		assertNotNull(subSubDir);
 		assertTrue(subSubDir.exists());
-		assertEquals(subSubDir.getName(), subSubDirName);
-		assertEquals(subSubDir.getParent(), subDir1);
+		assertEquals(subSubDirName, subSubDir.getName());
+		assertEquals(subDir1, subSubDir.getParent());
 		assertNull(subSubDir.getFirstMember());
 		assertNull(subSubDir.getNextEntry());
 		assertNull(subSubDir.getPreviousEntry());
@@ -151,13 +155,13 @@ public class IVirtualDiskTest {
 				"subSubSubDir");
 
 		// check for correct structure
-		assertEquals(subDir.getParent(), disk.getRootDirectory());
+		assertEquals(disk.getRootDirectory(), subDir.getParent());
 		assertEquals(subDir, disk.getRootDirectory().getFirstMember());
 
-		assertEquals(subSubDir1.getParent(), subDir);
-		assertEquals(subSubDir2.getParent(), subDir);
+		assertEquals(subDir, subSubDir1.getParent());
+		assertEquals(subDir, subSubDir2.getParent());
 
-		assertEquals(subSubSubDir.getParent(), subSubDir1);
+		assertEquals(subSubDir1, subSubSubDir.getParent());
 		assertEquals(subSubSubDir, subSubDir1.getFirstMember());
 
 		// delete subSubDir1
@@ -174,5 +178,21 @@ public class IVirtualDiskTest {
 		assertFalse(subDir.exists());
 		assertFalse(subSubDir2.exists());
 		assertNull(disk.getRootDirectory().getFirstMember());
+	}
+	
+	@Test
+	public void sameDirectoryNameExceptionTest() throws IOException {
+	    IVirtualDirectory dir = disk.createDirectory(disk.getRootDirectory(), "samename");
+	    
+	    boolean exceptionCatched = false;
+	    try {
+	        disk.createDirectory(disk.getRootDirectory(), "samename");
+	    } catch (VirtualDiskException ex) {
+	        exceptionCatched = true;
+	    } finally {
+	        dir.delete();
+	        
+	        assertTrue(exceptionCatched);
+	    }
 	}
 }
