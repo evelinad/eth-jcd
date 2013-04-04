@@ -1,7 +1,10 @@
 package ch.se.inf.ethz.jcd.batman.cli;
 
+import java.io.IOException;
+
 import ch.se.inf.ethz.jcd.batman.cli.command.CommandNotFound;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
@@ -12,7 +15,7 @@ import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
  */
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		CommandLineInterface cli = new CommandLineInterface();
 		
 		// register commands
@@ -21,6 +24,7 @@ public class Main {
 		cli.addObserver(new CreateCommand());
 		cli.addObserver(new LoadCommand());
 		cli.addObserver(new UnloadCommand());
+		cli.addObserver(new ListMembersCommand());
 		
 		// start command line interface
 		cli.start();
