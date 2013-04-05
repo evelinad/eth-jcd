@@ -327,7 +327,7 @@ public class VirtualDisk implements IVirtualDisk {
 	private void readFreeLists () throws IOException {
 		file.seek(FREE_LISTS_POSITION);
 		freeLists.clear();
-		for (int i = 0; i < FREE_LIST_SIZE; i++) {
+		for (int i = 0; i < NR_FREE_LISTS; i++) {
 			freeLists.add(file.readLong());
 		}
 	}

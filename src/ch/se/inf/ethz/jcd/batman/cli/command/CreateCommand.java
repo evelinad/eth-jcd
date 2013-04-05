@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 
 /**
@@ -35,7 +34,7 @@ public class CreateCommand implements PrioritizedObserver<String> {
                 cli.setHandled();
 
                 // parse parameters
-                if (lineParts.length == 3) {
+                if (lineParts.length == 2) {
                     // extract path
                     Path hostPath = null;
                     try {
@@ -48,19 +47,8 @@ public class CreateCommand implements PrioritizedObserver<String> {
                         return;
                     }
 
-                    // extract size
-                    long size = 0L;
                     try {
-                        size = Long.parseLong(lineParts[2]);
-                    } catch (NumberFormatException ex) {
-                        cli.writeln(String.format(
-                                "provided size is not valid: %s",
-                                ex.getMessage()));
-                        return;
-                    }
-
-                    try {
-                        VirtualDisk.create(hostPath.toString(), size).close();
+                        VirtualDisk.create(hostPath.toString()).close();
                     } catch (IOException ex) {
                         cli.writeln(String.format(
                                 "following exception occured: %s",
