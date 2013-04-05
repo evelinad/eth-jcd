@@ -425,6 +425,29 @@ public class VDiskFile {
     }
 
     /**
+     * Creates a new, empty file.
+     * 
+     * @return true if file could be created in all other cases false
+     * @throws IOException
+     *             TODO
+     */
+    public boolean createNewFile() throws IOException {
+        if (this.exists()) {
+            return false;
+        }
+
+        VDiskFile parent = this.getParentFile();
+        if (!parent.exists() || !parent.isDirectory()) {
+            return false;
+        }
+
+        this.pathDiskEntry = this.disk.createFile((IVirtualDirectory) parent.getDiskEntry(),
+                this.getName(), 1);
+        
+        return true;
+    }
+
+    /**
      * Sets the last modified value.
      * 
      * @param time
@@ -481,6 +504,16 @@ public class VDiskFile {
         } else {
             return 0L;
         }
+    }
+
+    /**
+     * Returns the IVirtualDiskEntry belonging to the represented object.
+     * 
+     * @return the IVirtualDiskEntry representing the VDiskFile or null if
+     *         object does not exist on disk
+     */
+    public IVirtualDiskEntry getDiskEntry() {
+        return this.pathDiskEntry;
     }
 
     @Override
