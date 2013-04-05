@@ -25,7 +25,7 @@ public class VDiskFile {
             .valueOf(IVirtualDisk.PATH_SEPARATOR);
 
     // fields
-    private final String pathname;
+    private String pathname;
     private final IVirtualDisk disk;
     private IVirtualDiskEntry pathDiskEntry;
 
@@ -339,7 +339,6 @@ public class VDiskFile {
             
         try {
             newParentDir.addMember(this.pathDiskEntry);
-            return true;
         } catch (IOException e) {
             try {
                 this.pathDiskEntry.setName(this.getName());
@@ -350,6 +349,9 @@ public class VDiskFile {
             
             return false;
         }
+        
+        this.pathname = dest.getPath();
+        return true;
     }
 
     public boolean setLastModified(long time) {
