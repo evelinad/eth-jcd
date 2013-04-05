@@ -6,7 +6,6 @@ import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
  * Provides a command to unload a loaded disk. Doesn't take any argument.
@@ -27,19 +26,19 @@ public class UnloadCommand implements PrioritizedObserver<String> {
 				
 				
 				VDiskFile curLocation = cli.getCurrentLocation();
-				if(curLocation != null) {
+				if(curLocation == null) {
+                    cli.writeln("no disk is loaded.");
+				} else {
 				    try {
-                        curLocation.getDisk().close();
-                    } catch (IOException ex) {
-                        cli.writeln(String.format(
-                                "following exception occured: %s",
-                                ex.getMessage()));
-                    }
+				        curLocation.getDisk().close();
+				    } catch (IOException ex) {
+				        cli.writeln(String.format(
+				                "following exception occured: %s",
+				                ex.getMessage()));
+				    }
 				    
 				    cli.setCurrentLocation(null);
 				    cli.writeln("disk unloaded.");
-				} else {
-				    cli.writeln("no disk is loaded.");
 				}
 			}
 		}
