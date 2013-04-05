@@ -363,7 +363,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	@Override
 	public void free() throws IOException {
 		for (IDataBlock block : blocks) {
-			disk.freeBlock(block);
+			block.free();
 		}
 	}
 

@@ -19,7 +19,6 @@ public class IVirtualDiskTest {
 	// parameter generation
 	private static final String TEST_DISK_DIR = System
 			.getProperty("java.io.tmpdir");
-	private static final long TEST_DISK_SIZE = 1024 * 1024;
 
 	// disks to clean up
 	private static List<File> disks = new ArrayList<File>();
@@ -34,7 +33,7 @@ public class IVirtualDiskTest {
 	    
 		disks.add(diskAFile);
 		
-		IVirtualDisk diskA = VirtualDisk.create(diskAFile.getPath(), TEST_DISK_SIZE);
+		IVirtualDisk diskA = VirtualDisk.create(diskAFile.getPath());
 
 		Object[][] instances = { {diskA} };
 
@@ -58,11 +57,6 @@ public class IVirtualDiskTest {
 	}
 
 	// tests
-	@Test
-	public void sizeCorrectTest() throws IOException {
-		assertEquals(disk.getMaxSize(), TEST_DISK_SIZE);
-	}
-
 	@Test
 	public void rootDirectoryInitialStateTest() throws IOException {
 		assertNotNull(disk.getRootDirectory());

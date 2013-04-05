@@ -13,8 +13,6 @@ public class VirtualDiskTest {
     private static final String TEST_DISK_DIR = System
             .getProperty("java.io.tmpdir");
 
-    private static final long TEST_DISK_SIZE = 1024 * 300; // 300 KByte
-
     private File diskFile;
     private IVirtualDisk disk;
 
@@ -25,7 +23,7 @@ public class VirtualDiskTest {
             diskFile.delete();
         }
         
-        disk = VirtualDisk.create(diskFile.getPath(), TEST_DISK_SIZE);
+        disk = VirtualDisk.create(diskFile.getPath());
     }
 
     @After

@@ -15,16 +15,19 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	
 	private transient long next;
 	private long dataSize;
+	private boolean valid;
 	
 	public static IDataBlock load (final IVirtualDisk disk, final long position) throws IOException {
 		final DataBlock block = new DataBlock(disk, position, 0, 0, 0);
 		block.readMetadata();
+		block.valid = true;
 		return block;
 	}
 	
 	public static IDataBlock create (final IVirtualDisk disk, final long position, final long size, final long dataSize, final long next) throws IOException {
 		final DataBlock block = new DataBlock(disk, position, size, dataSize, next);
 		block.updateMetadata();
+		block.valid = true;
 		return block;
 	}
 	
@@ -144,6 +147,17 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	@Override
 	protected long setMetaFlagsOnSize(final long size) {
 		return VirtualBlock.setAllocatedFlag(size, true);
+	}
+
+	@Override
+	public boolean isValid () {
+		return valid;
+	}
+
+	@Override
+	public void free() throws IOException {
+		getDisk().freeBlock(this);
+		valid = false;			
 	}
 
 }

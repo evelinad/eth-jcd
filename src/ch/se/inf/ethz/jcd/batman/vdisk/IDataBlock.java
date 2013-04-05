@@ -206,5 +206,9 @@ public interface IDataBlock extends IVirtualBlock {
      * @throws IOException
      */
     void setDataSize(long size) throws IOException;
+    
+    void free () throws IOException;
+    
+    boolean isValid ();
 
 }

@@ -17,23 +17,23 @@ public class VirtualDisk implements IVirtualDisk {
 		return virtualDisk;
 	}
 	
-	public static IVirtualDisk create (String path, long maxSize) throws IOException {
+	public static IVirtualDisk create (String path) throws IOException {
 		VirtualDisk virtualDisk = new VirtualDisk(path);
-		virtualDisk.createDisk(maxSize);
+		virtualDisk.createDisk();
 		return virtualDisk;
 	}
 	
 	private static final byte[] MAGIC_NUMBER = new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xC0, (byte) 0xFF, (byte) 0xEE, 0x00, 0x00, 0x00};
 	private static final int SUPERBLOCK_SIZE = 192;  
-	private static final int FREE_LISTS_POSITION = 32;
+	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
-	private static final int NR_FREE_LISTS = 20;
+	private static final int NR_FREE_LISTS = 21;
 	private static final int FREE_LIST_SIZE = NR_FREE_LISTS*POSITION_SIZE;
 	private static final String ROOT_DIRECTORY_NAME = "root";
 	private static final long MIN_BLOCK_SIZE = 128;
-	private static final long ROOT_DIRECTORY_POSITION = 16;
+	private static final long MIN_EXTEND_SIZE = 1024;
+	private static final long ROOT_DIRECTORY_POSITION = 8;
 	
-	private long maxSize;
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
 	private List<Long> freeLists = new ArrayList<Long>();
@@ -41,10 +41,9 @@ public class VirtualDisk implements IVirtualDisk {
 	
 	/*
 	 * 0x00 8byte   MagicNumber
-	 * 0x08 8byte	Max Size
-	 * 0x10 8byte   Root Directory
-	 * 0x18 8byte   Reserved
-	 * 0x20 160byte FreeLists
+	 * 0x08 8byte   Root Directory
+	 * 0x10 8byte   Reserved
+	 * 0x18 160byte FreeLists
 	 */
 	private VirtualDisk(String path) {
 		this.path = path;
@@ -64,7 +63,6 @@ public class VirtualDisk implements IVirtualDisk {
 		if (!Arrays.equals(MAGIC_NUMBER, magicNumber)) {
 			throw new IllegalArgumentException("Can't load Virtual Dsik " + path + ". Wrong file type.");
 		}
-		setMaxSize(file.readLong());
 		readFreeLists();
 		loadRootDirectory();
 	}
@@ -75,17 +73,14 @@ public class VirtualDisk implements IVirtualDisk {
 		rootDirectory = VirtualDirectory.load(this, rootDirectoryPosition);
 	}
 	
-	private void createDisk (long maxSize) throws IOException {
-		setMaxSize(maxSize);
+	private void createDisk () throws IOException {
 		File f = new File(path);
 		if (f.exists()) {
 			throw new IllegalArgumentException("Can't create Virtual Disk at " + path + ". File already exists.");
 		}
 		file = new RandomAccessFile(f, "rw");
 		file.write(MAGIC_NUMBER);
-		file.writeLong(maxSize);
 		initializeFreeList();
-		extend(getMaxSize() - getSize());
 		createRootDirectory();
 	}
 	
@@ -131,20 +126,6 @@ public class VirtualDisk implements IVirtualDisk {
 	}
 
 	@Override
-	public void setMaxSize(long maxSize) throws IOException {
-		long fileLength = (file == null) ? 0 : file.length();
-		if (fileLength > maxSize || getMinSize() > maxSize) {
-			throw new IllegalArgumentException("Virtual file system can't be smaller than " + Math.max(maxSize, getMinSize()));
-		}
-		this.maxSize = maxSize;
-	}
-	
-	@Override
-	public long getMaxSize() {
-		return maxSize;
-	}
-
-	@Override
 	public long getSize() throws IOException {
 		return file.length();
 	}
@@ -157,11 +138,6 @@ public class VirtualDisk implements IVirtualDisk {
 	@Override
 	public IVirtualDirectory getRootDirectory() {
 		return rootDirectory;
-	}
-
-	@Override
-	public long getMinSize() {
-		return SUPERBLOCK_SIZE + DataBlock.MIN_BLOCK_SIZE;
 	}
 
 	@Override
@@ -223,14 +199,9 @@ public class VirtualDisk implements IVirtualDisk {
 
 	@Override
 	public void freeBlock(IDataBlock block) throws IOException {
-		long next = block.getNextBlock();
-		freeRange(block.getBlockPosition(), block.getDiskSize());
-		while (next != 0) {
-			IDataBlock toFreeBlock = DataBlock.load(this, next);
-			next = toFreeBlock.getNextBlock();
-			freeRange(toFreeBlock.getBlockPosition(), toFreeBlock.getDiskSize());
+		if (block.isValid()) {
+			freeRange(block.getBlockPosition(), block.getDiskSize());	
 		}
-		
 	}
 
 	private void removeFreeBlockFromList (IFreeBlock block) throws IOException {
@@ -323,29 +294,36 @@ public class VirtualDisk implements IVirtualDisk {
 		}
 		List<IDataBlock> allocatedBlocks = new ArrayList<IDataBlock>();
 		boolean blocksAllocated = false;
-		for (int freeListIndex = getFreeListIndex(size); freeListIndex < FREE_LIST_SIZE && !blocksAllocated; freeListIndex++) {
-			long nextEntry = freeLists.get(freeListIndex);
-			while (nextEntry != 0) {
-				IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
-				if (freeBlock.getDiskSize() > size) {
-					removeFreeBlockFromList(freeBlock);
-					if (isBlockSplittable(freeBlock, size)) {
-						allocatedBlocks.add(splitBlock(freeBlock, size, dataSize));
-					} else {
-						allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), dataSize, 0));
+		while (!blocksAllocated) {
+			for (int freeListIndex = getFreeListIndex(size); freeListIndex < FREE_LIST_SIZE && !blocksAllocated; freeListIndex++) {
+				long nextEntry = freeLists.get(freeListIndex);
+				while (nextEntry != 0) {
+					IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
+					if (freeBlock.getDiskSize() > size) {
+						removeFreeBlockFromList(freeBlock);
+						if (isBlockSplittable(freeBlock, size)) {
+							allocatedBlocks.add(splitBlock(freeBlock, size, dataSize));
+						} else {
+							allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), dataSize, 0));
+						}
+						blocksAllocated = true;
+						break;
 					}
-					blocksAllocated = true;
-					break;
+					nextEntry = freeBlock.getNextBlock();
 				}
-				nextEntry = freeBlock.getNextBlock();
 			}
-		}
-		if (!blocksAllocated) {
-			throw new OutOfDiskSpaceException();
+			if (!blocksAllocated) {
+				//Free the allocated blocks and extend the disk
+				for (IDataBlock block : allocatedBlocks) {
+					block.free();
+				}
+				allocatedBlocks.clear();
+				extend(Math.max(size, MIN_EXTEND_SIZE));
+			}
 		}
 		return allocatedBlocks.toArray(new IDataBlock[allocatedBlocks.size()]);
 	}
-	
+
 	private void readFreeLists () throws IOException {
 		file.seek(FREE_LISTS_POSITION);
 		freeLists.clear();

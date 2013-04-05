@@ -10,12 +10,6 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 
 	IVirtualDirectory getRootDirectory ();
 	
-	void setMaxSize (long maxSize) throws IOException;
-	
-	long getMinSize ();
-	
-	long getMaxSize ();
-	
 	long getSize () throws IOException;
 	
 	int getSuperblockSize (); 
