@@ -74,6 +74,7 @@ public class ImportCommand implements PrioritizedObserver<String> {
                             cli.writeln(String.format(
                                     "virtual file '%s' already exists",
                                     virtualFile.getPath()));
+                            return;
                         }
 
                         // create streams
