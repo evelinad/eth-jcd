@@ -8,7 +8,7 @@ import java.io.IOException;
  * {@link IVirtualFile}.
  * 
  */
-public interface IVirtualDiskEntry {
+public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 
 	/**
 	 * Sets the name of the entry.

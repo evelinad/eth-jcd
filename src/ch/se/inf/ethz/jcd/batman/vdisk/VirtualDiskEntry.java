@@ -3,8 +3,10 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualEntryIterator;
 
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
@@ -146,6 +148,11 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	@Override
 	public boolean exists () {
 		return state == FileState.CREATED;
+	}
+	
+	@Override
+	public Iterator<IVirtualDiskEntry> iterator() {
+	    return new VirtualEntryIterator(this);
 	}
 	
 	protected void saveString (IVirtualDiskSpace space, long position, String string) throws IOException {
