@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URI;
 
 
 public interface IVirtualDisk extends AutoCloseable, Closeable {
@@ -33,5 +34,7 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	IVirtualDirectory createDirectory (IVirtualDirectory parent, String name) throws IOException;
 	
 	IVirtualFile createFile (IVirtualDirectory parent, String name, long size) throws IOException;
+	
+	URI getHostLocation();
 	
 }

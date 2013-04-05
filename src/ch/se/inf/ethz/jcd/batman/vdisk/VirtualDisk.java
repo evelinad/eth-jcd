@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -202,6 +203,11 @@ public final class VirtualDisk implements IVirtualDisk {
 			freeRange(block.getBlockPosition(), block.getDiskSize());	
 		}
 	}
+	
+	@Override
+    public URI getHostLocation() {
+        return new File(path).toURI();
+    }
 
 	private void removeFreeBlockFromList (IFreeBlock block) throws IOException {
 		if (block.getPreviousBlock() == 0) {
