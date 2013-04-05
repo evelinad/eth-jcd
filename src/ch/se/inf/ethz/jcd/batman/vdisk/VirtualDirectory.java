@@ -93,15 +93,21 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	protected IVirtualDiskEntry loadNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		long nextEntry = space.readLong();
-		return VirtualDiskEntry.load(getDisk(), nextEntry);
+		if (nextEntry != 0) {
+			return VirtualDiskEntry.load(getDisk(), nextEntry);
+		} else  {
+			return null;
+		}
 	}
 	
 	protected void loadFirstMember() throws IOException {
 		space.seek(FIRST_MEMBER_POS);
 		long firstMemberPos = space.readLong();
-		firstMember = VirtualDiskEntry.load(getDisk(), firstMemberPos);
-		firstMember.setParent(this);
-		firstMemberLoaded = true;
+		if (firstMemberPos != 0) {
+			firstMember = VirtualDiskEntry.load(getDisk(), firstMemberPos);
+			firstMember.setParent(this);
+			firstMemberLoaded = true;
+		}
 	}
 	
 	protected String loadName() throws IOException {

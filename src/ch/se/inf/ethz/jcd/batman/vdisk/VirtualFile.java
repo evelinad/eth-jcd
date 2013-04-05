@@ -107,7 +107,11 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	protected IVirtualDiskEntry loadNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		long nextEntry = space.readLong();
-		return VirtualDiskEntry.load(getDisk(), nextEntry);
+		if (nextEntry != 0) {
+			return VirtualDiskEntry.load(getDisk(), nextEntry);
+		} else {
+			return null;
+		}
 	}
 
 	private long calculateSize (String name) throws IOException {

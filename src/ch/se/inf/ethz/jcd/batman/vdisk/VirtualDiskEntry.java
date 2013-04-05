@@ -107,9 +107,11 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	public IVirtualDiskEntry getNextEntry() throws IOException {
 		if (!nextEntryLoaded) {
 			next = loadNextEntry();
-			next.setParent(this.getParent());
-			next.setPreviousEntry(this);
-			nextEntryLoaded = true;
+			if (next != null) {
+				next.setParent(this.getParent());
+				next.setPreviousEntry(this);
+				nextEntryLoaded = true;
+			}
 		}
 		return next;
 	}

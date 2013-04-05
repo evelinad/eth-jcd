@@ -13,8 +13,11 @@ public class VirtualDiskUtil {
 
 	public static Collection<IVirtualDiskEntry> getDirectoryMembers (IVirtualDirectory directory) throws IOException {
 		List<IVirtualDiskEntry> members = new LinkedList<IVirtualDiskEntry>();
-		for (IVirtualDiskEntry currentMember : directory.getFirstMember()) {
-			members.add(currentMember);
+		IVirtualDiskEntry firstMember = directory.getFirstMember();
+		if (firstMember != null) {
+			for (IVirtualDiskEntry currentMember : firstMember) {
+				members.add(currentMember);
+			}
 		}
 		
 		return members;
