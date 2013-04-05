@@ -1,19 +1,19 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.io.VDiskFileOutputStream;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFileInputStream;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class ImportCommand implements PrioritizedObserver<String> {
-    private static final String[] COMMAND_STRINGS = { "import" };
+public class ExportCommand implements PrioritizedObserver<String> {
+    private static final String[] COMMAND_STRINGS = { "export" };
 
     @Override
     public void update(PrioritizedObservable<String> observable, String data) {
@@ -28,34 +28,9 @@ public class ImportCommand implements PrioritizedObserver<String> {
                 // parse parameters
                 try {
                     if (lineParts.length == 3) {
-                        // extract host path
-                        File hostFile = null;
-                        try {
-                            hostFile = new File(lineParts[1]);
-
-                            if (!hostFile.exists()) {
-                                cli.writeln(String.format(
-                                        "host file '%s' does not exist",
-                                        hostFile.getAbsolutePath()));
-                                return;
-                            }
-
-                            if (!hostFile.isFile()) {
-                                cli.writeln(String.format(
-                                        "host file '%s' is not a file",
-                                        hostFile.getAbsolutePath()));
-                                return;
-                            }
-                        } catch (InvalidPathException ex) {
-                            cli.writeln(String.format(
-                                    "provided path is not valid: %s",
-                                    ex.getMessage()));
-                            return;
-                        }
-
                         // extract virtual path
                         VDiskFile currentLocation = cli.getCurrentLocation();
-                        String virtualPathParam = lineParts[2];
+                        String virtualPathParam = lineParts[1];
 
                         VDiskFile virtualFile = null;
 
@@ -69,19 +44,42 @@ public class ImportCommand implements PrioritizedObserver<String> {
                         }
 
                         if (!virtualFile.exists()) {
-                            virtualFile.createNewFile();
-                        } else {
                             cli.writeln(String.format(
-                                    "virtual file '%s' already exists",
+                                    "virtual file '%s' does not exist",
                                     virtualFile.getPath()));
                             return;
                         }
 
-                        // create streams
-                        FileInputStream reader = new FileInputStream(hostFile);
+                        if (!virtualFile.isFile()) {
+                            cli.writeln(String.format(
+                                    "virtual file '%s' is not file",
+                                    virtualFile.getPath()));
+                            return;
+                        }
 
-                        VDiskFileOutputStream writer = new VDiskFileOutputStream(
+                        // extract host path
+                        File hostFile = null;
+                        try {
+                            hostFile = new File(lineParts[2]);
+
+                            if (hostFile.exists()) {
+                                cli.writeln(String.format(
+                                        "host file '%s' already exists",
+                                        hostFile.getAbsolutePath()));
+                                return;
+                            }
+                        } catch (InvalidPathException ex) {
+                            cli.writeln(String.format(
+                                    "provided path is not valid: %s",
+                                    ex.getMessage()));
+                            return;
+                        }
+
+                        // create streams
+                        VDiskFileInputStream reader = new VDiskFileInputStream(
                                 virtualFile.getPath(), virtualFile.getDisk());
+
+                        FileOutputStream writer = new FileOutputStream(hostFile);
 
                         // import
                         int read = 0;
@@ -94,9 +92,9 @@ public class ImportCommand implements PrioritizedObserver<String> {
                         writer.close();
                         reader.close();
 
-                        cli.writeln(String.format("imported '%s' into '%s'",
-                                hostFile.getAbsolutePath(),
-                                virtualFile.getPath()));
+                        cli.writeln(String.format("exported '%s' into '%s'",
+                                virtualFile.getPath(),
+                                hostFile.getAbsolutePath()));
 
                     } else {
                         cli.writeln("not the right amount of parameters provided.");
