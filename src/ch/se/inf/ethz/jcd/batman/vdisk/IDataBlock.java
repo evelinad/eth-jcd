@@ -207,8 +207,19 @@ public interface IDataBlock extends IVirtualBlock {
      */
     void setDataSize(long size) throws IOException;
     
+    /**
+     * Frees this data blocks on the virtual disk. After freeing the data block
+     * it can't be used and it's status is invalid.
+     * 
+     * @throws IOException
+     */
     void free () throws IOException;
     
+    /**
+     * Returns if the data block is currently valid, or if it has already been freed.
+     * 
+     * @return true if its still valid 
+     */
     boolean isValid ();
 
 }

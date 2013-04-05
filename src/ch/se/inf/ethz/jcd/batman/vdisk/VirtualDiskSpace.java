@@ -290,20 +290,21 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return blocks.get(pos.getBlockIndex());
 	}
 	
-	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
-		allocateSpace(pos, BYTE_LENGTH);
-		getDataBlock(pos).write(pos.getBlockPosition(), b);
-	}
-	
 	private void write (VirtualDiskSpacePosition pos, long l) throws IOException {
 		write(pos, ByteBuffer.allocate(8).putLong(l).array());
 	}
 	
 	private void allocateSpace(VirtualDiskSpacePosition pos,long length) throws IOException {
-		long remainingSpace = getRemainingSpace(pos);
-		if (remainingSpace < length) {
-			extend(length-remainingSpace);
+		long currentSize = getSize();
+		long sizeNeeded = pos.getPosition() + length;
+		if (currentSize < sizeNeeded) {
+			extend(sizeNeeded-currentSize);
 		}
+	}
+	
+	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
+		allocateSpace(pos, BYTE_LENGTH);
+		getDataBlock(pos).write(pos.getBlockPosition(), b);
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
