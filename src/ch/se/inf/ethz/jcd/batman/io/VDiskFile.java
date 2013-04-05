@@ -3,7 +3,6 @@
  */
 package ch.se.inf.ethz.jcd.batman.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
