@@ -111,6 +111,7 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
         }
         
         out.print(inputPrefix);
+        out.flush();
 
         String line = in.readLine();
 
