@@ -223,5 +223,10 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 	public long getPosition() {
 		return space.getVirtualDiskPosition();
 	}
+
+    @Override
+    public long getTotalSize() throws IOException {
+        return space.getDiskSize();
+    }
 	
 }

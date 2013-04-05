@@ -134,5 +134,15 @@ public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 	 * @return the position of the entry inside the virtual disk
 	 */
 	long getPosition();
+	
+	/**
+	 * Returns the total size of the entry. This includes metadata and data.
+	 * 
+	 * The returned size is the amount of bytes used by the entry on the disk.
+	 * 
+	 * @return size of the whole entry in bytes
+	 * @throws IOException TODO
+	 */
+	long getTotalSize() throws IOException;
 
 }
