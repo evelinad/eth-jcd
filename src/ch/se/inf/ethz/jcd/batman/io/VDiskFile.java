@@ -298,12 +298,59 @@ public class VDiskFile {
                 return false;
             }
         }
-        
+
         return mkdir();
     }
 
-    public boolean renameTo(File dest) {
-        throw new UnsupportedOperationException(); // TODO
+    public boolean renameTo(VDiskFile dest) {
+        if (dest.getDisk() != this.disk) {
+            return false;
+        }
+
+        if (dest.exists() || !this.exists()) {
+            return false;
+        }
+
+        VDiskFile newParent = dest.getParentFile();
+
+        if (!newParent.isDirectory()) {
+            return false;
+        }
+        
+        IVirtualDirectory oldParentDir = (IVirtualDirectory) getParentFile().pathDiskEntry;
+        IVirtualDirectory newParentDir = (IVirtualDirectory) newParent.pathDiskEntry;
+        
+        try {
+            oldParentDir.removeMember(this.pathDiskEntry);
+        } catch (IOException e) {
+            return false;
+        }
+            
+        try {
+            this.pathDiskEntry.setName(dest.getName());
+        } catch (IOException e) {
+            try {
+                oldParentDir.addMember(this.pathDiskEntry);
+            } catch (IOException eInner) {
+                throw new RuntimeException(eInner);
+            }
+            
+            return false;
+        }
+            
+        try {
+            newParentDir.addMember(this.pathDiskEntry);
+            return true;
+        } catch (IOException e) {
+            try {
+                this.pathDiskEntry.setName(this.getName());
+                oldParentDir.addMember(this.pathDiskEntry);
+            } catch (IOException eInner) {
+                throw new RuntimeException(eInner);
+            }
+            
+            return false;
+        }
     }
 
     public boolean setLastModified(long time) {
@@ -311,14 +358,6 @@ public class VDiskFile {
     }
 
     public long getTotalSpace() {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    public long getFreeSpace() {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    public long getUsableSpace() {
         throw new UnsupportedOperationException(); // TODO
     }
 
