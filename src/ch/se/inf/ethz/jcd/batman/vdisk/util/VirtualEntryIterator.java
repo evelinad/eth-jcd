@@ -7,29 +7,24 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
 
 public class VirtualEntryIterator implements Iterator<IVirtualDiskEntry> {
     
-    IVirtualDiskEntry curEntry;
+    IVirtualDiskEntry nextEntry;
     
     public VirtualEntryIterator(IVirtualDiskEntry startEntry) {
-        curEntry = startEntry;
+        nextEntry = startEntry;
     }
 
     @Override
     public boolean hasNext() {
-        IVirtualDiskEntry nextEntry;
-        try {
-            nextEntry = curEntry.getNextEntry();
-        } catch (IOException e) {
-            return false; // TODO this is very bad, we need some clean solution
-        }
-        
         return nextEntry != null;
     }
 
     @Override
     public IVirtualDiskEntry next() {
         try {
-            curEntry = curEntry.getNextEntry();
-            return curEntry;
+            IVirtualDiskEntry toReturn = nextEntry;
+            nextEntry = nextEntry.getNextEntry();
+            
+            return toReturn;
         } catch (IOException e) {
             return null; // TODO this is very bad, we need some clean solution
         }
