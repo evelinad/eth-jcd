@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
+
 public class VirtualFileTest extends NewDiskPerTest {
 
 	@Test
@@ -77,5 +79,53 @@ public class VirtualFileTest extends NewDiskPerTest {
 	public void seekTest() throws IOException {
 		IVirtualFile file = disk.createFile(disk.getRootDirectory(), "Test", 100);
 		assertEquals(0, file.getFilePointer());
+		file.seek(50);
+		assertEquals(50, file.getFilePointer());
+		
+		file.seek(50);
+		file.write((byte) 0);
+		assertEquals(51, file.getFilePointer());
+		
+		file.seek(50);
+		byte[] testArray = new byte[10];
+		file.write(testArray);
+		assertEquals(60, file.getFilePointer());
+	}
+	
+	@Test
+	public void readWriteTest()  throws IOException {
+		IVirtualFile file = disk.createFile(disk.getRootDirectory(), "Test", 100);
+		file.seek(0);
+		file.write((byte) 5);
+		file.seek(10);
+		byte[] testArray = new byte[] {0, 1, 2, 3, 4, 5};
+		file.write(testArray);
+		disk.close();
+		
+		disk = loadDisk();
+		IVirtualDiskEntry fileLoaded = VirtualDiskUtil.getDirectoryMember(disk.getRootDirectory(), "Test");
+		assertTrue(fileLoaded instanceof IVirtualFile);
+		IVirtualFile fileCheck = (IVirtualFile) fileLoaded;
+		assertEquals(100, fileCheck.getSize());
+		fileCheck.seek(0);
+		assertEquals(5, fileCheck.read());
+		fileCheck.seek(10);
+		byte[] buffer = new byte[6]; 
+		fileCheck.read(buffer);
+		assertArrayEquals(testArray, buffer);
+	}
+	
+	@Test
+	public void autoExpandTest()  throws IOException {
+		IVirtualFile file = disk.createFile(disk.getRootDirectory(), "Test", 100);
+		file.seek(100);
+		file.write((byte) 0);
+		assertEquals(101l, file.getSize());
+		
+		byte[] testArray = new byte[] {0, 1, 2, 3, 4};
+		file = disk.createFile(disk.getRootDirectory(), "Test2", 100);
+		file.seek(100);
+		file.write(testArray);
+		assertEquals(105, file.getSize());
 	}
 }

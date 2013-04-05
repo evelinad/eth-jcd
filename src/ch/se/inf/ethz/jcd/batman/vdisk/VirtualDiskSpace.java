@@ -86,7 +86,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		int index = 0;
 		for (; index < blocks.size(); index++) {
 			IDataBlock block = blocks.get(index);
-			if (block.getDataSize() < blockPosition) {
+			if (block.getDataSize() <= blockPosition) {
 				blockPosition -= block.getDataSize();
 			} else {
 				break;
@@ -317,8 +317,12 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
-		allocateSpace(pos, BYTE_LENGTH);
-		getDataBlock(pos).write(pos.getBlockPosition(), b);
+		VirtualDiskSpacePosition currentPos = pos;
+		if (allocateSpace(currentPos, BYTE_LENGTH)) {
+			//If the disk space changed, the position needs to be recalculated
+			currentPos = calculatePosition(currentPos.getPosition());
+		}
+		getDataBlock(currentPos).write(currentPos.getBlockPosition(), b);
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
