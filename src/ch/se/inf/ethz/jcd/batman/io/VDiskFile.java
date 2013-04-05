@@ -3,7 +3,6 @@
  */
 package ch.se.inf.ethz.jcd.batman.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +37,7 @@ public class VDiskFile {
     public VDiskFile(String pathname, IVirtualDisk disk) throws IOException {
         this.pathname = pathname;
         this.disk = disk;
-        this.pathDiskEntry = getDiskEntry(pathname);
+        this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
     /**
@@ -48,9 +47,15 @@ public class VDiskFile {
      */
     public VDiskFile(String parent, String child, IVirtualDisk disk)
             throws IOException {
-        this(String
-                .format("%s%s%s", parent, IVirtualDisk.PATH_SEPARATOR, child),
-                disk);
+        if (parent.equals(PATH_SEPARATOR)) {
+            this.pathname = String.format("%s%s", PATH_SEPARATOR, child);
+        } else {
+            this.pathname = String.format("%s%s%s", parent,
+                    IVirtualDisk.PATH_SEPARATOR, child);
+        }
+
+        this.disk = disk;
+        this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
     /**
@@ -58,8 +63,7 @@ public class VDiskFile {
      * @param child
      * @throws IOException
      */
-    public VDiskFile(VDiskFile parent, String child)
-            throws IOException {
+    public VDiskFile(VDiskFile parent, String child) throws IOException {
         this(parent.getPath(), child, parent.getDisk());
     }
 
@@ -128,7 +132,7 @@ public class VDiskFile {
     }
 
     // public methods
-    
+
     /**
      * Returns the disk associated with the VDiskFile.
      * 
@@ -195,6 +199,11 @@ public class VDiskFile {
     public VDiskFile getParentFile() {
         int lastSeperatorIndex = pathname.lastIndexOf(PATH_SEPARATOR);
         String parentPath = pathname.substring(0, lastSeperatorIndex);
+
+        if (parentPath.isEmpty()) {
+            // ok, the parent is the root dir
+            parentPath = PATH_SEPARATOR;
+        }
 
         try {
             return new VDiskFile(parentPath, disk);
@@ -278,11 +287,69 @@ public class VDiskFile {
     }
 
     public boolean mkdirs() {
-        throw new UnsupportedOperationException(); // TODO
+        VDiskFile parent = getParentFile();
+        if (parent == null) {
+            return false;
+        }
+
+        if (!parent.exists()) {
+            if (!parent.mkdirs()) {
+                return false;
+            }
+        }
+
+        return mkdir();
     }
 
-    public boolean renameTo(File dest) {
-        throw new UnsupportedOperationException(); // TODO
+    public boolean renameTo(VDiskFile dest) {
+        if (dest.getDisk() != this.disk) {
+            return false;
+        }
+
+        if (dest.exists() || !this.exists()) {
+            return false;
+        }
+
+        VDiskFile newParent = dest.getParentFile();
+
+        if (!newParent.isDirectory()) {
+            return false;
+        }
+        
+        IVirtualDirectory oldParentDir = (IVirtualDirectory) getParentFile().pathDiskEntry;
+        IVirtualDirectory newParentDir = (IVirtualDirectory) newParent.pathDiskEntry;
+        
+        try {
+            oldParentDir.removeMember(this.pathDiskEntry);
+        } catch (IOException e) {
+            return false;
+        }
+            
+        try {
+            this.pathDiskEntry.setName(dest.getName());
+        } catch (IOException e) {
+            try {
+                oldParentDir.addMember(this.pathDiskEntry);
+            } catch (IOException eInner) {
+                throw new RuntimeException(eInner);
+            }
+            
+            return false;
+        }
+            
+        try {
+            newParentDir.addMember(this.pathDiskEntry);
+            return true;
+        } catch (IOException e) {
+            try {
+                this.pathDiskEntry.setName(this.getName());
+                oldParentDir.addMember(this.pathDiskEntry);
+            } catch (IOException eInner) {
+                throw new RuntimeException(eInner);
+            }
+            
+            return false;
+        }
     }
 
     public boolean setLastModified(long time) {
@@ -290,14 +357,6 @@ public class VDiskFile {
     }
 
     public long getTotalSpace() {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    public long getFreeSpace() {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    public long getUsableSpace() {
         throw new UnsupportedOperationException(); // TODO
     }
 

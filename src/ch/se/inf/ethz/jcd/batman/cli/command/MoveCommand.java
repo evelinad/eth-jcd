@@ -1,16 +1,16 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class ListMembersCommand implements PrioritizedObserver<String> {
+public class MoveCommand implements PrioritizedObserver<String> {
 
-    private static final String[] COMMAND_STRINGS = { "list", "ls", "dir" };
+    private static final String[] COMMAND_STRINGS = { "move", "mv" };
 
     @Override
     public void update(PrioritizedObservable<String> observable, String data) {
@@ -29,24 +29,32 @@ public class ListMembersCommand implements PrioritizedObserver<String> {
                 }
 
                 try {
-                    VDiskFile listRoot = null;
-                    if (lineParts.length == 1) {
-                        listRoot = currentLocation;
-                    } else if (lineParts.length == 2) {
-                        listRoot = new VDiskFile(lineParts[1],
-                                currentLocation.getDisk());
+                    if (lineParts.length == 3) {
+                        String oldPath = lineParts[1];
+                        String newPath = lineParts[2];
+                        
+                        VDiskFile oldFile = getVDiskFile(oldPath, currentLocation);
+                        VDiskFile newFile = getVDiskFile(newPath, currentLocation);
+                        
+                        if(!oldFile.renameTo(newFile)) {
+                            cli.writeln("could not move file");
+                        }
                     } else {
                         cli.writeln("not the right amount of parameters provided.");
-                        return;
                     }
-
-                    String[] list = listRoot.list();
-                    cli.writeln(Arrays.toString(list));
                 } catch (IOException ex) {
                     cli.writeln(String.format(
                             "following exception occured: %s", ex.getMessage()));
                 }
             }
+        }
+    }
+
+    private VDiskFile getVDiskFile(String path, VDiskFile currentLocation) throws IOException {
+        if(path.startsWith(String.valueOf(IVirtualDisk.PATH_SEPARATOR))) {
+            return new VDiskFile(path, currentLocation.getDisk());
+        } else {
+            return new VDiskFile(currentLocation, path);
         }
     }
 

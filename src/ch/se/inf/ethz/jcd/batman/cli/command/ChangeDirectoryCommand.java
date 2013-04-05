@@ -1,7 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
@@ -34,8 +33,6 @@ public class ChangeDirectoryCommand implements PrioritizedObserver<String> {
                         String pathParam = lineParts[1];
                         if (pathParam.startsWith(String
                                 .valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-                            // absolute path
-
                             currentLocation = new VDiskFile(pathParam,
                                     currentLocation.getDisk());
                         } else {
@@ -46,13 +43,17 @@ public class ChangeDirectoryCommand implements PrioritizedObserver<String> {
                         if (!currentLocation.exists()) {
                             cli.writeln(String.format(
                                     "location '%s' does not exist", pathParam));
-                        } else if (!currentLocation.isDirectory()) {
+                            return;
+                        }
+
+                        if (!currentLocation.isDirectory()) {
                             cli.writeln(String.format(
                                     "location '%s' is not a directory",
                                     pathParam));
-                        } else {
-                            cli.setCurrentLocation(currentLocation);
+                            return;
                         }
+
+                        cli.setCurrentLocation(currentLocation);
 
                     } else {
                         cli.writeln("not the right amount of parameters provided.");
