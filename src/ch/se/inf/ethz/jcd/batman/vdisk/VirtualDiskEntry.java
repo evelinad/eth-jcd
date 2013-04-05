@@ -38,6 +38,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 	
 	protected void create (String name) throws IOException {
+		checkNameValid(name);
 		this.name = name;
 		nextEntryLoaded = true;
 	}
@@ -48,6 +49,12 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	}
 	
 	protected abstract String loadName() throws IOException;
+	
+	protected void checkNameValid (String name) throws VirtualDiskException {
+		if (name == null || name.contains("/")) {
+			throw new VirtualDiskException("Invalid name");
+		}
+	}
 	
 	/**
 	 * Checks if the name is already in use in the given directory. If so an exception is thrown.
@@ -69,6 +76,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	
 	@Override
 	public void setName(String name) throws IOException {
+		checkNameValid(name);
 		checkNameFree(parent, name);
 		this.name = name;
 		updateName();
