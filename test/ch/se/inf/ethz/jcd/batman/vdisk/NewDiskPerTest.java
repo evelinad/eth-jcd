@@ -1,6 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,6 +14,18 @@ public class NewDiskPerTest {
     protected File diskFile;
     protected IVirtualDisk disk;
 
+    protected IVirtualDisk createNewDisk (String path) throws IOException {
+    	return VirtualDisk.create(path);
+    }
+    
+    protected IVirtualDisk loadDisk () throws IOException {
+    	return loadDisk(diskFile.getPath());
+    } 
+    
+    protected IVirtualDisk loadDisk (String path) throws IOException {
+    	return VirtualDisk.load(path);
+    } 
+    
     @Before
     public void setUp() throws Exception {
         diskFile = new File(TEST_DISK_DIR, "virtualDiskTest.vdisk");
@@ -20,7 +33,7 @@ public class NewDiskPerTest {
             diskFile.delete();
         }
 
-        disk = VirtualDisk.create(diskFile.getPath());
+        disk = createNewDisk(diskFile.getPath());
     }
 
     @After

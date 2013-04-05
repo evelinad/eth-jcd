@@ -69,7 +69,6 @@ public class VirtualDiskTest extends NewDiskPerTest {
 		}
 		assertEquals(100, blockSize);
 	}
-    
 
 	// tests
 	@Test

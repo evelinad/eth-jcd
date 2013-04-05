@@ -1,6 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ public class VirtualDiskSpaceTest extends NewDiskPerTest {
     	diskSpace.write(testArray);
     	diskSpace.seek(0);
     	diskSpace.read(bufferArray);
-    	Assert.assertArrayEquals(testArray, bufferArray);
+    	assertArrayEquals(testArray, bufferArray);
     	
     	diskSpace.write(20, testArray);
     	bufferArray = new byte[testArray.length];
@@ -84,4 +84,67 @@ public class VirtualDiskSpaceTest extends NewDiskPerTest {
     	diskSpace.writeLong(10000, 5);
     	assertEquals(5, diskSpace.readLong(10000));
     }
+    
+    @Test
+    public void truncateTest ()  throws IOException {
+    	//Test if the data size matches the new size, if the new size is smaller than the original.
+    	IVirtualDiskSpace diskSpace = VirtualDiskSpace.create(disk, 100);
+    	diskSpace.changeSize(50);
+    	assertEquals(50, diskSpace.getSize());
+    }
+    
+    /**
+     * Test if offset is set correctly after read/write.
+     * @throws IOException
+     */
+    @Test
+    public void positionTest () throws IOException {
+    	IVirtualDiskSpace diskSpace = VirtualDiskSpace.create(disk, 100);
+    	
+    	//Test read byte
+    	diskSpace.seek(0);
+    	diskSpace.read();
+    	assertEquals(1, diskSpace.getPosition());
+    	
+    	//Test read long
+    	diskSpace.seek(0);
+    	diskSpace.readLong();
+    	assertEquals(8, diskSpace.getPosition());
+    	
+    	//Test read byte array
+    	byte[] buffer = new byte[5];
+    	diskSpace.seek(0);
+    	diskSpace.read(buffer);
+    	assertEquals(5, diskSpace.getPosition());
+    	
+    	//Test write byte
+    	diskSpace.seek(0);
+    	diskSpace.write((byte) 1);
+    	assertEquals(1, diskSpace.getPosition());
+    	
+    	//Test write long
+    	diskSpace.seek(0);
+    	diskSpace.writeLong(1);
+    	assertEquals(8, diskSpace.getPosition());
+    	
+    	//Test write byte array
+    	byte[] testArray = new byte[] {0, 1, 2, 3, 4};
+    	diskSpace.seek(0);
+    	diskSpace.read(testArray);
+    	assertEquals(5, diskSpace.getPosition());
+    }
+    
+    @Test
+    public void freeTest () throws IOException {
+    	IVirtualDiskSpace diskSpace = VirtualDiskSpace.create(disk, 100);
+    	diskSpace.free();
+    	boolean exceptionThrown = false;
+    	try {
+    		diskSpace.write((byte) 1);
+    	} catch (VirtualDiskException e) {
+    		exceptionThrown = true;
+    	}
+    	Assert.assertTrue(exceptionThrown);
+    }
+    
 }

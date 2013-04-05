@@ -195,7 +195,7 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	}
 
 	@Override
-	public long getDiskSize() throws IOException {
+	public long getDataDiskSize() throws IOException {
 		return getDataSpace().getDiskSize();
 	}
 
