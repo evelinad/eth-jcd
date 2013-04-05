@@ -51,10 +51,10 @@ public class VDiskFile {
         if (parent.equals(PATH_SEPARATOR)) {
             this.pathname = String.format("%s%s", PATH_SEPARATOR, child);
         } else {
-            this.pathname = String.format("%s%s%s", parent, IVirtualDisk.PATH_SEPARATOR,
-                    child);
+            this.pathname = String.format("%s%s%s", parent,
+                    IVirtualDisk.PATH_SEPARATOR, child);
         }
-        
+
         this.disk = disk;
         this.pathDiskEntry = getDiskEntry(this.pathname);
     }
@@ -200,8 +200,8 @@ public class VDiskFile {
     public VDiskFile getParentFile() {
         int lastSeperatorIndex = pathname.lastIndexOf(PATH_SEPARATOR);
         String parentPath = pathname.substring(0, lastSeperatorIndex);
-        
-        if(parentPath.isEmpty()) {
+
+        if (parentPath.isEmpty()) {
             // ok, the parent is the root dir
             parentPath = PATH_SEPARATOR;
         }
@@ -288,7 +288,18 @@ public class VDiskFile {
     }
 
     public boolean mkdirs() {
-        throw new UnsupportedOperationException(); // TODO
+        VDiskFile parent = getParentFile();
+        if (parent == null) {
+            return false;
+        }
+
+        if (!parent.exists()) {
+            if (!parent.mkdirs()) {
+                return false;
+            }
+        }
+        
+        return mkdir();
     }
 
     public boolean renameTo(File dest) {
