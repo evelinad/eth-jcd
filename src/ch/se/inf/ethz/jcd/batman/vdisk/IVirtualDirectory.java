@@ -9,7 +9,6 @@ import java.io.IOException;
  * directory. This includes files and subdirectories inside the directory. As
  * defined by the {@link IVirtualDiskEntry} the member list is a doubly linked
  * list.
- * 
  */
 public interface IVirtualDirectory extends IVirtualDiskEntry {
 	/**

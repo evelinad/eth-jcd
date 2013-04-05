@@ -3,6 +3,9 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.IOException;
 
 
+/**
+ * Represents a file on the virtual disk.
+ */
 public interface IVirtualFile extends IVirtualDiskEntry {
 	
 	/**
