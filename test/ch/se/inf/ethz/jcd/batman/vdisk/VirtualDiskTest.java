@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
+
 public class VirtualDiskTest {
     private static final String TEST_DISK_DIR = System
             .getProperty("java.io.tmpdir");
@@ -21,10 +23,10 @@ public class VirtualDiskTest {
     @Before
     public void setUp() throws Exception {
         diskFile = new File(TEST_DISK_DIR, "virtualDiskTest.vdisk");
-        if(diskFile.exists()) {
+        if (diskFile.exists()) {
             diskFile.delete();
         }
-        
+
         disk = VirtualDisk.create(diskFile.getPath(), TEST_DISK_SIZE);
     }
 
@@ -56,23 +58,27 @@ public class VirtualDiskTest {
         IVirtualDirectory dirASubSub = disk.createDirectory(dirASub, "AsubSub");
 
         disk.close();
+        disk = null; // just to make sure
 
         disk = VirtualDisk.load(diskFile.getPath());
-        // TODO use path finding to check if directories exists and not the
-        // knowledge of the implementation.
-        IVirtualDiskEntry loadedDirB = disk.getRootDirectory().getFirstMember();
-        IVirtualDiskEntry loadedDirA = loadedDirB.getNextEntry();
-        IVirtualDiskEntry loadedDirASub = ((IVirtualDirectory) loadedDirA)
-                .getFirstMember();
-        IVirtualDiskEntry loadedDirASubSub = ((IVirtualDirectory) loadedDirASub)
-                .getFirstMember();
-        IVirtualDiskEntry loadedDirBSub = ((IVirtualDirectory) loadedDirB)
-                .getFirstMember();
-        
-        assertEquals(dirB.getName(), loadedDirB.getName());
-        assertEquals(dirA.getName(), loadedDirA.getName());
-        assertEquals(dirASub.getName(), loadedDirASub.getName());
-        assertEquals(dirASubSub.getName(), loadedDirASubSub.getName());
-        assertEquals(dirBSub.getName(), loadedDirBSub.getName());
+        assertNotNull(disk);
+
+        IVirtualDiskEntry loadedDirB = VirtualDiskUtil.getDirectoryMember(
+                disk.getRootDirectory(), dirB.getName());
+        assertNotNull(loadedDirB);
+
+        IVirtualDiskEntry loadedDirA = VirtualDiskUtil.getDirectoryMember(
+                disk.getRootDirectory(), dirA.getName());
+        assertNotNull(loadedDirA);
+
+        IVirtualDiskEntry loadedDirASub = VirtualDiskUtil.getDirectoryMember(
+                (IVirtualDirectory) loadedDirA, dirASub.getName());
+        assertNotNull(loadedDirASub);
+
+        assertNotNull(VirtualDiskUtil.getDirectoryMember(
+                (IVirtualDirectory) loadedDirASub, dirASubSub.getName()));
+
+        assertNotNull(VirtualDiskUtil.getDirectoryMember(
+                (IVirtualDirectory) loadedDirB, dirBSub.getName()));
     }
 }
