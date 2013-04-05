@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
+
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
 	public static IVirtualDiskEntry load (IVirtualDisk disk, long position) throws IOException {

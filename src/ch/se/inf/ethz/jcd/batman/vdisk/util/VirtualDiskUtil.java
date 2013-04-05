@@ -1,9 +1,12 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.util;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
 
 
 public class VirtualDiskUtil {

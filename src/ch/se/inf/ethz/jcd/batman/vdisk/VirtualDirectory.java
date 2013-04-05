@@ -2,6 +2,8 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
+
 
 
 /* 

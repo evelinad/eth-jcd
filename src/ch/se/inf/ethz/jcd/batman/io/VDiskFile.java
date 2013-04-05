@@ -22,7 +22,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskUtil;
+import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 /**
  * 
