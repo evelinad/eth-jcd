@@ -1,7 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
