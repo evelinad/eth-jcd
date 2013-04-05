@@ -1,14 +1,13 @@
 package ch.se.inf.ethz.jcd.batman.cli;
 
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
  * This class implements an interface for the command line (CLI).
@@ -20,11 +19,6 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
  * 
  * There are some additional features implemented, like a changeable prefix for
  * the input and a way to inform others that a given input was handled.
- * 
- * <b>Important:</b> If an instance of this class is used inside some IDEs (i.e.
- * Eclipse) it won't work as those terminals are not correctly recognized as a
- * console and therefore System.console() returns null. An excpetion is thrown
- * in such a case.
  * 
  * @see java.io.Console
  * @see ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver
@@ -50,6 +44,7 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 
     private final BufferedReader in = new BufferedReader(new InputStreamReader(
             System.in));
+    private final PrintWriter out = new PrintWriter(System.out);
     private boolean running;
     private VDiskFile curLocation;
 
@@ -87,8 +82,8 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
      *            text to write into the console
      */
     public void write(String text) {
-        System.out.print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
-        System.out.flush();
+        out.print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
+        out.flush();
     }
 
     /**
@@ -115,7 +110,7 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
             inputPrefix = String.format(CLI_INPUT_PREFIX_FORMAT_STR, diskName, this.curLocation.getPath());
         }
         
-        System.out.print(inputPrefix);
+        out.print(inputPrefix);
 
         String line = in.readLine();
 
