@@ -9,6 +9,7 @@ import ch.se.inf.ethz.jcd.batman.cli.command.CreateDirectoryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.MoveCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.SizeCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
 
@@ -31,6 +32,7 @@ public class Main {
 		cli.addObserver(new ChangeDirectoryCommand());
 		cli.addObserver(new CreateDirectoryCommand());
 		cli.addObserver(new MoveCommand());
+		cli.addObserver(new SizeCommand());
 		
 		// start command line interface
 		cli.start();
