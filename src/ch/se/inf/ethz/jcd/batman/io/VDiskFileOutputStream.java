@@ -102,6 +102,7 @@ public class VDiskFileOutputStream extends OutputStream {
     @Override
     protected void finalize() throws Throwable {
         this.close();
+        super.finalize();
     }
 
     // private methods

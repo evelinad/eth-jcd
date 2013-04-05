@@ -216,8 +216,7 @@ public class VDiskFile {
      * @return true if VDiskFile is directory, otherwise false
      */
     public boolean isDirectory() {
-        return pathDiskEntry != null
-                && pathDiskEntry instanceof IVirtualDirectory;
+        return pathDiskEntry instanceof IVirtualDirectory;
     }
 
     /**
@@ -226,7 +225,7 @@ public class VDiskFile {
      * @return true if VDiskFile is a file, otherwise false
      */
     public boolean isFile() {
-        return pathDiskEntry != null && pathDiskEntry instanceof IVirtualFile;
+        return pathDiskEntry instanceof IVirtualFile;
     }
 
     /**
@@ -441,9 +440,9 @@ public class VDiskFile {
             return false;
         }
 
-        this.pathDiskEntry = this.disk.createFile((IVirtualDirectory) parent.getDiskEntry(),
-                this.getName(), 1);
-        
+        this.pathDiskEntry = this.disk.createFile(
+                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), 1);
+
         return true;
     }
 
@@ -530,6 +529,11 @@ public class VDiskFile {
 
     @Override
     public int hashCode() {
+        /*
+         * PMD shows a UselessParentheses violation, although it's obviously not
+         * as I need the hash of the whole string containing the URI and
+         * pathname
+         */
         return (this.disk.getHostLocation().toString() + this.pathname)
                 .hashCode();
     }
