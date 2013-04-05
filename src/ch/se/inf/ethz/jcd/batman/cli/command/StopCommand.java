@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.cli.command;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
@@ -28,10 +29,10 @@ public class StopCommand implements PrioritizedObserver<String> {
                 cli.setHandled();
                 cli.writeln("exiting...");
 
-                IVirtualDisk disk = cli.getCurrentLocation().getDisk();
-                if (disk != null) {
+                VDiskFile curLocation = cli.getCurrentLocation();
+                if (curLocation != null) {
                     try {
-                        disk.close();
+                        curLocation.getDisk().close();
                     } catch (IOException ex) {
                         cli.writeln(String.format(
                                 "following exception occured: %s",
