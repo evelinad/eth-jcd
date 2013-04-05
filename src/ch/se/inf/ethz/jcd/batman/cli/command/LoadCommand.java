@@ -6,6 +6,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
@@ -46,19 +47,23 @@ public class LoadCommand implements PrioritizedObserver<String> {
 						return;
 					}
 					
-					IVirtualDisk disk = null;
+					if(cli.getCurrentLocation() != null) {
+					    cli.writeln("a disk is still loaded. unload first.");
+					    return;
+					}
+					
 					try {
-                        disk = VirtualDisk.load(hostPath.toString());
+					    IVirtualDisk disk = VirtualDisk.load(hostPath.toString());
+                        VDiskFile rootDir = new VDiskFile("/", disk);
+                        
+                        cli.setCurrentLocation(rootDir);
+                        
                     } catch (IOException ex) {
                         cli.writeln(String.format(
                                 "following exception occured: %s",
                                 ex.getMessage()));
                         return;
                     }
-					
-					cli.setDisk(disk);
-					
-					cli.setInputPrefix(hostPath.getFileName().toString());
 				} else {
 					cli.writeln("not the right amount of parameters provided.");
 				}

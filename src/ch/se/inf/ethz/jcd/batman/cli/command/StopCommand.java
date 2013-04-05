@@ -22,10 +22,12 @@ public class StopCommand implements PrioritizedObserver<String> {
 		CommandLineInterface cli = (CommandLineInterface)obs;
 		
 		for(String commandStr : COMMAND_STRINGS) {
+            cli.setHandled();
+            
 			if(line.equalsIgnoreCase(commandStr)) {
 				cli.writeln("exiting...");
 				
-				IVirtualDisk disk = cli.getDisk();
+				IVirtualDisk disk = cli.getCurrentLocation().getDisk();
 				if(disk != null) {
 				    try {
                         disk.close();
@@ -37,7 +39,6 @@ public class StopCommand implements PrioritizedObserver<String> {
 				}
 				
 				cli.stop();
-				cli.setHandled();
 			}
 		}
 	}

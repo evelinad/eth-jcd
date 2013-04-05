@@ -23,24 +23,29 @@ public class ListMembersCommand implements PrioritizedObserver<String> {
             if (lineParts[0].equalsIgnoreCase(command)) {
                 cli.setHandled();
 
-                IVirtualDisk disk = cli.getDisk();
-                if (disk == null) {
+                VDiskFile currentLocation = cli.getCurrentLocation();
+                if (currentLocation == null) {
                     cli.writeln("no disk loaded. command needs loaded disk.");
                     return;
                 }
 
-                if (lineParts.length == 2) {
-                    VDiskFile file = new VDiskFile(lineParts[1], disk);
-                    try {
-                        String[] list = file.list();
-                        cli.writeln(Arrays.toString(list));
-                    } catch (IOException ex) {
-                        cli.writeln(String.format(
-                                "following exception occured: %s",
-                                ex.getMessage()));
+                try {
+                    VDiskFile listRoot = null;
+                    if (lineParts.length == 1) {
+                        listRoot = currentLocation;
+                    } else if (lineParts.length == 2) {
+                        listRoot = new VDiskFile(lineParts[1],
+                                currentLocation.getDisk());
+                    } else {
+                        cli.writeln("not the right amount of parameters provided.");
+                        return;
                     }
-                } else {
-                    cli.writeln("not the right amount of parameters provided.");
+
+                    String[] list = listRoot.list();
+                    cli.writeln(Arrays.toString(list));
+                } catch (IOException ex) {
+                    cli.writeln(String.format(
+                            "following exception occured: %s", ex.getMessage()));
                 }
             }
         }

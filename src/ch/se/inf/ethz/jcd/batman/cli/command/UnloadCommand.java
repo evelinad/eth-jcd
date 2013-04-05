@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.cli.command;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
@@ -23,20 +24,23 @@ public class UnloadCommand implements PrioritizedObserver<String> {
 		for(String command : COMMAND_STRINGS) {
 			if(lineParts[0].equalsIgnoreCase(command)) {
 				cli.setHandled();
-					
-				IVirtualDisk disk = cli.getDisk();
-				if(disk != null) {
+				
+				
+				VDiskFile curLocation = cli.getCurrentLocation();
+				if(curLocation != null) {
 				    try {
-                        disk.close();
+                        curLocation.getDisk().close();
                     } catch (IOException ex) {
                         cli.writeln(String.format(
                                 "following exception occured: %s",
                                 ex.getMessage()));
                     }
-				    cli.setDisk(null);
+				    
+				    cli.setCurrentLocation(null);
+				    cli.writeln("disk unloaded.");
+				} else {
+				    cli.writeln("no disk is loaded.");
 				}
-				
-				cli.setInputPrefix(null);
 			}
 		}
 	}
