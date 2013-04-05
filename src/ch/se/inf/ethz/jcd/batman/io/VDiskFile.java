@@ -38,7 +38,7 @@ public class VDiskFile {
     public VDiskFile(String pathname, IVirtualDisk disk) throws IOException {
         this.pathname = pathname;
         this.disk = disk;
-        this.pathDiskEntry = getDiskEntry(pathname);
+        this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
     /**
@@ -48,9 +48,15 @@ public class VDiskFile {
      */
     public VDiskFile(String parent, String child, IVirtualDisk disk)
             throws IOException {
-        this(String
-                .format("%s%s%s", parent, IVirtualDisk.PATH_SEPARATOR, child),
-                disk);
+        if (parent.equals(PATH_SEPARATOR)) {
+            this.pathname = String.format("%s%s", PATH_SEPARATOR, child);
+        } else {
+            this.pathname = String.format("%s%s%s", parent, IVirtualDisk.PATH_SEPARATOR,
+                    child);
+        }
+        
+        this.disk = disk;
+        this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
     /**
@@ -58,8 +64,7 @@ public class VDiskFile {
      * @param child
      * @throws IOException
      */
-    public VDiskFile(VDiskFile parent, String child)
-            throws IOException {
+    public VDiskFile(VDiskFile parent, String child) throws IOException {
         this(parent.getPath(), child, parent.getDisk());
     }
 
@@ -128,7 +133,7 @@ public class VDiskFile {
     }
 
     // public methods
-    
+
     /**
      * Returns the disk associated with the VDiskFile.
      * 
@@ -195,6 +200,11 @@ public class VDiskFile {
     public VDiskFile getParentFile() {
         int lastSeperatorIndex = pathname.lastIndexOf(PATH_SEPARATOR);
         String parentPath = pathname.substring(0, lastSeperatorIndex);
+        
+        if(parentPath.isEmpty()) {
+            // ok, the parent is the root dir
+            parentPath = PATH_SEPARATOR;
+        }
 
         try {
             return new VDiskFile(parentPath, disk);
