@@ -65,36 +65,42 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	
 	@Override
 	public void write(final long pos, final byte data) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, BYTE_LENGTH);
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
 	public void write(final long pos, final byte[] data) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, data.length);
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
 	public void write(final long pos, final long data) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, LONG_LENGTH);
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 	
 	@Override
 	public byte read(final long pos) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, BYTE_LENGTH);
 		return readRealPosition(pos + METADATA_START_SIZE);
 	}
 
 	@Override
 	public int read(final long pos, final byte[] data) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, data.length);
 		return readRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
 	@Override
 	public long readLong(final long pos) throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, LONG_LENGTH);
 		return readLongRealPosition(pos + METADATA_START_SIZE);
 	}
@@ -120,6 +126,7 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 
 	@Override
 	public void setDataSize(final long size) throws IOException {
+		checkValidTrue();
 		this.dataSize = size;
 		updateDataSize();
 	}
@@ -127,6 +134,7 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	@Override
 	public void write(final long pos, final byte[] b, final int offset, final int length)
 			throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, length);
 		writeRealPosition(pos + METADATA_START_SIZE, b, offset, length);
 	}
@@ -134,12 +142,14 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	@Override
 	public int read(final long pos, final byte[] data, final int offset, final int length)
 			throws IOException {
+		checkValidTrue();
 		checkDataRange(pos, length);
 		return readRealPosition(pos + METADATA_START_SIZE, data, offset, length);
 	}
 
 	@Override
 	public void setNextBlock(final long nextBlock) throws IOException {
+		checkValidTrue();
 		this.next = nextBlock;
 		updateNextBlock();
 	}
@@ -149,6 +159,17 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return VirtualBlock.setAllocatedFlag(size, true);
 	}
 
+	/**
+	 * Throws a {@link VirtualDiskException} if the status is not valid.
+	 * 
+	 * @throws VirtualDiskException if the status is not valid
+	 */
+	private void checkValidTrue() throws VirtualDiskException {
+		if (!isValid()) {
+			throw new VirtualDiskException("Block is not valid.");
+		}
+	}
+	
 	@Override
 	public boolean isValid () {
 		return valid;
@@ -156,8 +177,10 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 
 	@Override
 	public void free() throws IOException {
-		getDisk().freeBlock(this);
-		valid = false;			
+		if (isValid()) {
+			getDisk().freeBlock(this);
+			valid = false;
+		}
 	}
 
 }
