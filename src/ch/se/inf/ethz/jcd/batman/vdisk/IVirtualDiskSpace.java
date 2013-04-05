@@ -70,7 +70,7 @@ public interface IVirtualDiskSpace {
 	 * @param l the long to be written
 	 * @throws IOException if an I/O error occurs
 	 */
-	void write(long l) throws IOException;
+	void writeLong(long l) throws IOException;
 
 	/**
 	 * Write the specified byte array to the disk space at the current offset.
@@ -96,7 +96,7 @@ public interface IVirtualDiskSpace {
 	 * @param l the long to be written
 	 * @throws IOException if an I/O error occurs
 	 */
-	void write(long pos, long l) throws IOException;
+	void writeLong(long pos, long l) throws IOException;
 
 	/**
 	 * Write the specified byte array to the disk space at the offset given by pos.

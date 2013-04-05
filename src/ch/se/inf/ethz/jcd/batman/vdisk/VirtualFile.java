@@ -72,7 +72,7 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	
 	protected void updateDataPosition() throws IOException {
 		space.seek(DATA_LOC_POS);
-		space.write(getDataPosition());
+		space.writeLong(getDataPosition());
 	}
 	
 	protected void load (IVirtualDiskSpace space) throws IOException {
@@ -178,13 +178,13 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	protected void updateNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		IVirtualDiskEntry next = getNextEntry();
-		space.write((next == null) ? 0 : next.getPosition());
+		space.writeLong((next == null) ? 0 : next.getPosition());
 	}
 
 	@Override
 	protected void updateTimestamp() throws IOException {
 		space.seek(TIMESTAMP_POS);
-		space.write(getTimestamp());
+		space.writeLong(getTimestamp());
 	}
 
 	private IVirtualDiskSpace getDataSpace () throws IOException {

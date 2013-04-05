@@ -216,7 +216,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 
 	@Override
-	public void write(long l) throws IOException {
+	public void writeLong(long l) throws IOException {
 		write(position, l);
 		position = addPosition(position, LONG_LENGTH);
 	}
@@ -233,7 +233,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 
 	@Override
-	public void write(long pos, long l) throws IOException {
+	public void writeLong(long pos, long l) throws IOException {
 		write(calculatePosition(pos), l);
 	}
 	

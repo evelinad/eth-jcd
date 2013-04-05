@@ -85,8 +85,8 @@ public final class VirtualDisk implements IVirtualDisk {
 	}
 	
 	private void extend (long amount) throws IOException {
-		long freeBlockPosition = getSize();
-		file.setLength( + amount);
+		long freeBlockPosition = file.length();
+		file.setLength(freeBlockPosition + amount);
 		IFreeBlock newSpace = FreeBlock.create(this, freeBlockPosition, amount, 0, 0);
 		addFreeBlockToList(newSpace);
 	}
@@ -100,8 +100,8 @@ public final class VirtualDisk implements IVirtualDisk {
 	 */
 	private void initializeFreeList () throws IOException {
 		file.seek(FREE_LISTS_POSITION);
-		for (int i = 0; i < FREE_LIST_SIZE; i++) {
-			file.write(0);
+		for (int i = 0; i < NR_FREE_LISTS; i++) {
+			file.writeLong(0);
 			freeLists.add(Long.valueOf(0));
 		}
 	}
@@ -238,6 +238,8 @@ public final class VirtualDisk implements IVirtualDisk {
 			block.setNextBlock(previousFirstBlock.getBlockPosition());	
 		}
 		freeLists.set(freeListIndex, block.getBlockPosition());
+		file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
+		file.writeLong(block.getBlockPosition());
 	}
 
 	private int getFreeListIndex(long length) {

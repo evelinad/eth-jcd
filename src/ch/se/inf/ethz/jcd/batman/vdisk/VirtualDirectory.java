@@ -129,19 +129,19 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 	
 	protected void updateTimestamp() throws IOException {
 		space.seek(TIMESTAMP_POS);
-		space.write(getTimestamp());
+		space.writeLong(getTimestamp());
 	}
 	
 	protected void updateNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		IVirtualDiskEntry next = getNextEntry();
-		space.write((next == null) ? 0 : next.getPosition());
+		space.writeLong((next == null) ? 0 : next.getPosition());
 	}
 	
 	protected void updateFirstMember() throws IOException {
 		space.seek(FIRST_MEMBER_POS);
 		IVirtualDiskEntry first = getFirstMember();
-		space.write((first == null) ? 0 : first.getPosition());
+		space.writeLong((first == null) ? 0 : first.getPosition());
 	}
 	
 	protected void updateName() throws IOException {
