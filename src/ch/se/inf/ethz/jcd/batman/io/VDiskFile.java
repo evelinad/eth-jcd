@@ -58,9 +58,9 @@ public class VDiskFile {
      * @param child
      * @throws IOException
      */
-    public VDiskFile(VDiskFile parent, String child, IVirtualDisk disk)
+    public VDiskFile(VDiskFile parent, String child)
             throws IOException {
-        this(parent.getPath(), child, disk);
+        this(parent.getPath(), child, parent.getDisk());
     }
 
     // private methods
@@ -239,7 +239,7 @@ public class VDiskFile {
 
         if (exists()) {
             for (IVirtualDiskEntry entry : getChilds()) {
-                VDiskFile file = new VDiskFile(this, entry.getName(), disk);
+                VDiskFile file = new VDiskFile(this, entry.getName());
 
                 files.add(file);
             }
