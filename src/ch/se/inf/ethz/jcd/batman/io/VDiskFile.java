@@ -463,11 +463,24 @@ public class VDiskFile {
      * If the object does not yet exist on disk 0L is returned. In case of an
      * exception a negative value is returned.
      * 
-     * @return size of the represented object. If the object does not exist yet
-     *         0L is returned and in case of an error a negative value.
+     * Note: For a directory the returned value does not include the files
+     * inside it and their size. It will only return the size of the structure
+     * used to represent the directory.
+     * 
+     * @return size in bytes of the represented object. If the object does not
+     *         exist yet 0L is returned and in case of an error a negative
+     *         value.
      */
     public long getTotalSpace() {
-        throw new UnsupportedOperationException(); // TODO
+        if (this.exists()) {
+            try {
+                return this.pathDiskEntry.getTotalSize();
+            } catch (IOException e) {
+                return -1L;
+            }
+        } else {
+            return 0L;
+        }
     }
 
     @Override
