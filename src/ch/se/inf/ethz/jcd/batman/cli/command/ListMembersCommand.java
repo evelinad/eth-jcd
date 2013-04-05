@@ -38,7 +38,6 @@ public class ListMembersCommand implements PrioritizedObserver<String> {
                         cli.writeln(String.format(
                                 "following exception occured: %s",
                                 ex.getMessage()));
-                        ex.printStackTrace();
                     }
                 } else {
                     cli.writeln("not the right amount of parameters provided.");
