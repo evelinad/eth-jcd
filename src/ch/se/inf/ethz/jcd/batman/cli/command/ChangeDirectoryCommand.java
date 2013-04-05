@@ -34,8 +34,6 @@ public class ChangeDirectoryCommand implements PrioritizedObserver<String> {
                         String pathParam = lineParts[1];
                         if (pathParam.startsWith(String
                                 .valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-                            // absolute path
-
                             currentLocation = new VDiskFile(pathParam,
                                     currentLocation.getDisk());
                         } else {
