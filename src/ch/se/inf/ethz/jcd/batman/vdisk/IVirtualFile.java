@@ -9,9 +9,17 @@ import java.io.IOException;
 public interface IVirtualFile extends IVirtualDiskEntry {
 	
 	/**
-	 * Returns the offset position, measured in bytes from the beginning of the file.
+	 * Returns the current offset in this file.
 	 * 
-	 * @return the offset position. 
+	 * @return the offset from the beginning of the file, in bytes, at which the next read or write occurs.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	long getFilePointer () throws IOException;
+	
+	/**
+	 * Returns the offset of the first block of the file data in the virtual disk.
+	 * 
+	 * @return the offset of the first block of the file in bytes. 
 	 */
 	long getDataPosition () throws IOException;
 	
