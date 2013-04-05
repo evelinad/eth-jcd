@@ -87,8 +87,8 @@ public class ImportCommand implements PrioritizedObserver<String> {
                         byte[] buffer = new byte[1024];
                         do {
                             read = reader.read(buffer);
-                            writer.write(buffer);
-                        } while (read != 0);
+                            writer.write(buffer, 0, read);
+                        } while (read < 0);
 
                         writer.close();
                         reader.close();
