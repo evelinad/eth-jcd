@@ -307,7 +307,7 @@ public final class VirtualDisk implements IVirtualDisk {
 				long nextEntry = freeLists.get(freeListIndex);
 				while (nextEntry != 0) {
 					IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
-					if (freeBlock.getDiskSize() > size) {
+					if (freeBlock.getDiskSize() >= size) {
 						removeFreeBlockFromList(freeBlock);
 						if (isBlockSplittable(freeBlock, size)) {
 							allocatedBlocks.add(splitBlock(freeBlock, size, dataSize));
