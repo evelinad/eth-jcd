@@ -203,5 +203,10 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
     public long getTotalSize() throws IOException {
         return getDataSpace().getDiskSize() + space.getDiskSize();
     }
+
+	@Override
+	public long getFilePointer() throws IOException {
+		return getDataSpace().getPosition();
+	}
 	
 }
