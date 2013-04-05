@@ -2,7 +2,7 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
 
-public class FreeBlock extends VirtualBlock implements IFreeBlock {
+public final class FreeBlock extends VirtualBlock implements IFreeBlock {
 	
 	public static final IFreeBlock load (IVirtualDisk disk, long position) throws IOException {
 		FreeBlock block = new FreeBlock(disk, position, 0, 0, 0);
@@ -17,12 +17,6 @@ public class FreeBlock extends VirtualBlock implements IFreeBlock {
 	}
 
 	private static final long PREVIOUS_SIZE = 8;
-	private static final long NEXT_SIZE = 8;
-
-	protected static final long METADATA_START_SIZE = VirtualBlock.METADATA_START_SIZE + PREVIOUS_SIZE + NEXT_SIZE;
-	protected static final long METADATA_END_SIZE = VirtualBlock.METADATA_END_SIZE;
-	protected static final long METADATA_SIZE = METADATA_START_SIZE + METADATA_END_SIZE;
-	protected static final long MIN_BLOCK_SIZE = METADATA_SIZE;
 	
 	private long previous;
 	private long next;

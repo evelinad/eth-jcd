@@ -14,7 +14,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
  * 0x11 8  Starting Directory/File of this directory
  * 0x19 n  Directory name
  */
-public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirectory {
+public final class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirectory {
 	
 	public static IVirtualDirectory load (IVirtualDisk disk, long position) throws IOException {
 		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
@@ -93,10 +93,10 @@ public class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirect
 	protected IVirtualDiskEntry loadNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		long nextEntry = space.readLong();
-		if (nextEntry != 0) {
-			return VirtualDiskEntry.load(getDisk(), nextEntry);
-		} else  {
+		if (nextEntry == 0) {
 			return null;
+		} else  {
+			return VirtualDiskEntry.load(getDisk(), nextEntry);
 		}
 	}
 	

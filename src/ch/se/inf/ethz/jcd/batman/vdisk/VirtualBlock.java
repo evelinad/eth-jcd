@@ -61,7 +61,7 @@ public abstract class VirtualBlock implements IVirtualBlock {
 	}
 	
 	private static final boolean checkIfAllocatedFlagSet (long l) {
-		return ((l & IN_USE_MASK) != 0);
+		return (l & IN_USE_MASK) != 0;
 	}
 	
 	protected static final long BLOCK_LENGTH_SIZE = 8;
@@ -75,8 +75,8 @@ public abstract class VirtualBlock implements IVirtualBlock {
 	
 	private static final long IN_USE_MASK = 0x8000000000000000l;
 	
-	private IVirtualDisk disk;
-	private long blockPosition;
+	private final IVirtualDisk disk;
+	private final long blockPosition;
 	private long size;
 	
 	protected VirtualBlock(IVirtualDisk disk, long position, long size) throws IOException {

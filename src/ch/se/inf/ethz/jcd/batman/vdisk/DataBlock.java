@@ -13,10 +13,6 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	public static final long METADATA_SIZE = METADATA_START_SIZE + METADATA_END_SIZE;
 	public static final long MIN_BLOCK_SIZE = METADATA_SIZE + 1;
 	
-	private transient long next;
-	private long dataSize;
-	private boolean valid;
-	
 	public static IDataBlock load (final IVirtualDisk disk, final long position) throws IOException {
 		final DataBlock block = new DataBlock(disk, position, 0, 0, 0);
 		block.readMetadata();
@@ -30,6 +26,10 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		block.valid = true;
 		return block;
 	}
+	
+	private transient long next;
+	private long dataSize;
+	private boolean valid;
 	
 	private DataBlock(final IVirtualDisk disk, final long position, final long size, final long dataSize, final long next) throws IOException {
 		super(disk, position, size);

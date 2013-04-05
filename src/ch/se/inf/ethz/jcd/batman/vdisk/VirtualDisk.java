@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//TODO dont set file to max size at the beginning
 //TODO implement block search properly
-public class VirtualDisk implements IVirtualDisk {
+public final class VirtualDisk implements IVirtualDisk {
 
 	public static IVirtualDisk load (String path) throws IOException {
 		VirtualDisk virtualDisk = new VirtualDisk(path);
@@ -36,8 +35,8 @@ public class VirtualDisk implements IVirtualDisk {
 	
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
-	private List<Long> freeLists = new ArrayList<Long>();
-	private String path;
+	private final List<Long> freeLists = new ArrayList<Long>();
+	private final String path;
 	
 	/*
 	 * 0x00 8byte   MagicNumber
@@ -114,8 +113,8 @@ public class VirtualDisk implements IVirtualDisk {
 	
 	@Override
 	protected void finalize() throws Throwable {
-		super.finalize();
 		close();
+		super.finalize();
 	}
 	
 	@Override
@@ -212,12 +211,12 @@ public class VirtualDisk implements IVirtualDisk {
 		} else {
 			//Middle/end block
 			IFreeBlock previousBlock = FreeBlock.load(this, block.getPreviousBlock());
-			if (block.getNextBlock() != 0) {
+			if (block.getNextBlock() == 0) {
+				previousBlock.setNextBlock(0);
+			} else {
 				IFreeBlock nextBlock = FreeBlock.load(this, block.getNextBlock());
 				previousBlock.setNextBlock(nextBlock.getBlockPosition());
 				nextBlock.setPreviousBlock(previousBlock.getBlockPosition());
-			} else {
-				previousBlock.setNextBlock(0);
 			}
 		}
 	}
@@ -225,25 +224,26 @@ public class VirtualDisk implements IVirtualDisk {
 	private void addFreeBlockToList (IFreeBlock block) throws IOException {
 		int freeListIndex = getFreeListIndex(block.getDiskSize());
 		long firstFreeListEntry = freeLists.get(freeListIndex);
-		if (firstFreeListEntry != 0) {
+		if (firstFreeListEntry == 0) {
+			block.setNextBlock(0);
+		} else {
 			IFreeBlock previousFirstBlock = FreeBlock.load(this, firstFreeListEntry);
 			previousFirstBlock.setPreviousBlock(block.getBlockPosition());
-			block.setNextBlock(previousFirstBlock.getBlockPosition());
-		} else {
-			block.setNextBlock(0);
+			block.setNextBlock(previousFirstBlock.getBlockPosition());	
 		}
 		freeLists.set(freeListIndex, block.getBlockPosition());
 	}
 
 	private int getFreeListIndex(long length) {
-		if (length < MIN_BLOCK_SIZE) {
-			length = MIN_BLOCK_SIZE;
+		long correcteLength = length;
+		if (correcteLength < MIN_BLOCK_SIZE) {
+			correcteLength = MIN_BLOCK_SIZE;
 		}
-		int index = (int) (Math.log(length/MIN_BLOCK_SIZE)/Math.log(2));
-		return ((index > FREE_LIST_SIZE - 1) ? FREE_LIST_SIZE - 1 : index);
+		int index = (int) (Math.log(correcteLength/MIN_BLOCK_SIZE)/Math.log(2));
+		return index > FREE_LIST_SIZE - 1 ? FREE_LIST_SIZE - 1 : index;
 	}
 	
-	private boolean isFirstBlock (long position, long size) {
+	private boolean isFirstBlock (long position) {
 		return position <= SUPERBLOCK_SIZE;
 	}
 	
@@ -255,7 +255,7 @@ public class VirtualDisk implements IVirtualDisk {
 		//check if previous or/and next is free
 		long freeBlockStart = position;
 		long freeBlockSize = size;
-		if (!isFirstBlock(position, size)) {
+		if (!isFirstBlock(position)) {
 			IVirtualBlock previousBlock = VirtualBlock.loadPreviousBlock(this, position);
 			if (previousBlock instanceof IFreeBlock) {
 				freeBlockStart -= previousBlock.getDiskSize();

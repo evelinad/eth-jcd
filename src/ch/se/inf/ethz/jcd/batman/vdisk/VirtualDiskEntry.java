@@ -23,7 +23,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	
 	private static final String CHARSET_NAME = "UTF-8";
 	
-	private IVirtualDisk disk;
+	private final IVirtualDisk disk;
 	private IVirtualDirectory parent;
 	private IVirtualDiskEntry previous;
 	private IVirtualDiskEntry next;
@@ -166,14 +166,15 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	protected String loadString (IVirtualDiskSpace space, long position) throws IOException {
 		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 		byte lastByteRead;
-		while ((lastByteRead = space.read(position++)) != '\0') {
+		long currentPosition = position;
+		while ((lastByteRead = space.read(currentPosition++)) != '\0') {
 			byteArray.write(lastByteRead);
 		}
 		return new String(byteArray.toByteArray(), CHARSET_NAME);
 	}
 	
 	protected long calculateStringSpace (String string) throws IOException {
-		return (string != null) ? string.getBytes(CHARSET_NAME).length : 0 +
-				String.valueOf('\0').getBytes(CHARSET_NAME).length;
+		long terminatorLength = String.valueOf('\0').getBytes(CHARSET_NAME).length;
+		return (string == null) ? terminatorLength : terminatorLength + string.getBytes(CHARSET_NAME).length;
 	}
 }

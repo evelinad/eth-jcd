@@ -7,7 +7,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
 
 public class VirtualEntryIterator implements Iterator<IVirtualDiskEntry> {
     
-    IVirtualDiskEntry nextEntry;
+    private IVirtualDiskEntry nextEntry;
     
     public VirtualEntryIterator(IVirtualDiskEntry startEntry) {
         nextEntry = startEntry;

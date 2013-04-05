@@ -107,10 +107,10 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	protected IVirtualDiskEntry loadNextEntry() throws IOException {
 		space.seek(NEXT_ENTRY_POS);
 		long nextEntry = space.readLong();
-		if (nextEntry != 0) {
-			return VirtualDiskEntry.load(getDisk(), nextEntry);
-		} else {
+		if (nextEntry == 0) {
 			return null;
+		} else {
+			return VirtualDiskEntry.load(getDisk(), nextEntry);
 		}
 	}
 

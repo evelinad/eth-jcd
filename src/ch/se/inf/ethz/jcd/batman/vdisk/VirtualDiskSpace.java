@@ -54,8 +54,8 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	private static final int BYTE_LENGTH = 1;
 	private static final int LONG_LENGTH = 8;
 	
-	private IVirtualDisk disk;
-	private List<IDataBlock> blocks = new ArrayList<IDataBlock>();
+	private final IVirtualDisk disk;
+	private final List<IDataBlock> blocks = new ArrayList<IDataBlock>();
 	private VirtualDiskSpacePosition position;
 	
 	private VirtualDiskSpace(IVirtualDisk disk) throws IOException {
@@ -135,16 +135,17 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 
 	private void truncate (long amount) throws IOException {
 		IDataBlock freeBlock = null;
-		for (int i = blocks.size() - 1; amount > 0 && i >= 0; i--) {
+		long truncateAmount = amount;
+		for (int i = blocks.size() - 1; truncateAmount > 0 && i >= 0; i--) {
 			IDataBlock block =  blocks.get(i);
 			long dataSize = block.getDataSize();
-			if (amount > dataSize) {
+			if (truncateAmount > dataSize) {
 				blocks.remove(i);
-				amount -= dataSize;
+				truncateAmount -= dataSize;
 				freeBlock = block;
 			} else {
-				block.setDataSize(dataSize - amount);
-				amount = 0;
+				block.setDataSize(dataSize - truncateAmount);
+				truncateAmount = 0;
 			}
 		}
 		if (freeBlock != null) {
@@ -155,17 +156,18 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	private void extend (long amount) throws IOException {
 		//Use the the last block if there is still some free space
 		IDataBlock lastBlock = getLastBlock();
+		long extendAmount = amount;
 		if (lastBlock != null) {
 			long freeSize = lastBlock.getFreeSize();
 			if (freeSize >= 0) {
-				long extendSize = Math.min(amount, freeSize);
+				long extendSize = Math.min(extendAmount, freeSize);
 				lastBlock.setDataSize(lastBlock.getDataSize() + extendSize);
-				amount -= extendSize;
+				extendAmount -= extendSize;
 			}
 		}
 		//Request the rest from the disk and add it to the list
-		if (amount > 0) {
-			IDataBlock[] allocatetBlocks = disk.allocateBlock(amount);
+		if (extendAmount > 0) {
+			IDataBlock[] allocatetBlocks = disk.allocateBlock(extendAmount);
 			if (lastBlock != null) {
 				lastBlock.setNextBlock(allocatetBlocks[0].getBlockPosition());
 			}
@@ -176,7 +178,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private IDataBlock getLastBlock () {
-		return (blocks.isEmpty() ? null : blocks.get(blocks.size()-1));
+		return blocks.isEmpty() ? null : blocks.get(blocks.size()-1);
 	}
 	
 	@Override
@@ -305,24 +307,25 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
-		allocateSpace(pos, b.length);
+		VirtualDiskSpacePosition currentPos = pos;
+		allocateSpace(currentPos, b.length);
 		int bytesWritten = 0;
 		while (bytesWritten != b.length) {
-			long remainingSpace = getRemainingSpace(pos);
+			long remainingSpace = getRemainingSpace(currentPos);
 			if (remainingSpace == 0) {
 				throw new VirtualDiskException("DiskSpace too small!");
 			}
 			int bytesToWrite = b.length - bytesWritten;
 			int currentBytesWritten = 0;
 			if (bytesToWrite <= remainingSpace) {
-				getDataBlock(pos).write(pos.getBlockPosition(), b, bytesWritten, bytesToWrite);
+				getDataBlock(currentPos).write(currentPos.getBlockPosition(), b, bytesWritten, bytesToWrite);
 				currentBytesWritten = bytesToWrite;
 			} else {
-				getDataBlock(pos).write(pos.getBlockPosition(), b, bytesWritten, (int) remainingSpace);
+				getDataBlock(currentPos).write(currentPos.getBlockPosition(), b, bytesWritten, (int) remainingSpace);
 				currentBytesWritten = (int) remainingSpace;
 			}
 			bytesWritten += currentBytesWritten;
-			pos = addPosition(pos, currentBytesWritten);
+			currentPos = addPosition(currentPos, currentBytesWritten);
 		}
 	}
 	
@@ -334,22 +337,23 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private int read (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
-		long readableBytes = getRemainingSpace(pos);
+		VirtualDiskSpacePosition currentPos = pos;
+		long readableBytes = getRemainingSpace(currentPos);
 		int readLength = (int) Math.min(b.length, readableBytes);
 		int bytesRead = 0;
 		while (bytesRead < readLength) {
-			long remainingSpace = getRemainingSpace(pos);
+			long remainingSpace = getRemainingSpace(currentPos);
 			int bytesToRead = readLength - bytesRead;
 			int currentBytesRead = 0;
 			if (bytesToRead <= remainingSpace) {
-				getDataBlock(pos).read(pos.getBlockPosition(), b, bytesRead, bytesToRead);
+				getDataBlock(currentPos).read(currentPos.getBlockPosition(), b, bytesRead, bytesToRead);
 				currentBytesRead = bytesToRead;
 			} else {
-				getDataBlock(pos).read(pos.getBlockPosition(), b, bytesRead, (int) remainingSpace);
+				getDataBlock(currentPos).read(currentPos.getBlockPosition(), b, bytesRead, (int) remainingSpace);
 				currentBytesRead = (int) remainingSpace;
 			}
 			bytesRead += currentBytesRead;
-			pos = addPosition(pos, currentBytesRead);
+			currentPos = addPosition(currentPos, currentBytesRead);
 		}
 		return bytesRead;
 	}
