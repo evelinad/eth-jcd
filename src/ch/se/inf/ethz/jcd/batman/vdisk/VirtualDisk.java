@@ -301,7 +301,7 @@ public final class VirtualDisk implements IVirtualDisk {
 		List<IDataBlock> allocatedBlocks = new ArrayList<IDataBlock>();
 		boolean blocksAllocated = false;
 		while (!blocksAllocated) {
-			for (int freeListIndex = getFreeListIndex(size); freeListIndex < FREE_LIST_SIZE && !blocksAllocated; freeListIndex++) {
+			for (int freeListIndex = getFreeListIndex(size); freeListIndex < freeLists.size() && !blocksAllocated; freeListIndex++) {
 				long nextEntry = freeLists.get(freeListIndex);
 				while (nextEntry != 0) {
 					IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
