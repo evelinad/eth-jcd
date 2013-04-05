@@ -31,8 +31,16 @@ public class VDiskFile {
 
     // constructors
     /**
+     * Constructs a VDiskFile using the given path and a virtual disk.
+     * 
+     * The given path does not have to exist yet on the disk.
+     * 
      * @param pathname
+     *            the path to a file or directory
+     * @param disk
+     *            the disk to which the path belongs
      * @throws IOException
+     *             TODO
      */
     public VDiskFile(String pathname, IVirtualDisk disk) throws IOException {
         this.pathname = pathname;
@@ -41,9 +49,20 @@ public class VDiskFile {
     }
 
     /**
+     * Constructs a VDiskFile using the given parent path, a child name and a
+     * virtual disk.
+     * 
+     * The given path does not have to exist yet on the disk. This holds for the
+     * parent as for the child.
+     * 
      * @param parent
+     *            the path to the parent directory
      * @param child
+     *            the name of the child
+     * @param disk
+     *            the disk to which parent and child belong
      * @throws IOException
+     *             TODO
      */
     public VDiskFile(String parent, String child, IVirtualDisk disk)
             throws IOException {
@@ -59,9 +78,18 @@ public class VDiskFile {
     }
 
     /**
+     * Constructs a VDiskFile using the given parent and a child's name.
+     * 
+     * The given parent and child do not have to exist yet.
+     * 
      * @param parent
+     *            a VDiskFile representing the parent
      * @param child
+     *            the name of the child
      * @throws IOException
+     *             TODO
+     * @throws NullPointerException
+     *             if parent is null
      */
     public VDiskFile(VDiskFile parent, String child) throws IOException {
         this(parent.getPath(), child, parent.getDisk());
@@ -69,6 +97,16 @@ public class VDiskFile {
 
     // private methods
 
+    /**
+     * Returns a IVirtualDiskEntry for the given path.
+     * 
+     * @param path
+     *            path for which to return a IVirtualDiskEntry
+     * @return the corresponding IVirtualDiskEntry or null. Null is returned if
+     *         the path is not valid or no disk entry exists yet
+     * @throws IOException
+     *             TODO
+     */
     private IVirtualDiskEntry getDiskEntry(String path) throws IOException {
         // split path into entry names
         String[] pathParts = pathname.split(PATH_SEPARATOR);
@@ -122,6 +160,17 @@ public class VDiskFile {
 
     }
 
+    /**
+     * Returns the children for the VDiskFile.
+     * 
+     * A returned empty list may indicate that the directory has no children or
+     * that the VDiskFile does not represent a directory at all.
+     * 
+     * @see #isDirectory()
+     * @return a collection of children. Will never return a null value!
+     * @throws IOException
+     *             TODO
+     */
     private Collection<IVirtualDiskEntry> getChilds() throws IOException {
         if (pathDiskEntry instanceof IVirtualDirectory) {
             return VirtualDiskUtil
@@ -286,6 +335,14 @@ public class VDiskFile {
         return false;
     }
 
+    /**
+     * Creates a directory for the path represented by the VDiskFile.
+     * 
+     * This method will try to create any parent that does not yet exist along
+     * the way of the path.
+     * 
+     * @return true if directory was created, otherwise false
+     */
     public boolean mkdirs() {
         VDiskFile parent = getParentFile();
         if (parent == null) {
@@ -301,6 +358,19 @@ public class VDiskFile {
         return mkdir();
     }
 
+    /**
+     * Moves the VDiskFile to the given destination.
+     * 
+     * This method can be used to rename and/or move a VDiskFile inside the same
+     * disk.
+     * 
+     * @param dest
+     *            the new destination of the VDiskFile
+     * @return true in case of success, otherwise false
+     * @throws RuntimeException
+     *             in case of a fatal error resulting in an unstable state of
+     *             the underlying disk
+     */
     public boolean renameTo(VDiskFile dest) {
         if (dest.getDisk() != this.disk) {
             return false;
@@ -315,16 +385,16 @@ public class VDiskFile {
         if (!newParent.isDirectory()) {
             return false;
         }
-        
+
         IVirtualDirectory oldParentDir = (IVirtualDirectory) getParentFile().pathDiskEntry;
         IVirtualDirectory newParentDir = (IVirtualDirectory) newParent.pathDiskEntry;
-        
+
         try {
             oldParentDir.removeMember(this.pathDiskEntry);
         } catch (IOException e) {
             return false;
         }
-            
+
         try {
             this.pathDiskEntry.setName(dest.getName());
         } catch (IOException e) {
@@ -333,10 +403,10 @@ public class VDiskFile {
             } catch (IOException eInner) {
                 throw new RuntimeException(eInner);
             }
-            
+
             return false;
         }
-            
+
         try {
             newParentDir.addMember(this.pathDiskEntry);
         } catch (IOException e) {
@@ -346,16 +416,23 @@ public class VDiskFile {
             } catch (IOException eInner) {
                 throw new RuntimeException(eInner);
             }
-            
+
             return false;
         }
-        
+
         this.pathname = dest.getPath();
         return true;
     }
 
+    /**
+     * Sets the last modified value.
+     * 
+     * @param time
+     *            the new time value
+     * @return true in case of success, otherwise false
+     */
     public boolean setLastModified(long time) {
-        if(this.exists()) {
+        if (this.exists()) {
             try {
                 this.pathDiskEntry.setTimestamp(time);
                 return true;
@@ -366,28 +443,48 @@ public class VDiskFile {
             return false;
         }
     }
-    
+
+    /**
+     * Returns the last modified value.
+     * 
+     * @return the last modified value
+     */
     public long lastModified() {
-        if(this.exists()) {
+        if (this.exists()) {
             return this.pathDiskEntry.getTimestamp();
         } else {
             return 0L;
         }
     }
 
+    /**
+     * Returns the size of the object represented by VDiskFile.
+     * 
+     * If the object does not yet exist on disk 0L is returned. In case of an
+     * exception a negative value is returned.
+     * 
+     * @return size of the represented object. If the object does not exist yet
+     *         0L is returned and in case of an error a negative value.
+     */
     public long getTotalSpace() {
         throw new UnsupportedOperationException(); // TODO
     }
 
+    @Override
     public boolean equals(Object obj) {
-        throw new UnsupportedOperationException(); // TODO
+        if (obj instanceof VDiskFile) {
+            VDiskFile otherFile = (VDiskFile) obj;
+
+            return otherFile.disk.equals(this.disk)
+                    && otherFile.pathname.equals(this.pathname);
+        } else {
+            return false;
+        }
     }
 
+    @Override
     public int hashCode() {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    public String toString() {
-        throw new UnsupportedOperationException(); // TODO
+        return (this.disk.getHostLocation().toString() + this.pathname)
+                .hashCode();
     }
 }
