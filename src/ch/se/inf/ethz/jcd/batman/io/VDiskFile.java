@@ -355,7 +355,24 @@ public class VDiskFile {
     }
 
     public boolean setLastModified(long time) {
-        throw new UnsupportedOperationException(); // TODO
+        if(this.exists()) {
+            try {
+                this.pathDiskEntry.setTimestamp(time);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public long lastModified() {
+        if(this.exists()) {
+            return this.pathDiskEntry.getTimestamp();
+        } else {
+            return 0L;
+        }
     }
 
     public long getTotalSpace() {
