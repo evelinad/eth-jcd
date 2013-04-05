@@ -104,7 +104,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		long blockPosition = base.getBlockPosition() + add;
 		for (; index < blocks.size(); index++) {
 			IDataBlock block = blocks.get(index);
-			if (block.getDataSize() < blockPosition) {
+			if (block.getDataSize() <= blockPosition) {
 				blockPosition -= block.getDataSize();
 			} else {
 				break;
@@ -282,24 +282,38 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return block.getDataSize()-blockPosition;
 	}
 	
-	private long getRemainingSpace(VirtualDiskSpacePosition pos) {
+	private long getRemainingSpaceInBlock(VirtualDiskSpacePosition pos) {
 		return getRemainingSpace(blocks.get(pos.getBlockIndex()), pos.getBlockPosition());
+	}
+	
+	private long getRemainingSpace(VirtualDiskSpacePosition pos) {
+		long remainingSpace = getRemainingSpaceInBlock(pos);
+		for (int index = pos.getBlockIndex() + 1; index < blocks.size(); index++) {
+			remainingSpace += getDataBlock(index).getDataSize();
+		}
+		return remainingSpace;
 	}
 	
 	private IDataBlock getDataBlock (VirtualDiskSpacePosition pos) {
 		return blocks.get(pos.getBlockIndex());
 	}
 	
+	private IDataBlock getDataBlock (int index) {
+		return blocks.get(index);
+	}
+	
 	private void write (VirtualDiskSpacePosition pos, long l) throws IOException {
 		write(pos, ByteBuffer.allocate(8).putLong(l).array());
 	}
 	
-	private void allocateSpace(VirtualDiskSpacePosition pos,long length) throws IOException {
+	private boolean allocateSpace(VirtualDiskSpacePosition pos,long length) throws IOException {
 		long currentSize = getSize();
 		long sizeNeeded = pos.getPosition() + length;
 		if (currentSize < sizeNeeded) {
 			extend(sizeNeeded-currentSize);
+			return true;
 		}
+		return false;
 	}
 	
 	private void write (VirtualDiskSpacePosition pos, byte b) throws IOException {
@@ -309,10 +323,13 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	
 	private void write (VirtualDiskSpacePosition pos, byte[] b) throws IOException {
 		VirtualDiskSpacePosition currentPos = pos;
-		allocateSpace(currentPos, b.length);
+		if (allocateSpace(pos, b.length)) {
+			//If the disk space changed, the position needs to be recalculated
+			currentPos = calculatePosition(currentPos.getPosition());
+		}
 		int bytesWritten = 0;
 		while (bytesWritten != b.length) {
-			long remainingSpace = getRemainingSpace(currentPos);
+			long remainingSpace = getRemainingSpaceInBlock(currentPos);
 			if (remainingSpace == 0) {
 				throw new VirtualDiskException("DiskSpace too small!");
 			}
@@ -331,7 +348,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private byte read (VirtualDiskSpacePosition pos) throws IOException {
-		if (getRemainingSpace(pos) <= 0) {
+		if (getRemainingSpaceInBlock(pos) <= 0) {
 			throw new VirtualDiskException("End of VirtualSpace reached.");
 		}
 		return getDataBlock(pos).read(pos.getBlockPosition());
@@ -343,7 +360,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		int readLength = (int) Math.min(b.length, readableBytes);
 		int bytesRead = 0;
 		while (bytesRead < readLength) {
-			long remainingSpace = getRemainingSpace(currentPos);
+			long remainingSpace = getRemainingSpaceInBlock(currentPos);
 			int bytesToRead = readLength - bytesRead;
 			int currentBytesRead = 0;
 			if (bytesToRead <= remainingSpace) {

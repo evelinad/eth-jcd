@@ -70,6 +70,18 @@ public class VirtualDiskSpaceTest extends NewDiskPerTest {
     	bufferArray = new byte[testArray.length];
     	diskSpace.read(20, bufferArray);
     	Assert.assertArrayEquals(testArray, bufferArray);
-
+    }
+    
+    @Test
+    public void autoExpandTest () throws IOException {
+    	//Test write at end of file
+    	IVirtualDiskSpace diskSpace = VirtualDiskSpace.create(disk, 100);
+    	diskSpace.seek(99);
+    	diskSpace.writeLong(5);
+    	assertEquals(5, diskSpace.readLong(99));
+    	
+    	//Test write at place which doesn't currently exist in the diskSpace
+    	diskSpace.writeLong(10000, 5);
+    	assertEquals(5, diskSpace.readLong(10000));
     }
 }
