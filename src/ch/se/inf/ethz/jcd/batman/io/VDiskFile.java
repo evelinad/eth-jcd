@@ -4,18 +4,9 @@
 package ch.se.inf.ethz.jcd.batman.io;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
