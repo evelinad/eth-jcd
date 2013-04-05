@@ -130,7 +130,8 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
 	 * @throws IOException 
 	 */
 	private void readCommand() throws IOException {
-	    write(String.format("%s%s", inputPrefix, CLI_INPUT_PREFIX_END));
+	    System.out.print(String.format("%s%s", inputPrefix, CLI_INPUT_PREFIX_END));
+	    
 		String line = in.readLine();
 		
 		notifyAll(line.trim());
