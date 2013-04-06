@@ -2,7 +2,6 @@ package ch.se.inf.ethz.jcd.batman.io;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +63,7 @@ public class HostBridgeTest {
         HostBridge.importFile(normalSizeFile, virtualFile);
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new VDiskFileInputStream(virtualFile.getPath(), disk)));
+                new VDiskFileInputStream(virtualFile)));
 
         String readContent = reader.readLine();
         reader.close();
