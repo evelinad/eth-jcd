@@ -23,7 +23,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 public class HostBridgeTest {
     /**
      * Test content for the normal sized file. Must not have any newline
-     * seperators in it!
+     * separators in it!
      */
     private static final String NORMAL_SIZE_FILE_CONTENT = "This is some test string used to test some stuff"
             + " while using HostBridge's import and export."
