@@ -5,20 +5,49 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A {@link IVirtualDiskSpace} is a simple abstraction of a list of
+ * {@link IDataBlock}.
+ * 
+ * A virtual disk space allows to work with a continuous space on the disk
+ * without handling the jumps between data blocks and the management that is
+ * connected with it.
+ * 
+ */
 public class VirtualDiskSpace implements IVirtualDiskSpace {
 
+	/**
+	 * Loads a VirtualDiskSpace located at the given offset position in the {@link IVirtualDisk}.
+	 * 
+	 * @param disk the disk from which the VirtualDiskSpace should be loaded.
+	 * @param position the offset position in bytes at which the VirtualDiskSpace is stored.
+	 * @return the loaded VirtualDiskSpace
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualDiskSpace load (IVirtualDisk disk, long position) throws IOException {
 		VirtualDiskSpace virtualSpace = new VirtualDiskSpace(disk);
 		virtualSpace.load(position);
 		return virtualSpace;
 	}
 	
+	/**
+	 * Creates a {@link VirtualDiskSpace} at the given offset position in the {@link IVirtualDisk} 
+	 * with the specified amount of space in bytes.
+	 * 
+	 * @param disk the disk in which the {@link VirtualDiskSpace} should be created.
+	 * @param size the size of the newly created {@link VirtualDiskSpace}
+	 * @return the newly created {@link VirtualDiskSpace}
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualDiskSpace create (IVirtualDisk disk, long size) throws IOException {
 		VirtualDiskSpace virtualSpace = new VirtualDiskSpace(disk);
 		virtualSpace.create(size);
 		return virtualSpace;
 	}
 	
+	/**
+	 * Stores the {@link IDataBlock} index and offset for an offset in the {@link VirtualDiskSpace}.
+	 */
 	private static class VirtualDiskSpacePosition {
 		
 		private long position;
@@ -115,11 +144,17 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return newPosition;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getVirtualDiskPosition() {
 		return blocks.get(0).getBlockPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void changeSize(long newSize) throws IOException {
 		if (newSize < 1) {
@@ -181,6 +216,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return blocks.isEmpty() ? null : blocks.get(blocks.size()-1);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getSize() {
 		long size = 0;
@@ -190,6 +228,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return size;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getDiskSize() {
 		long diskSize = 0;
@@ -199,49 +240,76 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return diskSize;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getPosition() {
 		return position.getPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void seek(long pos) {
 		position = calculatePosition(pos);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(byte b) throws IOException {
 		write(position, b);
 		position = addPosition(position, BYTE_LENGTH);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void writeLong(long l) throws IOException {
 		write(position, l);
 		position = addPosition(position, LONG_LENGTH);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(byte[] b) throws IOException {
 		write(position, b);
 		position = addPosition(position, b.length);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(long pos, byte b) throws IOException {
 		write(calculatePosition(pos), b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void writeLong(long pos, long l) throws IOException {
 		write(calculatePosition(pos), l);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(long pos, byte[] b) throws IOException {
 		write(calculatePosition(pos), b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte read() throws IOException {
 		byte b = read(position);
@@ -249,6 +317,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return b;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(byte[] b) throws IOException {
 		int l = read(position, b);
@@ -256,6 +327,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return l;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long readLong() throws IOException {
 		long l = readLong(position);
@@ -263,16 +337,25 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return l;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte read(long pos) throws IOException {
 		return read(calculatePosition(pos));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(long pos, byte[] b) throws IOException {
 		return read(calculatePosition(pos), b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long readLong(long pos) throws IOException {
 		return readLong(calculatePosition(pos));
@@ -390,6 +473,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 		return ByteBuffer.wrap(longInBytes).getLong();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void free() throws IOException {
 		for (IDataBlock block : blocks) {
