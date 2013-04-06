@@ -283,7 +283,11 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
 	}
 	
 	private long getRemainingSpaceInBlock(VirtualDiskSpacePosition pos) {
-		return getRemainingSpace(blocks.get(pos.getBlockIndex()), pos.getBlockPosition());
+		if (pos.getBlockIndex() < blocks.size()) {
+			return getRemainingSpace(blocks.get(pos.getBlockIndex()), pos.getBlockPosition());		
+		} else {
+			return 0;
+		}
 	}
 	
 	private long getRemainingSpace(VirtualDiskSpacePosition pos) {
