@@ -99,6 +99,16 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 		}
 	}
 	
+	@Override
+	public void delete() throws IOException {
+		super.delete();
+		if (getParent() != null) {
+			getParent().removeMember(this);
+		}
+		getDataSpace().free();
+		space.free();
+	}
+	
 	protected void loadTimestamp() throws IOException {
 		space.seek(TIMESTAMP_POS);
 		setTimestamp(space.readLong());
