@@ -103,7 +103,7 @@ public class HostBridge {
                  * all other cases are not supported as we would overwrite
                  * existing data
                  */
-                throw new UnsupportedOperationException();
+                throw new FileAlreadyExistsException(absHostFile.getPath());
             }
         } else {
             if(virtualFile.isFile()) {
@@ -148,7 +148,7 @@ public class HostBridge {
         assert !virtualFile.exists();
 
         if (!virtualFile.getParentFile().exists()) {
-            throw new UnsupportedOperationException("Parent does not exists");
+            throw new FileNotFoundException("Parent does not exists");
         }
 
         virtualFile.createNewFile(hostFile.length());
