@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.io;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -134,5 +135,46 @@ public class VDiskFileInputOutputStreamsTest {
         // we should not be able to read anything as we skiped to the end.
         assertEquals(0, reader.read(readBuffer));
         assertArrayEquals(expected, readBuffer);
+    }
+    
+    @Test
+    public void testAppendOutput() throws IOException {
+        // test data
+        byte[] initialData = {0xA, 0xC, 0xA};
+        byte[] appendData = {0xF, 0xD, 0x1, 0x5};
+        
+        // write initial data
+        writer.write(initialData);
+        
+        // read initial data
+        byte[] readInitialData = new byte[initialData.length];
+        reader.read(readInitialData);
+        assertArrayEquals(initialData, readInitialData);
+        
+        // append new data
+        writer.close();
+        writer = new VDiskFileOutputStream(virtualFile, true);
+        writer.write(appendData);
+        
+        // read appended data
+        byte[] readAppendData = new byte[appendData.length];
+        reader.read(readAppendData);
+        assertArrayEquals(appendData, readAppendData);
+    }
+    
+    @SuppressWarnings("resource")
+    @Test(expected = FileNotFoundException.class)
+    public void testOutputFileNotExist() throws IOException {
+        VDiskFile nonExistingFile = new VDiskFile("/nonexisting", disk);
+        
+        new VDiskFileOutputStream(nonExistingFile, false);
+    }
+    
+    @SuppressWarnings("resource")
+    @Test(expected = FileNotFoundException.class)
+    public void testInputFileNotExist() throws IOException {
+        VDiskFile nonExistingFile = new VDiskFile("/nonexisting", disk);
+        
+        new VDiskFileInputStream(nonExistingFile);
     }
 }
