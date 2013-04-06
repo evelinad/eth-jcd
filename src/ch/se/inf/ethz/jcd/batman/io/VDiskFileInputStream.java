@@ -113,7 +113,7 @@ public class VDiskFileInputStream extends InputStream {
         long fileSize = this.file.getSize();
 
         if (newPosition > fileSize) {
-            this.file.seek(fileSize - 1);
+            this.file.seek(fileSize);
             this.currentPosition = this.file.getFilePointer();
 
             return fileSize - oldPosition;

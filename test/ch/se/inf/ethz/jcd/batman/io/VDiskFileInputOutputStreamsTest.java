@@ -18,6 +18,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 public class VDiskFileInputOutputStreamsTest {
     private File diskFile;
     private IVirtualDisk disk;
+    private VDiskFile virtualFile;
     private InputStream reader;
     private OutputStream writer;
 
@@ -30,11 +31,11 @@ public class VDiskFileInputOutputStreamsTest {
         disk = VirtualDisk.create(diskFile.getAbsolutePath());
 
         // create streams
-        VDiskFile file = new VDiskFile("/test", disk);
-        file.createNewFile();
+        virtualFile = new VDiskFile("/test", disk);
+        virtualFile.createNewFile();
 
-        reader = new VDiskFileInputStream(file);
-        writer = new VDiskFileOutputStream(file, false);
+        reader = new VDiskFileInputStream(virtualFile);
+        writer = new VDiskFileOutputStream(virtualFile, false);
     }
 
     @After
@@ -100,19 +101,38 @@ public class VDiskFileInputOutputStreamsTest {
 
         byte[] firstExpected = { 0x1, 0x2, 0x3, 0x4 };
         byte[] secondExpected = { 0xA, 0xB, 0xC, 0xD };
-        
+
         // write
         writer.write(toWrite);
-        
+
         // read & check
         byte[] firstReadValue = new byte[firstRead];
         assertEquals(firstRead, reader.read(firstReadValue));
         assertArrayEquals(firstExpected, firstReadValue);
-        
+
         reader.skip(skip);
-        
+
         byte[] secondReadValue = new byte[secondRead];
         assertEquals(secondRead, reader.read(secondReadValue));
         assertArrayEquals(secondExpected, secondReadValue);
+    }
+
+    @Test
+    public void testInputStreamSkeepOverFileSize() throws IOException {
+        long fileSize = virtualFile.getTotalSpace();
+
+        /*
+         * as we skip way more than the amount of data inside the file, the
+         * returned value must be lower than fileSize.
+         */
+        assertTrue(fileSize > reader.skip(fileSize));
+
+        // we just need a buffer bigger than 1
+        byte[] readBuffer = { 0x0, 0x0, 0x0 };
+        byte[] expected = Arrays.copyOf(readBuffer, readBuffer.length);
+
+        // we should not be able to read anything as we skiped to the end.
+        assertEquals(0, reader.read(readBuffer));
+        assertArrayEquals(expected, readBuffer);
     }
 }
