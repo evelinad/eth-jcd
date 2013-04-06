@@ -6,9 +6,9 @@ import java.io.RandomAccessFile;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
-//TODO implement block search properly
 public final class VirtualDisk implements IVirtualDisk {
 
 	public static IVirtualDisk load (String path) throws IOException {
@@ -28,10 +28,8 @@ public final class VirtualDisk implements IVirtualDisk {
 	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
 	private static final int NR_FREE_LISTS = 21;
-	private static final int FREE_LIST_SIZE = NR_FREE_LISTS*POSITION_SIZE;
 	private static final String ROOT_DIRECTORY_NAME = "root";
 	private static final long MIN_BLOCK_SIZE = 128;
-	private static final long MIN_EXTEND_SIZE = 1024;
 	private static final long ROOT_DIRECTORY_POSITION = 8;
 	
 	private RandomAccessFile file;
@@ -84,11 +82,12 @@ public final class VirtualDisk implements IVirtualDisk {
 		createRootDirectory();
 	}
 	
-	private void extend (long amount) throws IOException {
+	private IFreeBlock extend (long amount) throws IOException {
 		long freeBlockPosition = file.length();
 		file.setLength(freeBlockPosition + amount);
 		IFreeBlock newSpace = FreeBlock.create(this, freeBlockPosition, amount, 0, 0);
 		addFreeBlockToList(newSpace);
+		return newSpace;
 	}
 	
 	/*
@@ -214,6 +213,8 @@ public final class VirtualDisk implements IVirtualDisk {
 			//First block in the list
 			int freeListIndex = getFreeListIndex(block.getDiskSize());
 			freeLists.set(freeListIndex, block.getNextBlock());
+			file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
+			file.writeLong(block.getNextBlock());
 		} else {
 			//Middle/end block
 			IFreeBlock previousBlock = FreeBlock.load(this, block.getPreviousBlock());
@@ -294,42 +295,58 @@ public final class VirtualDisk implements IVirtualDisk {
 	
 	@Override
 	public IDataBlock[] allocateBlock(long dataSize) throws IOException {
-		//TODO connect smaller blocks if no larger block is available
-		//TODO remove MetadataSize from data block
-		long size = dataSize + DataBlock.METADATA_SIZE;
-		if (size < MIN_BLOCK_SIZE) {
-			size = MIN_BLOCK_SIZE;
-		}
-		List<IDataBlock> allocatedBlocks = new ArrayList<IDataBlock>();
-		boolean blocksAllocated = false;
-		while (!blocksAllocated) {
-			for (int freeListIndex = getFreeListIndex(size); freeListIndex < freeLists.size() && !blocksAllocated; freeListIndex++) {
-				long nextEntry = freeLists.get(freeListIndex);
-				while (nextEntry != 0) {
-					IFreeBlock freeBlock = FreeBlock.load(this, nextEntry);
-					if (freeBlock.getDiskSize() >= size) {
-						removeFreeBlockFromList(freeBlock);
-						if (isBlockSplittable(freeBlock, size)) {
-							allocatedBlocks.add(splitBlock(freeBlock, size, dataSize));
-						} else {
-							allocatedBlocks.add(DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), dataSize, 0));
-						}
-						blocksAllocated = true;
-						break;
-					}
-					nextEntry = freeBlock.getNextBlock();
-				}
-			}
-			if (!blocksAllocated) {
-				//Free the allocated blocks and extend the disk
-				for (IDataBlock block : allocatedBlocks) {
-					block.free();
-				}
-				allocatedBlocks.clear();
-				extend(Math.max(size, MIN_EXTEND_SIZE));
+		long metaDataSize = DataBlock.METADATA_SIZE;
+		long remainingDataSize = dataSize;
+		//Search the usable free blocks and extend the disk if necessary
+		List<IFreeBlock> usableFreeBlocks = new LinkedList<IFreeBlock>();
+		//First search through the big blocks and try to find a continuous block
+		for (int index = getFreeListIndex(remainingDataSize + metaDataSize); index < freeLists.size(); index++) {
+			IFreeBlock freeBlock = null;
+			for (long nextEntry = freeLists.get(index); nextEntry != 0; nextEntry = freeBlock.getNextBlock()) {
+				 freeBlock = FreeBlock.load(this, nextEntry);
+				 if (freeBlock.getDiskSize() >= dataSize + metaDataSize) {
+					 remainingDataSize -= freeBlock.getDiskSize() - metaDataSize;
+					 usableFreeBlocks.add(freeBlock); 
+				 }
 			}
 		}
-		return allocatedBlocks.toArray(new IDataBlock[allocatedBlocks.size()]);
+		//If no continuous block was found try to fit some smaller blocks together
+		for (int index = freeLists.size() - 1; index >= 0 && remainingDataSize > 0; index--) {
+			IFreeBlock freeBlock = null;
+			for (long nextEntry = freeLists.get(index); nextEntry != 0 && remainingDataSize > 0; nextEntry = freeBlock.getNextBlock()) {
+				 freeBlock = FreeBlock.load(this, nextEntry);
+				 remainingDataSize -= freeBlock.getDiskSize() - metaDataSize;
+				 usableFreeBlocks.add(freeBlock);
+			} 
+		}
+		if (remainingDataSize > 0) {
+			IFreeBlock newFreeBlock = extend(Math.max(MIN_BLOCK_SIZE, remainingDataSize + metaDataSize));
+			usableFreeBlocks.add(0, newFreeBlock);
+		}
+		//Allocate the freeBlocks and return them
+		LinkedList<IDataBlock> allocatedDataBlocks = new LinkedList<IDataBlock>();
+		long remainingDataSizeToAllocate = dataSize;
+		for (IFreeBlock freeBlock : usableFreeBlocks) {
+			long remainingSizeToAllocate = remainingDataSizeToAllocate + metaDataSize;
+			IDataBlock allocatedBlock;
+			removeFreeBlockFromList(freeBlock);
+			if (freeBlock.getDiskSize() > remainingSizeToAllocate) {
+				if (isBlockSplittable(freeBlock, remainingSizeToAllocate)) {
+					allocatedBlock = splitBlock(freeBlock, remainingSizeToAllocate, remainingDataSizeToAllocate);
+				} else {
+					allocatedBlock = DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), remainingDataSizeToAllocate, 0);
+				}
+				remainingDataSizeToAllocate = 0;
+			} else {
+				allocatedBlock = DataBlock.create(this, freeBlock.getBlockPosition(), freeBlock.getDiskSize(), freeBlock.getDiskSize() - metaDataSize, 0);
+				remainingDataSizeToAllocate -= freeBlock.getDiskSize() - metaDataSize;
+			}
+			if (!allocatedDataBlocks.isEmpty()) {
+				allocatedDataBlocks.getLast().setNextBlock(allocatedBlock.getBlockPosition());
+			}
+			allocatedDataBlocks.add(allocatedBlock);
+		}
+		return allocatedDataBlocks.toArray(new IDataBlock[allocatedDataBlocks.size()]);
 	}
 
 	private void readFreeLists () throws IOException {
