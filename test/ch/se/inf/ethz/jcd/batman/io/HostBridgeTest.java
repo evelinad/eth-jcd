@@ -4,9 +4,11 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -18,6 +20,10 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 
 public class HostBridgeTest {
+    /**
+     * Test content for the normal sized file. Must not have any newline
+     * seperators in it!
+     */
     private static final String NORMAL_SIZE_FILE_CONTENT = "This is some test string used to test some stuff"
             + " while using HostBridge's import and export."
             + "It's part of a project written by B. Steger and G. Wegberg";
@@ -58,17 +64,43 @@ public class HostBridgeTest {
     }
 
     @Test
-    public void testImportFile() throws IOException {
-        VDiskFile virtualFile = new VDiskFile("/test", disk);
-        HostBridge.importFile(normalSizeFile, virtualFile);
+    public void testImportExportNormalSizeFile() throws IOException {
+        final String virtualFilePath = "/test";
+        
+        // import normalSizeFile
+        VDiskFile virtualFileImport = new VDiskFile(virtualFilePath, disk);
+        HostBridge.importFile(normalSizeFile, virtualFileImport);
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new VDiskFileInputStream(virtualFile)));
+                new VDiskFileInputStream(virtualFileImport)));
 
         String readContent = reader.readLine();
         reader.close();
 
         assertEquals(NORMAL_SIZE_FILE_CONTENT, readContent);
+        
+        // close disk
+        disk.close();
+        disk = null;
+        
+        // reopen disk
+        disk = VirtualDisk.load(diskFile.getAbsolutePath());
+        
+        // export to disk
+        File exportTarget = File.createTempFile("HostBridgeTest", "");
+        exportTarget.delete();
+        
+        VDiskFile virtualFileExport = new VDiskFile(virtualFilePath, disk);
+        
+        HostBridge.exportFile(virtualFileExport, exportTarget);
+        
+        // read exported file
+        BufferedReader exportedFileReader = new BufferedReader(new FileReader(exportTarget));
+        
+        String exportedFileContent = exportedFileReader.readLine();
+        exportedFileReader.close();
+        
+        assertEquals(NORMAL_SIZE_FILE_CONTENT, exportedFileContent);
 
     }
 
