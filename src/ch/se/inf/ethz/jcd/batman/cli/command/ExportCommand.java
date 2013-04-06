@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.io.HostBridge;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFileInputStream;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
@@ -75,22 +76,8 @@ public class ExportCommand implements PrioritizedObserver<String> {
                             return;
                         }
 
-                        // create streams
-                        VDiskFileInputStream reader = new VDiskFileInputStream(
-                                virtualFile.getPath(), virtualFile.getDisk());
-
-                        FileOutputStream writer = new FileOutputStream(hostFile);
-
-                        // import
-                        int read = 0;
-                        byte[] buffer = new byte[1024];
-                        do {
-                            read = reader.read(buffer);
-                            writer.write(buffer, 0, read);
-                        } while (read < 0);
-
-                        writer.close();
-                        reader.close();
+                        // export
+                        HostBridge.exportFile(virtualFile, hostFile);
 
                         cli.writeln(String.format("exported '%s' into '%s'",
                                 virtualFile.getPath(),
