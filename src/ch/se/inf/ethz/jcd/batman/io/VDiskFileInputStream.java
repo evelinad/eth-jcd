@@ -27,21 +27,23 @@ public class VDiskFileInputStream extends InputStream {
      * 
      * @param filePath
      *            path to the file to open
-     * @throws IOException TODO
+     * @throws IOException
+     *             TODO
      */
     public VDiskFileInputStream(String filePath, IVirtualDisk disk)
             throws IOException {
         this(new VDiskFile(filePath, disk));
-        
+
     }
-    
+
     /**
      * Creates a VDiskFileInputStream by opening the file represented by
      * VDiskFile file.
      * 
      * @param file
      *            the file to open
-     * @throws IOException TODO
+     * @throws IOException
+     *             TODO
      */
     public VDiskFileInputStream(VDiskFile file) throws IOException {
         if (!file.exists() || !file.isFile()) {
@@ -75,7 +77,7 @@ public class VDiskFileInputStream extends InputStream {
         this.file.seek(currentPosition);
         int readValue = (int) this.file.read();
         this.currentPosition = this.file.getFilePointer();
-        
+
         return readValue;
     }
 
@@ -84,23 +86,23 @@ public class VDiskFileInputStream extends InputStream {
         this.file.seek(currentPosition);
         int readAmount = this.file.read(b);
         this.currentPosition = this.file.getFilePointer();
-        
+
         return readAmount;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         this.file.seek(currentPosition);
-        
+
         byte[] readBytes = new byte[len];
         int readCount = this.file.read(readBytes);
-        
-        for(int i = off; i < off + len; i++) {
-            b[i] = readBytes[i-off];
+
+        for (int i = off; i < off + len; i++) {
+            b[i] = readBytes[i - off];
         }
-        
+
         this.currentPosition = this.file.getFilePointer();
-        
+
         return readCount;
     }
 
@@ -109,16 +111,16 @@ public class VDiskFileInputStream extends InputStream {
         long oldPosition = this.currentPosition;
         long newPosition = oldPosition + n;
         long fileSize = this.file.getSize();
-        
-        if(newPosition > fileSize) {
+
+        if (newPosition > fileSize) {
             this.file.seek(fileSize - 1);
             this.currentPosition = this.file.getFilePointer();
-            
+
             return fileSize - oldPosition;
         } else {
             this.file.seek(newPosition);
             this.currentPosition = this.file.getFilePointer();
-            
+
             return n;
         }
     }
