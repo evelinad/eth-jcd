@@ -248,7 +248,7 @@ public final class VirtualDisk implements IVirtualDisk {
 			correcteLength = MIN_BLOCK_SIZE;
 		}
 		int index = (int) (Math.log(correcteLength/MIN_BLOCK_SIZE)/Math.log(2));
-		return index > FREE_LIST_SIZE - 1 ? FREE_LIST_SIZE - 1 : index;
+		return index > NR_FREE_LISTS - 1 ? NR_FREE_LISTS - 1 : index;
 	}
 	
 	private boolean isFirstBlock (long position) {

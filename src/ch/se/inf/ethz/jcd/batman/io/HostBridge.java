@@ -94,7 +94,9 @@ public class HostBridge {
         int readAmount = 0;
         do {
             readAmount = reader.read(buffer);
-            writer.write(buffer, 0, readAmount);
+            if (readAmount > 0) {
+            	writer.write(buffer, 0, readAmount);
+            }
         } while(readAmount > 0);
     }
 }
