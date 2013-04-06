@@ -22,9 +22,6 @@ public class VDiskFileOutputStream extends OutputStream {
      * Creates a VDiskFileOutputStream by opening the file named by the filePath
      * parameter.
      * 
-     * If the file already exists it will overwrite the current content. If the
-     * file does not yet exist the file will be created.
-     * 
      * @param filePath
      *            path to the file to open
      * @param disk
@@ -40,9 +37,6 @@ public class VDiskFileOutputStream extends OutputStream {
      * Creates a VDiskFileOutputStream by opening the file named by the filePath
      * parameter.
      * 
-     * If the file already exists, the written content will be appended to the
-     * current data. If the file dies not yet exist the file will be created.
-     * 
      * @param filePath
      *            path to the file to open
      * @param disk
@@ -54,14 +48,27 @@ public class VDiskFileOutputStream extends OutputStream {
      */
     public VDiskFileOutputStream(String filePath, IVirtualDisk disk,
             boolean append) throws IOException {
+        this(new VDiskFile(filePath, disk), append);
+    }
 
-        VDiskFile fileHelper = new VDiskFile(filePath, disk);
-        if (!fileHelper.exists() || !fileHelper.isFile()) {
+    /**
+     * Creates a VDiskFileOutputStream by using the given VDiskFile file.
+     * 
+     * @param file
+     *            the file to write into
+     * @param append
+     *            true if the written content should be appended to the current
+     *            data.
+     * @throws IOException TODO
+     */
+    public VDiskFileOutputStream(VDiskFile file, boolean append)
+            throws IOException {
+        if (!file.exists() || !file.isFile()) {
             throw new FileNotFoundException();
         }
 
-        this.file = (IVirtualFile) fileHelper.getDiskEntry();
-        if(append) {
+        this.file = (IVirtualFile) file.getDiskEntry();
+        if (append) {
             this.file.seek(this.file.getSize());
         } else {
             this.file.seek(0);
