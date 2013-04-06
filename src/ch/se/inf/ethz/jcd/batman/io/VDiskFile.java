@@ -422,15 +422,32 @@ public class VDiskFile {
         this.pathname = dest.getPath();
         return true;
     }
-
+    
     /**
-     * Creates a new, empty file.
+     * Creates a new, empty file of minimal size.
      * 
+     * @see #createNewFile(long)
      * @return true if file could be created in all other cases false
      * @throws IOException
      *             TODO
      */
     public boolean createNewFile() throws IOException {
+        return this.createNewFile(1);
+    }
+    
+    /**
+     * Creates a new, empty file of given size.
+     * 
+     * @param size the size to reserve in advance. Must be greater than zero.
+     * @return true if file could be created in all other cases false
+     * @throws IOException
+     *             TODO
+     */
+    public boolean createNewFile(long size) throws IOException {
+        if(size < 1L) {
+            return false;
+        }
+        
         if (this.exists()) {
             return false;
         }
@@ -441,7 +458,7 @@ public class VDiskFile {
         }
 
         this.pathDiskEntry = this.disk.createFile(
-                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), 1);
+                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), size);
 
         return true;
     }
