@@ -128,12 +128,7 @@ public final class VirtualDisk implements IVirtualDisk {
 	public long getSize() throws IOException {
 		return file.length();
 	}
-
-	@Override
-	public int getSuperblockSize() {
-		return SUPERBLOCK_SIZE;
-	}
-
+	
 	@Override
 	public IVirtualDirectory getRootDirectory() {
 		return rootDirectory;
