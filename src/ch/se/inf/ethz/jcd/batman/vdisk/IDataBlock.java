@@ -60,7 +60,7 @@ public interface IDataBlock extends IVirtualBlock {
      * @throws IOException
      *             TODO
      */
-    void write(long pos, long l) throws IOException;
+    void writeLong(long pos, long l) throws IOException;
 
     /**
      * Writes the given bytes inside the byte array b into the block starting at

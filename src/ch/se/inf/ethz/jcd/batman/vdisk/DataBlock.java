@@ -78,7 +78,7 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 	}
 
 	@Override
-	public void write(final long pos, final long data) throws IOException {
+	public void writeLong(final long pos, final long data) throws IOException {
 		checkValidTrue();
 		checkDataRange(pos, LONG_LENGTH);
 		writeRealPosition(pos + METADATA_START_SIZE, data);

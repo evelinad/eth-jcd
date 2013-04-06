@@ -34,12 +34,12 @@ public abstract class VirtualBlock implements IVirtualBlock {
 	}
 	
 	public static final boolean checkIfPreviousFree (IVirtualDisk disk, long position) throws IOException {
-		return checkIfAllocatedFlagSet(readLong(disk, position - BLOCK_LENGTH_SIZE));
+		return !checkIfAllocatedFlagSet(readLong(disk, position - BLOCK_LENGTH_SIZE));
 	}
 	
 	public static final boolean checkIfNextFree (IVirtualDisk disk, long position) throws IOException {
 		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
-		return checkIfAllocatedFlagSet(readLong(disk, position + currentBlockSize));
+		return !checkIfAllocatedFlagSet(readLong(disk, position + currentBlockSize));
 	}
 	
 	private static final long readLong (IVirtualDisk disk, long pos) throws IOException {
