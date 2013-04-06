@@ -31,13 +31,24 @@ public class VDiskFileInputStream extends InputStream {
      */
     public VDiskFileInputStream(String filePath, IVirtualDisk disk)
             throws IOException {
-
-        VDiskFile fileHelper = new VDiskFile(filePath, disk);
-        if (!fileHelper.exists() || !fileHelper.isFile()) {
+        this(new VDiskFile(filePath, disk));
+        
+    }
+    
+    /**
+     * Creates a VDiskFileInputStream by opening the file represented by
+     * VDiskFile file.
+     * 
+     * @param file
+     *            the file to open
+     * @throws IOException TODO
+     */
+    public VDiskFileInputStream(VDiskFile file) throws IOException {
+        if (!file.exists() || !file.isFile()) {
             throw new FileNotFoundException();
         }
 
-        this.file = (IVirtualFile) fileHelper.getDiskEntry();
+        this.file = (IVirtualFile) file.getDiskEntry();
         this.currentPosition = 0;
     }
 
