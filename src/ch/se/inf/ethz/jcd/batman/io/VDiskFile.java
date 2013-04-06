@@ -532,6 +532,32 @@ public class VDiskFile {
         return this.pathDiskEntry;
     }
 
+    /**
+     * Deletes the file or directory denoted by this object. If this object denotes a directory, 
+     * then the directory must be empty in order to be deleted.
+     * 
+     * @return true if the object was successfully deleted, false otherwise.
+     */
+    public boolean delete() {
+    	if (exists()) {
+    		try {
+	    		if (isDirectory()) {
+	    			//Check if directory is empty
+	    			IVirtualDirectory directory = (IVirtualDirectory) this.pathDiskEntry;
+	    			if (directory.getFirstMember() != null) {
+	    				return false;
+	    			}
+	    		}
+	        	this.pathDiskEntry.delete();
+	        	this.pathDiskEntry = null;
+	        	return true;
+	    	} catch (IOException e) {
+	    		return false;
+	    	}
+    	}
+    	return false;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof VDiskFile) {
