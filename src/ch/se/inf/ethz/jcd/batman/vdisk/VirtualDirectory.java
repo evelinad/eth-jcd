@@ -149,10 +149,6 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		saveString(space, NAME_POS, getName());
 	}
 	
-	public boolean isEmpty() throws IOException {
-		return getFirstMember() == null;
-	}
-	
 	@Override
 	public void delete() throws IOException {
 		super.delete();
