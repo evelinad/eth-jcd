@@ -101,6 +101,9 @@ public class HostBridgeTest {
         exportedFileReader.close();
         
         assertEquals(NORMAL_SIZE_FILE_CONTENT, exportedFileContent);
+        
+        // clean up
+        exportTarget.delete();
 
     }
 
