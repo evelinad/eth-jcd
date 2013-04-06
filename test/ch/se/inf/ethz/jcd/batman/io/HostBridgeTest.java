@@ -51,9 +51,7 @@ public class HostBridgeTest {
     @Before
     public void setUp() throws Exception {
         diskFile = new File("HostBridgeTest.vdisk");
-        if (diskFile.exists()) {
-            diskFile.delete();
-        }
+        diskFile.delete();
 
         disk = VirtualDisk.create(diskFile.getAbsolutePath());
     }
