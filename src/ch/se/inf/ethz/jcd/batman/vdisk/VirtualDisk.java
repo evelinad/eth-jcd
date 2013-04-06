@@ -356,5 +356,23 @@ public final class VirtualDisk implements IVirtualDisk {
 			freeLists.add(file.readLong());
 		}
 	}
+
+	@Override
+	public long getFreeSpace() throws IOException {
+		long freeSpace = 0;
+		for (Long freeListPosition : freeLists) {
+			IFreeBlock freeBlock = null;
+			for (long nextEntry = freeListPosition; nextEntry != 0; nextEntry = freeBlock.getNextBlock()) {
+				 freeBlock = FreeBlock.load(this, nextEntry);
+				 freeSpace += freeBlock.getDiskSize();
+			}
+		}
+		return freeSpace;
+	}
+
+	@Override
+	public long getOccupiedSpace() throws IOException {
+		return getSize() - getFreeSpace();
+	}
 	
 }
