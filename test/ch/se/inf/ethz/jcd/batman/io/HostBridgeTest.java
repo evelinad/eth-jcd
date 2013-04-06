@@ -21,7 +21,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 public class HostBridgeTest {
     private static final String NORMAL_SIZE_FILE_CONTENT = "This is some test string used to test some stuff"
             + " while using HostBridge's import and export."
-            + "It's part of a project written by B. Steger and G. Wegberg\n";
+            + "It's part of a project written by B. Steger and G. Wegberg";
 
     private static File normalSizeFile;
 
@@ -33,7 +33,7 @@ public class HostBridgeTest {
         // initialize the simple file
         normalSizeFile = File.createTempFile("HostBridgeTest", "");
         PrintWriter normalWriter = new PrintWriter(normalSizeFile);
-        normalWriter.write(NORMAL_SIZE_FILE_CONTENT);
+        normalWriter.write(NORMAL_SIZE_FILE_CONTENT + System.lineSeparator());
         normalWriter.close();
     }
 

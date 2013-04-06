@@ -17,6 +17,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 public class VDiskFileInputStream extends InputStream {
     // fields
     private final IVirtualFile file;
+    private long currentPosition;
 
     // constructors
 
@@ -37,6 +38,7 @@ public class VDiskFileInputStream extends InputStream {
         }
 
         this.file = (IVirtualFile) fileHelper.getDiskEntry();
+        this.currentPosition = 0;
     }
 
     // public methods
@@ -59,22 +61,34 @@ public class VDiskFileInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        return (int) this.file.read();
+        this.file.seek(currentPosition);
+        int readValue = (int) this.file.read();
+        this.currentPosition = this.file.getFilePointer();
+        
+        return readValue;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return this.file.read(b);
+        this.file.seek(currentPosition);
+        int readAmount = this.file.read(b);
+        this.currentPosition = this.file.getFilePointer();
+        
+        return readAmount;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        this.file.seek(currentPosition);
+        
         byte[] readBytes = new byte[len];
         int readCount = this.file.read(readBytes);
         
         for(int i = off; i < off + len; i++) {
             b[i] = readBytes[i-off];
         }
+        
+        this.currentPosition = this.file.getFilePointer();
         
         return readCount;
     }
@@ -87,9 +101,13 @@ public class VDiskFileInputStream extends InputStream {
         
         if(newPosition > fileSize) {
             this.file.seek(fileSize - 1);
+            this.currentPosition = this.file.getFilePointer();
+            
             return fileSize - oldPosition;
         } else {
             this.file.seek(newPosition);
+            this.currentPosition = this.file.getFilePointer();
+            
             return n;
         }
     }
