@@ -77,14 +77,42 @@ public class VDiskFileInputOutputStreamsTest {
                 - doNotChange, (byte) 0x1);
 
         // write
-        writer.write(expectedValue, doNotChange, expectedValue.length
-                - 2 * doNotChange);
+        writer.write(expectedValue, doNotChange, expectedValue.length - 2
+                * doNotChange);
 
         // read
-        reader.read(readBuffer, doNotChange, readBuffer.length
-                - 2 * doNotChange);
-        
+        reader.read(readBuffer, doNotChange, readBuffer.length - 2
+                * doNotChange);
+
         // check
         assertArrayEquals(expectedValue, readBuffer);
+    }
+
+    @Test
+    public void testInputStreamSkeep() throws IOException {
+        // prepare test data
+        int firstRead = 4;
+        int skip = 5;
+        int secondRead = 4;
+
+        byte[] toWrite = { 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA,
+                0xB, 0xC, 0xD, 0xE };
+
+        byte[] firstExpected = { 0x1, 0x2, 0x3, 0x4 };
+        byte[] secondExpected = { 0xA, 0xB, 0xC, 0xD };
+        
+        // write
+        writer.write(toWrite);
+        
+        // read & check
+        byte[] firstReadValue = new byte[firstRead];
+        assertEquals(firstRead, reader.read(firstReadValue));
+        assertArrayEquals(firstExpected, firstReadValue);
+        
+        reader.skip(skip);
+        
+        byte[] secondReadValue = new byte[secondRead];
+        assertEquals(secondRead, reader.read(secondReadValue));
+        assertArrayEquals(secondExpected, secondReadValue);
     }
 }

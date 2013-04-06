@@ -106,7 +106,7 @@ public class VDiskFileInputStream extends InputStream {
 
     @Override
     public long skip(long n) throws IOException {
-        long oldPosition = this.file.getDataPosition();
+        long oldPosition = this.currentPosition;
         long newPosition = oldPosition + n;
         long fileSize = this.file.getSize();
         
