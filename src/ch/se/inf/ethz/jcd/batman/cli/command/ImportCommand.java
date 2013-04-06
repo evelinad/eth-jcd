@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.io.HostBridge;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFileOutputStream;
 import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
@@ -68,31 +69,15 @@ public class ImportCommand implements PrioritizedObserver<String> {
                                     virtualPathParam);
                         }
 
-                        if (!virtualFile.exists()) {
-                            virtualFile.createNewFile();
-                        } else {
+                        if (virtualFile.exists()) {
                             cli.writeln(String.format(
                                     "virtual file '%s' already exists",
                                     virtualFile.getPath()));
                             return;
                         }
 
-                        // create streams
-                        FileInputStream reader = new FileInputStream(hostFile);
-
-                        VDiskFileOutputStream writer = new VDiskFileOutputStream(
-                                virtualFile.getPath(), virtualFile.getDisk());
-
-                        // import
-                        int read = 0;
-                        byte[] buffer = new byte[1024];
-                        do {
-                            read = reader.read(buffer);
-                            writer.write(buffer, 0, read);
-                        } while (read < 0);
-
-                        writer.close();
-                        reader.close();
+                        // move it
+                        HostBridge.importFile(hostFile, virtualFile);
 
                         cli.writeln(String.format("imported '%s' into '%s'",
                                 hostFile.getAbsolutePath(),
