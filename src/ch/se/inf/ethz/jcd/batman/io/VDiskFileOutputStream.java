@@ -110,7 +110,7 @@ public class VDiskFileOutputStream extends OutputStream {
     public void write(byte[] b, int off, int len) throws IOException {
         this.file.seek(currentPosition);
         
-        byte[] toBeWritten = Arrays.copyOfRange(b, off, len);
+        byte[] toBeWritten = Arrays.copyOfRange(b, off, off + len);
         this.file.write(toBeWritten);
         
         this.currentPosition = this.file.getFilePointer();
