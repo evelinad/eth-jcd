@@ -15,7 +15,8 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 public class VDiskFileOutputStream extends OutputStream {
     // fields
     private final IVirtualFile file;
-
+    private long currentPosition;
+    
     // constructors
 
     /**
@@ -69,9 +70,9 @@ public class VDiskFileOutputStream extends OutputStream {
 
         this.file = (IVirtualFile) file.getDiskEntry();
         if (append) {
-            this.file.seek(this.file.getSize());
+            this.currentPosition = this.file.getSize();
         } else {
-            this.file.seek(0);
+            this.currentPosition = 0;
         }
     }
 
@@ -91,18 +92,28 @@ public class VDiskFileOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
+        this.file.seek(currentPosition);
         this.file.write((byte) b);
+        
+        this.currentPosition = this.file.getFilePointer();
     }
 
     @Override
     public void write(byte[] b) throws IOException {
+        this.file.seek(currentPosition);
         this.file.write(b);
+        
+        this.currentPosition = this.file.getFilePointer();
     }
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        this.file.seek(currentPosition);
+        
         byte[] toBeWritten = Arrays.copyOfRange(b, off, len);
         this.file.write(toBeWritten);
+        
+        this.currentPosition = this.file.getFilePointer();
     }
 
     // protected methods
