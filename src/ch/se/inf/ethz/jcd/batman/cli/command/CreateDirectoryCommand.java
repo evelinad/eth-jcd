@@ -1,91 +1,58 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
-import java.io.IOException;
-
-import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.Command;
+import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class CreateDirectoryCommand implements PrioritizedObserver<String> {
+/**
+ * Implements a create directory command for the CLI.
+ *
+ */
+public class CreateDirectoryCommand implements Command {
 
     private static final String[] COMMAND_STRINGS = { "mkdir" };
     private static final String CREATE_PARENTS_FLAG = "-p";
 
     @Override
-    public void update(PrioritizedObservable<String> observable, String data) {
-        assert observable instanceof CommandLineInterface;
-        CommandLineInterface cli = (CommandLineInterface) observable;
-
-        String[] lineParts = data.split(" ");
-        for (String command : COMMAND_STRINGS) {
-            if (lineParts[0].equalsIgnoreCase(command)) {
-                cli.setHandled();
-
-                VDiskFile currentLocation = cli.getCurrentLocation();
-                if (currentLocation == null) {
-                    cli.writeln("no disk loaded. command needs loaded disk.");
-                    return;
-                }
-
-                try {
-                    if (lineParts.length == 3) {
-                        String pathParam = lineParts[2];
-                        if (lineParts[1].equalsIgnoreCase(CREATE_PARENTS_FLAG)) {
-                            createDir(cli, currentLocation, pathParam, true);
-                        } else {
-                            cli.writeln(String.format("unknown option '%s'",
-                                    lineParts[1]));
-                        }
-
-                    } else if (lineParts.length == 2) {
-                        String pathParam = lineParts[1];
-                        createDir(cli, currentLocation, pathParam, false);
-
-                    } else {
-                        cli.writeln("not the right amount of parameters provided.");
-                    }
-                } catch (IOException ex) {
-                    cli.writeln(String.format(
-                            "following exception occured: %s", ex.getMessage()));
-                }
-            }
-        }
-    }
-
-    private void createDir(CommandLineInterface cli, VDiskFile currentLocation,
-            String pathParam, boolean createParents) throws IOException {
-        VDiskFile newDir;
-
-        // check if provided path is absolute or relative
-        if (pathParam.startsWith(String.valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-            newDir = new VDiskFile(pathParam, currentLocation.getDisk());
-        } else {
-            newDir = new VDiskFile(currentLocation, pathParam);
-        }
-
-        if (newDir.exists()) {
-            cli.writeln(String
-                    .format("location '%s' already exists", newDir.getPath()));
-        } else {
-            if (createParents) {
-                if (!newDir.mkdirs()) {
-                    cli.writeln(String.format(
-                            "could not create directory at '%s'", newDir.getPath()));
-                }
-            } else {
-                if (!newDir.mkdir()) {
-                    cli.writeln(String.format(
-                            "could not create directory at '%s'", newDir.getPath()));
-                }
-            }
-        }
+    public String[] getAliases() {
+        return CreateDirectoryCommand.COMMAND_STRINGS;
     }
 
     @Override
-    public int getPriority() {
-        return 0;
+    public void execute(CommandLine caller, String alias, String... params) {
+        if (params.length == 2) {
+            boolean createParents = params[0]
+                    .equalsIgnoreCase(CREATE_PARENTS_FLAG);
+            VDiskFile dirFile = CommandUtil.getFile(caller, params[1]);
+
+            createDir(caller, dirFile, createParents);
+        } else if (params.length == 1) {
+            VDiskFile dirFile = CommandUtil.getFile(caller, params[0]);
+
+            createDir(caller, dirFile, false);
+        } else {
+            caller.write("expected at least one parameter, got %s",
+                    params.length);
+        }
     }
 
+    private void createDir(CommandLine cli, VDiskFile dirFile,
+            boolean createParents) {
+
+        if (dirFile.exists()) {
+            cli.writeln("location '%s' already exists", dirFile.getPath());
+        } else {
+            if (createParents) {
+                if (!dirFile.mkdirs()) {
+                    cli.writeln("could not create directory at '%s'",
+                            dirFile.getPath());
+                }
+            } else {
+                if (!dirFile.mkdir()) {
+                    cli.writeln("could not create directory at '%s'",
+                            dirFile.getPath());
+                }
+            }
+        }
+    }
 }

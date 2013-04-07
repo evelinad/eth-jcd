@@ -1,66 +1,51 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.IOException;
-import java.util.Arrays;
 
-import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.Command;
+import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class ListMembersCommand implements PrioritizedObserver<String> {
+/**
+ * Implements a ls / dir like command for the CLI
+ * 
+ */
+public class ListMembersCommand implements Command {
 
     private static final String[] COMMAND_STRINGS = { "list", "ls", "dir" };
 
     @Override
-    public void update(PrioritizedObservable<String> observable, String data) {
-        assert observable instanceof CommandLineInterface;
-        CommandLineInterface cli = (CommandLineInterface) observable;
-
-        String[] lineParts = data.split(" ");
-        for (String command : COMMAND_STRINGS) {
-            if (lineParts[0].equalsIgnoreCase(command)) {
-                cli.setHandled();
-
-                VDiskFile currentLocation = cli.getCurrentLocation();
-                if (currentLocation == null) {
-                    cli.writeln("no disk loaded. command needs loaded disk.");
-                    return;
-                }
-
-                try {
-                    VDiskFile listRoot = null;
-                    if (lineParts.length == 1) {
-                        listRoot = currentLocation;
-                    } else if (lineParts.length == 2) {
-                        String pathParam = lineParts[1];
-                        if (pathParam.startsWith(String
-                                .valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-                            listRoot = new VDiskFile(pathParam,
-                                    currentLocation.getDisk());
-                        } else {
-                            listRoot = new VDiskFile(currentLocation,
-                                    pathParam);
-                        }
-                    } else {
-                        cli.writeln("not the right amount of parameters provided.");
-                        return;
-                    }
-
-                    String[] list = listRoot.list();
-                    cli.writeln(Arrays.toString(list));
-                } catch (IOException ex) {
-                    cli.writeln(String.format(
-                            "following exception occured: %s", ex.getMessage()));
-                }
-            }
-        }
+    public String[] getAliases() {
+        return ListMembersCommand.COMMAND_STRINGS;
     }
 
     @Override
-    public int getPriority() {
-        return 0;
+    public void execute(CommandLine caller, String alias, String... params) {
+        VDiskFile curLocation = caller.getCurrentLocation();
+        if (curLocation == null) {
+            caller.writeln("no disk loaded.");
+        } else {
+            VDiskFile listRoot = null;
+            if (params.length == 1) {
+                listRoot = CommandUtil.getFile(caller, params[0]);
+            } else {
+                listRoot = curLocation;
+            }
+
+            try {
+                for (VDiskFile child : listRoot.listFiles()) {
+                    if (child.isDirectory()) {
+                        caller.writeln("%s [D]", child.getName());
+                    } else if (child.isFile()) {
+                        caller.writeln("%s [F]", child.getName());
+                    } else {
+                        caller.writeln("%s [?]", child.getName());
+                    }
+                }
+            } catch (IOException e) {
+                caller.write(e);
+            }
+        }
     }
 
 }

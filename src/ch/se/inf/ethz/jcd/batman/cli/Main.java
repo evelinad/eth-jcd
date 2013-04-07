@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.command.ChangeDirectoryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.CreateDirectoryCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
@@ -23,6 +25,8 @@ public class Main {
 		cli.attachCommand(new UnloadCommand());
 		cli.attachCommand(new CreateCommand());
 		cli.attachCommand(new ChangeDirectoryCommand());
+		cli.attachCommand(new CreateDirectoryCommand());
+		cli.attachCommand(new ListMembersCommand());
 		
 		// start command line interface
 		cli.start();
