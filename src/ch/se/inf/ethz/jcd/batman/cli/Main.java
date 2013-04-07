@@ -7,6 +7,7 @@ import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateDirectoryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.DeleteCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.DestroyCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.ImportCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.QueryCommand;
@@ -35,6 +36,7 @@ public class Main {
 		cli.attachCommand(new DestroyCommand());
 		cli.attachCommand(new SizeCommand());
 		cli.attachCommand(new QueryCommand());
+		cli.attachCommand(new ImportCommand());
 		
 		// start command line interface
 		cli.start();
