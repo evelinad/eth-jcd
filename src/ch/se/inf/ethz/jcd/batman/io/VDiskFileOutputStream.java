@@ -16,7 +16,7 @@ public class VDiskFileOutputStream extends OutputStream {
     // fields
     private final IVirtualFile file;
     private long currentPosition;
-    
+
     // constructors
 
     /**
@@ -60,7 +60,8 @@ public class VDiskFileOutputStream extends OutputStream {
      * @param append
      *            true if the written content should be appended to the current
      *            data.
-     * @throws IOException TODO
+     * @throws IOException
+     *             TODO
      */
     public VDiskFileOutputStream(VDiskFile file, boolean append)
             throws IOException {
@@ -94,7 +95,7 @@ public class VDiskFileOutputStream extends OutputStream {
     public void write(int b) throws IOException {
         this.file.seek(currentPosition);
         this.file.write((byte) b);
-        
+
         this.currentPosition = this.file.getFilePointer();
     }
 
@@ -102,17 +103,17 @@ public class VDiskFileOutputStream extends OutputStream {
     public void write(byte[] b) throws IOException {
         this.file.seek(currentPosition);
         this.file.write(b);
-        
+
         this.currentPosition = this.file.getFilePointer();
     }
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         this.file.seek(currentPosition);
-        
+
         byte[] toBeWritten = Arrays.copyOfRange(b, off, off + len);
         this.file.write(toBeWritten);
-        
+
         this.currentPosition = this.file.getFilePointer();
     }
 

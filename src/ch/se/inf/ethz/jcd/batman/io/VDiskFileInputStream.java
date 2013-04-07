@@ -74,11 +74,15 @@ public class VDiskFileInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        this.file.seek(currentPosition);
-        int readValue = (int) this.file.read();
-        this.currentPosition = this.file.getFilePointer();
-
-        return readValue;
+        if (currentPosition < this.file.getSize()) {
+            this.file.seek(currentPosition);
+            int readValue = this.file.read() & 0xFF;
+            this.currentPosition = this.file.getFilePointer();
+            
+            return readValue;
+        } else {
+            return -1;
+        }
     }
 
     @Override
