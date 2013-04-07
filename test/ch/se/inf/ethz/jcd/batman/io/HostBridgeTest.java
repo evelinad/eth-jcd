@@ -11,8 +11,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.FileAlreadyExistsException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import java.util.Collection;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -25,6 +35,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ch.se.inf.ethz.jcd.batman.io.util.DataMover;
 import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
+import ch.se.inf.ethz.jcd.batman.io.util.EncryptedMover;
 import ch.se.inf.ethz.jcd.batman.io.util.GZIPMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
@@ -61,9 +72,24 @@ public class HostBridgeTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getParameters() {
+    public static Collection<Object[]> getParameters()
+            throws InvalidKeyException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchPaddingException {
+        // prepare encrypt/decrypt stuff
+        final byte[] iv = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        SecretKey key = KeyGenerator.getInstance("DES").generateKey();
+        AlgorithmParameterSpec algoParamSpec = new IvParameterSpec(iv);
+
+        Cipher encryptCipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, key, algoParamSpec);
+
+        Cipher decryptCipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
+        decryptCipher.init(Cipher.DECRYPT_MODE, key, algoParamSpec);
+
+        // create movers
         Object[][] params = new Object[][] { { new DefaultMover() },
-                { new GZIPMover() } };
+                { new GZIPMover() },
+                { new EncryptedMover(encryptCipher, decryptCipher) } };
 
         return Arrays.asList(params);
     }
