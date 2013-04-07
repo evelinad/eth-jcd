@@ -47,6 +47,14 @@ public class CommandLineInterface implements CommandLine {
     private static final String CLI_EXCEPTION_PREFIX = "!> ";
 
     /**
+     * Format string for exception output. Should have three string place
+     * holders. First placeholder is the {@link #CLI_EXCEPTION_PREFIX}, second
+     * one the class name of the exception and the third one the exception
+     * message itself.
+     */
+    private static final String CLI_EXCEPTION_FORMAT_STRING = "%s%s: %s";
+
+    /**
      * String indicating the start of a stack trace.
      */
     private static final String CLI_STACKTRACE_BEGIN = "== STACK TRACE ==";
@@ -74,7 +82,9 @@ public class CommandLineInterface implements CommandLine {
         this.aliasCommandMapping = new HashMap<String, Command>();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#start()
      */
     @Override
@@ -86,7 +96,9 @@ public class CommandLineInterface implements CommandLine {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#stop()
      */
     @Override
@@ -94,8 +106,12 @@ public class CommandLineInterface implements CommandLine {
         this.running = false;
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#attachCommand(ch.se.inf.ethz.jcd.batman.cli.Command)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#attachCommand(ch.se.inf.ethz
+     * .jcd.batman.cli.Command)
      */
     @Override
     public void attachCommand(Command command) {
@@ -105,8 +121,12 @@ public class CommandLineInterface implements CommandLine {
         }
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#detachCommand(ch.se.inf.ethz.jcd.batman.cli.Command)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#detachCommand(ch.se.inf.ethz
+     * .jcd.batman.cli.Command)
      */
     @Override
     public void detachCommand(Command command) {
@@ -118,7 +138,9 @@ public class CommandLineInterface implements CommandLine {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.String)
      */
     @Override
@@ -127,15 +149,20 @@ public class CommandLineInterface implements CommandLine {
         this.out.flush();
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.String, java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.String,
+     * java.lang.Object)
      */
     @Override
     public void write(String format, Object... args) {
         this.write(String.format(format, args));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#writeln(java.lang.String)
      */
     @Override
@@ -143,21 +170,26 @@ public class CommandLineInterface implements CommandLine {
         this.write(text + System.lineSeparator());
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#writeln(java.lang.String, java.lang.Object)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#writeln(java.lang.String,
+     * java.lang.Object)
      */
     @Override
     public void writeln(String format, Object... args) {
         this.write(format + System.lineSeparator(), args);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.Exception)
      */
     @Override
     public void write(Exception ex) {
-        out.println(String.format("%s%s:%s", CLI_EXCEPTION_PREFIX, ex
-                .getClass().getName(), ex.getMessage()));
+        out.println(String.format(CLI_EXCEPTION_FORMAT_STRING,
+                CLI_EXCEPTION_PREFIX, ex.getClass().getName(), ex.getMessage()));
 
         out.println(CLI_STACKTRACE_BEGIN);
         ex.printStackTrace(out);
@@ -185,26 +217,28 @@ public class CommandLineInterface implements CommandLine {
 
         out.print(inputPrefix);
         out.flush();
-        
+
         // read user input
         String userInputLine = in.readLine();
-        
+
         // prepare read input and extract all needed parts.
         userInputLine = userInputLine.trim();
         String[] inputParts = userInputLine.split(CLI_USER_INPUT_SEPARATOR);
         String commandName = inputParts[0];
         String[] params = Arrays.copyOfRange(inputParts, 1, inputParts.length);
-        
+
         // check if command is known. if not, inform user
         Command command = this.aliasCommandMapping.get(commandName);
-        if(command == null) {
+        if (command == null) {
             this.writeln("given command '%s' not found.", commandName);
         } else {
             command.execute(this, commandName, params);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#getCurrentLocation()
      */
     @Override
@@ -212,8 +246,12 @@ public class CommandLineInterface implements CommandLine {
         return this.curLocation;
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#setCurrentLocation(ch.se.inf.ethz.jcd.batman.io.VDiskFile)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#setCurrentLocation(ch.se.inf
+     * .ethz.jcd.batman.io.VDiskFile)
      */
     @Override
     public void setCurrentLocation(VDiskFile newLoc) {
