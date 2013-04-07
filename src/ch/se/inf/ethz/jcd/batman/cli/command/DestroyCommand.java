@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class DestroyCommand implements Command {
                             "file '%s' is not a virtual disk. command ignored.",
                             hostPath);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 caller.write(e);
             }
         } else {

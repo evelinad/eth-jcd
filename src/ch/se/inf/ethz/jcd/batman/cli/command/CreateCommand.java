@@ -3,6 +3,7 @@
  */
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
@@ -35,7 +36,7 @@ public class CreateCommand implements Command {
                 caller.writeln(
                         "disk created at '%s'. Use load command to load the disk",
                         hostPath);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 caller.write(e);
             }
         } else {

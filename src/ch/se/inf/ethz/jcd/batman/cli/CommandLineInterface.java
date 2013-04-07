@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
@@ -72,7 +73,7 @@ public class CommandLineInterface implements CommandLine {
     private final BufferedReader in = new BufferedReader(new InputStreamReader(
             System.in));
     private final PrintWriter out = new PrintWriter(System.out);
-    private HashMap<String, Command> aliasCommandMapping;
+    private final Map<String, Command> aliasCommandMapping;
     private boolean running;
     private VDiskFile curLocation;
 

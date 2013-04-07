@@ -12,12 +12,12 @@ public interface CommandLine {
      * 
      * @throws IOException
      */
-    public abstract void start() throws IOException;
+    void start() throws IOException;
 
     /**
      * Stops the running workflow.
      */
-    public abstract void stop();
+    void stop();
 
     /**
      * Attaches the given command to the CLI.
@@ -25,7 +25,7 @@ public interface CommandLine {
      * @param command
      *            CLI command to attach
      */
-    public abstract void attachCommand(Command command);
+    void attachCommand(Command command);
 
     /**
      * Removes the given command from the CLI.
@@ -33,7 +33,7 @@ public interface CommandLine {
      * @param command
      *            CLI command to detach
      */
-    public abstract void detachCommand(Command command);
+    void detachCommand(Command command);
 
     /**
      * Writes the given text into the console. The visible text starts with the
@@ -42,7 +42,7 @@ public interface CommandLine {
      * @param text
      *            text to write into the console
      */
-    public abstract void write(String text);
+    void write(String text);
 
     /**
      * Wrapper around {@link #write(String)} with a
@@ -57,7 +57,7 @@ public interface CommandLine {
      * @param args
      *            {@link String#format(String, Object...)}
      */
-    public abstract void write(String format, Object... args);
+    void write(String format, Object... args);
 
     /**
      * Same as {@link #write(String)} except that it adds a newline at the end.
@@ -65,7 +65,7 @@ public interface CommandLine {
      * @param text
      *            text to write into the console followed by a newline
      */
-    public abstract void writeln(String text);
+    void writeln(String text);
 
     /**
      * Wrapper around {@link #writeln(String)} with a
@@ -79,7 +79,7 @@ public interface CommandLine {
      * @param args
      *            {@link String#format(String, Object...)}
      */
-    public abstract void writeln(String format, Object... args);
+    void writeln(String format, Object... args);
 
     /**
      * Writes the given exception into the console. This can be used to inform
@@ -88,14 +88,14 @@ public interface CommandLine {
      * @param ex
      *            Exception to show the user in the console
      */
-    public abstract void write(Exception ex);
+    void write(Exception ex);
 
     /**
      * Returns the current location of the CLI inside the loaded disk.
      * 
      * @return
      */
-    public abstract VDiskFile getCurrentLocation();
+    VDiskFile getCurrentLocation();
 
     /**
      * Sets a new location at which the CLI is currently.
@@ -108,6 +108,6 @@ public interface CommandLine {
      * @param newLoc
      *            the new location or null if no disk is loaded.
      */
-    public abstract void setCurrentLocation(VDiskFile newLoc);
+    void setCurrentLocation(VDiskFile newLoc);
 
 }
