@@ -2,20 +2,58 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import java.io.IOException;
 
-public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
+/**
+ * Represents a file on the virtual disk. The file contains two separate {@link IVirtualDiskSpace}
+ * on stores the meta data of the file and one stores the data of the file.
+ * 
+ * The {@link IVirtualDiskSpace} which handles the meta data is structured as follows:
+ * 
+ * 0x00 1  Entry Type
+ * 0x01 8  Time stamp
+ * 0x09 8  Offset position of the next directory/file which is stored in the same directory as this directory
+ * 0x11 8  Offset position of the {@link IVirtualDiskSpace} of the data
+ * 0x19 n  File name
+ */
+public final class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 
+	/**
+	 * Loads a File located at the offset position given by position.
+	 * 
+	 * @param disk the disk on which the file is stored
+	 * @param position the offset position in bytes of the file
+	 * @return the loaded File
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualFile load (IVirtualDisk disk, long position) throws IOException {
 		VirtualFile virtualFile = new VirtualFile(disk);
 		virtualFile.load(VirtualDiskSpace.load(disk, position));
 		return virtualFile;
 	}
 	
+	/**
+	 * Loads a File from the virtual disk, the meta data is located in the {@link IVirtualDiskSpace} given
+	 * by the parameter space.
+	 * 
+	 * @param disk the disk on which the file is stored
+	 * @param space contains the meta data of the file
+	 * @return the loaded File
+	 * @throws IOException if an I/O error occurs
+	 */
 	protected static IVirtualFile load (IVirtualDisk disk, IVirtualDiskSpace space) throws IOException {
 		VirtualFile virtualFile = new VirtualFile(disk);
 		virtualFile.load(space);
 		return virtualFile;
 	}
 	
+	/**
+	 * Creates a file with the given name and size on the {@link IVirtualDisk}.
+	 * 
+	 * @param disk the disk on which the file should be stored
+	 * @param name the name of the newly created file
+	 * @param size the starting size of the newly created file
+	 * @return the newly created file
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualFile create (IVirtualDisk disk, String name, long size) throws IOException {
 		VirtualFile virtualFile = new VirtualFile(disk);
 		virtualFile.create(name, size);
@@ -45,7 +83,7 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 	private IVirtualDiskSpace dataSpace;
 	private boolean dataSpaceLoaded;
 	
-	public VirtualFile(IVirtualDisk disk) throws IOException {
+	private VirtualFile(IVirtualDisk disk) throws IOException {
 		super(disk);
 	}
 
@@ -99,6 +137,9 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete() throws IOException {
 		super.delete();
@@ -128,46 +169,73 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 		return DEFAULT_SIZE + calculateStringSpace(name);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getPosition() {
 		return space.getVirtualDiskPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getDataPosition() throws IOException {
 		return getDataSpace().getVirtualDiskPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void seek(long position) throws IOException {
 		getDataSpace().seek(position);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(byte[] b) throws IOException {
 		return getDataSpace().read(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte read() throws IOException {
 		return getDataSpace().read();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(byte b) throws IOException {
 		getDataSpace().write(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(byte[] b) throws IOException {
 		getDataSpace().write(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setSize(long size) throws IOException {
 		getDataSpace().changeSize(size);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getSize() throws IOException {
 		return getDataSpace().getSize();
@@ -204,16 +272,25 @@ public class VirtualFile extends VirtualDiskEntry implements IVirtualFile {
 		return dataSpace;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getDataDiskSize() throws IOException {
 		return getDataSpace().getDiskSize();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
     @Override
     public long getTotalSize() throws IOException {
         return getDataSpace().getDiskSize() + space.getDiskSize();
     }
 
+    /**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getFilePointer() throws IOException {
 		return getDataSpace().getPosition();

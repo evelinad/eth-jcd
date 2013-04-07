@@ -42,10 +42,9 @@ public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 	 * 
 	 * @param directory
 	 *            the parent of the virtual disk entry
-	 * @throws VirtualDiskException 
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
-	void setParent(IVirtualDirectory directory) throws VirtualDiskException, IOException;
+	void setParent(IVirtualDirectory directory) throws IOException;
 
 	/**
 	 * Returns the previous virtual disk entry.
@@ -81,7 +80,7 @@ public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 	 * this doubly linked list. It returns null if there is no next member.
 	 * 
 	 * @return next member or null if there is none
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	IVirtualDiskEntry getNextEntry() throws IOException;
 
@@ -114,7 +113,7 @@ public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 	 * 
 	 * For details how this is exactly executed read the documentation of the
 	 * specific implementations.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	void delete() throws IOException;
 
@@ -141,7 +140,7 @@ public interface IVirtualDiskEntry extends Iterable<IVirtualDiskEntry> {
 	 * The returned size is the amount of bytes used by the entry on the disk.
 	 * 
 	 * @return size of the whole entry in bytes
-	 * @throws IOException TODO
+	 * @throws IOException if an I/O error occurs
 	 */
 	long getTotalSize() throws IOException;
 

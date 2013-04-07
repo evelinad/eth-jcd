@@ -5,29 +5,62 @@ import java.io.IOException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 
-
-/* 
- * DirectoryEntry 64 bytes
+/**
+ * Represents a directory on the virtual disk.
+ * 
+ * A directory contains members ({@link IVirtualDiskEntry}) which belong to the
+ * directory. This includes files and subdirectories inside the directory. As
+ * defined by the {@link IVirtualDiskEntry} the member list is a doubly linked
+ * list.
+ * 
+ * The data stored in the directory is handled by a {@link IVirtualDiskSpace}. The structure of the data
+ * is structured as follows:
+ * 
  * 0x00 1  Entry Type
- * 0x01 8  time stamp
- * 0x09 8  BlockNr of next File/Directory in this Directory
- * 0x11 8  Starting Directory/File of this directory
+ * 0x01 8  Time stamp
+ * 0x09 8  Offset position of the next directory/file which is stored in the same directory as this directory
+ * 0x11 8  Offset position of the first member of this directory
  * 0x19 n  Directory name
  */
 public final class VirtualDirectory extends VirtualDiskEntry implements IVirtualDirectory {
 	
+	/**
+	 * Loads a directory located at the offset position given by position.
+	 * 
+	 * @param disk the disk on which the file is stored
+	 * @param position the offset position in bytes of the directory
+	 * @return the loaded directory
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualDirectory load (IVirtualDisk disk, long position) throws IOException {
 		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
 		virtualDirectory.load(VirtualDiskSpace.load(disk, position));
 		return virtualDirectory;
 	}
 	
+	/**
+	 * Loads a directory from the virtual disk, the data is located in the {@link IVirtualDiskSpace} given
+	 * by the parameter space.
+	 * 
+	 * @param disk the disk on which the directory is stored
+	 * @param space contains the data of the directory
+	 * @return the loaded directory
+	 * @throws IOException if an I/O error occurs
+	 */
 	protected static IVirtualDirectory load (IVirtualDisk disk, IVirtualDiskSpace space) throws IOException {
 		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
 		virtualDirectory.load(space);
 		return virtualDirectory;
 	}
 	
+	/**
+	 * Creates a directory with the given name on the {@link IVirtualDisk}.
+	 * 
+	 * @param disk the disk on which the directory should be stored
+	 * @param name the name of the newly created directory
+	 * @return the newly created directory
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualDirectory create (IVirtualDisk disk, String name) throws IOException {
 		VirtualDirectory virtualDirectory = new VirtualDirectory(disk);
 		virtualDirectory.create(name);
@@ -149,6 +182,9 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		saveString(space, NAME_POS, getName());
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete() throws IOException {
 		super.delete();
@@ -162,6 +198,9 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		space.free();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void addMember(IVirtualDiskEntry member) throws IOException {
 		checkNameFree(this, member.getName());
@@ -177,6 +216,9 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		setFirstMember(member);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void removeMember(IVirtualDiskEntry member) throws IOException {
 		if (member.getParent() == this) {
@@ -207,6 +249,9 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		updateFirstMember();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDiskEntry getFirstMember() throws IOException {
 		if (!firstMemberLoaded) {
@@ -219,11 +264,17 @@ public final class VirtualDirectory extends VirtualDiskEntry implements IVirtual
 		return DEFAULT_SIZE + calculateStringSpace(name);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getPosition() {
 		return space.getVirtualDiskPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
     @Override
     public long getTotalSize() throws IOException {
         return space.getDiskSize();
