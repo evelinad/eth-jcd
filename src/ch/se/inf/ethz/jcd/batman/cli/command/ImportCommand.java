@@ -34,8 +34,8 @@ public class ImportCommand implements Command {
             // extract host file
             File hostFile = new File(params[0]);
 
-            if (!hostFile.isFile()) {
-                caller.writeln("given host file '%s' is not a file",
+            if (!hostFile.exists()) {
+                caller.writeln("given host file '%s' does not exist",
                         hostFile.getPath());
                 return;
             }
