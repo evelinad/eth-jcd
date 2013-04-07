@@ -18,7 +18,7 @@ public class CommandUtil {
      *            a string representing a path
      * @return a VDiskFile instance or null in case of an error.
      */
-    public VDiskFile getFile(CommandLine cli, String pathParam) {
+    public static VDiskFile getFile(CommandLine cli, String pathParam) {
         VDiskFile file = null;
         VDiskFile curLocation = cli.getCurrentLocation();
 
