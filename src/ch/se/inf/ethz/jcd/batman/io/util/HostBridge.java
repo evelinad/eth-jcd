@@ -106,7 +106,7 @@ public class HostBridge {
                 /*
                  * export given virtual file into the given host directory
                  */
-                throw new UnsupportedOperationException(); // TODO
+                exportFileIntoDirectory(virtualFile, absHostFile);
             } else {
                 /*
                  * all other cases are not supported as we would overwrite
@@ -148,6 +148,23 @@ public class HostBridge {
 
         moveData(reader, writer);
 
+        reader.close();
+        writer.close();
+    }
+
+    private static void exportFileIntoDirectory(VDiskFile virtualFile,
+            File hostDir) throws IOException {
+        assert virtualFile.exists();
+        assert hostDir.isDirectory();
+        
+        File hostFile = new File(hostDir, virtualFile.getName());
+        hostFile.createNewFile();
+        
+        FileOutputStream writer = new FileOutputStream(hostFile);
+        VDiskFileInputStream reader = new VDiskFileInputStream(virtualFile);
+        
+        moveData(reader, writer);
+        
         reader.close();
         writer.close();
     }
@@ -195,14 +212,15 @@ public class HostBridge {
             VDiskFile virtualDir) throws IOException {
         assert hostDir.isDirectory();
         assert !virtualDir.exists();
-        
+
         virtualDir.mkdir();
-        
-        for(File hostChild : hostDir.listFiles()) {
-            if(hostChild.isFile()) {
+
+        for (File hostChild : hostDir.listFiles()) {
+            if (hostChild.isFile()) {
                 importFileIntoDirectory(hostChild, virtualDir);
-            } else if(hostChild.isDirectory()) {
-                importDirectoryIntoDirectory(hostChild, new VDiskFile(virtualDir, hostChild.getName()));
+            } else if (hostChild.isDirectory()) {
+                importDirectoryIntoDirectory(hostChild, new VDiskFile(
+                        virtualDir, hostChild.getName()));
             }
         }
     }
