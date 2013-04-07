@@ -61,7 +61,7 @@ public class VDiskFileInputOutputStreamsTest {
 
     @Test
     public void testWriteReadSingleByte() throws IOException {
-        byte value = 0xC;
+        int value = 0xC;
 
         writer.write(value);
         assertEquals(value, reader.read());
@@ -133,7 +133,7 @@ public class VDiskFileInputOutputStreamsTest {
         byte[] expected = Arrays.copyOf(readBuffer, readBuffer.length);
 
         // we should not be able to read anything as we skiped to the end.
-        assertEquals(0, reader.read(readBuffer));
+        assertEquals(-1, reader.read(readBuffer));
         assertArrayEquals(expected, readBuffer);
     }
     
