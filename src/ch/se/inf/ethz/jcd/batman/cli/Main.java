@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.cli;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 
 /**
  * Starts the CLI interface.
@@ -15,6 +16,7 @@ public class Main {
 		
 		// register commands
 		cli.attachCommand(new LoadCommand());
+		cli.attachCommand(new StopCommand());
 		
 		// start command line interface
 		cli.start();
