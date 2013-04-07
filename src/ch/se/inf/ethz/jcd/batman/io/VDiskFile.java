@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ch.se.inf.ethz.jcd.batman.io;
 
 import java.io.IOException;
@@ -17,8 +14,11 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 /**
+ * Representation of a virtual disk entry (file or directory).
  * 
- *
+ * This class provides everything needed to navigate inside a
+ * {@link IVirtualDisk}.
+ * 
  */
 public class VDiskFile {
 
