@@ -1,74 +1,37 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
-import java.io.IOException;
-
-import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.Command;
+import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class ChangeDirectoryCommand implements PrioritizedObserver<String> {
+public class ChangeDirectoryCommand implements Command {
 
     private static final String[] COMMAND_STRINGS = { "cd" };
 
     @Override
-    public void update(PrioritizedObservable<String> observable, String data) {
-        assert observable instanceof CommandLineInterface;
-        CommandLineInterface cli = (CommandLineInterface) observable;
-
-        String[] lineParts = data.split(" ");
-        for (String command : COMMAND_STRINGS) {
-            if (lineParts[0].equalsIgnoreCase(command)) {
-                cli.setHandled();
-
-                VDiskFile currentLocation = cli.getCurrentLocation();
-                if (currentLocation == null) {
-                    cli.writeln("no disk loaded. command needs loaded disk.");
-                    return;
-                }
-
-                try {
-                    if (lineParts.length == 2) {
-                        String pathParam = lineParts[1];
-                        if (pathParam.startsWith(String
-                                .valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-                            currentLocation = new VDiskFile(pathParam,
-                                    currentLocation.getDisk());
-                        } else {
-                            currentLocation = new VDiskFile(currentLocation,
-                                    pathParam);
-                        }
-
-                        if (!currentLocation.exists()) {
-                            cli.writeln(String.format(
-                                    "location '%s' does not exist", pathParam));
-                            return;
-                        }
-
-                        if (!currentLocation.isDirectory()) {
-                            cli.writeln(String.format(
-                                    "location '%s' is not a directory",
-                                    pathParam));
-                            return;
-                        }
-
-                        cli.setCurrentLocation(currentLocation);
-
-                    } else {
-                        cli.writeln("not the right amount of parameters provided.");
-                    }
-                } catch (IOException ex) {
-                    cli.writeln(String.format(
-                            "following exception occured: %s", ex.getMessage()));
-                }
-            }
-        }
+    public String[] getAliases() {
+        return ChangeDirectoryCommand.COMMAND_STRINGS;
     }
 
     @Override
-    public int getPriority() {
-        return 0;
+    public void execute(CommandLine caller, String alias, String... params) {
+        VDiskFile curLocation = caller.getCurrentLocation();
+        if(curLocation == null) {
+            caller.writeln("no disk loaded.");
+            return;
+        }
+        
+        if(params.length == 1) {
+            curLocation = CommandUtil.getFile(caller, params[0]);
+            
+            if(curLocation.isDirectory()) {
+                caller.setCurrentLocation(curLocation);
+            } else {
+                caller.writeln("given path '%s' is not a directory or does not exist", curLocation.getPath());
+            }
+        } else {
+            caller.writeln("expected one parameter, %s given", params.length);
+        }
     }
 
 }

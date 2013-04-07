@@ -2,15 +2,14 @@ package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import java.io.IOException;
 
-import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.Command;
+import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
 /**
  * Implements a quit command that can be used to end the CLI.
  */
-public class StopCommand implements PrioritizedObserver<String> {
+public class StopCommand implements Command {
     /**
      * Accepted commands. Case will be ignored for the check.
      */
@@ -18,35 +17,22 @@ public class StopCommand implements PrioritizedObserver<String> {
             "stop" };
 
     @Override
-    public void update(PrioritizedObservable<String> obs, String line) {
-        assert obs instanceof CommandLineInterface;
-        CommandLineInterface cli = (CommandLineInterface) obs;
-
-        for (String commandStr : COMMAND_STRINGS) {
-
-            if (line.equalsIgnoreCase(commandStr)) {
-                cli.setHandled();
-                cli.writeln("exiting...");
-
-                VDiskFile curLocation = cli.getCurrentLocation();
-                if (curLocation != null) {
-                    try {
-                        curLocation.getDisk().close();
-                    } catch (IOException ex) {
-                        cli.writeln(String.format(
-                                "following exception occured: %s",
-                                ex.getMessage()));
-                    }
-                }
-
-                cli.stop();
-            }
-        }
+    public String[] getAliases() {
+        return StopCommand.COMMAND_STRINGS;
     }
 
     @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE - 1;
+    public void execute(CommandLine caller, String alias, String... params) {
+        VDiskFile curLocation = caller.getCurrentLocation();
+        if (curLocation != null) {
+            try {
+                curLocation.getDisk().close();
+            } catch (IOException e) {
+                caller.write(e);
+            }
+        }
+
+        caller.stop();
     }
 
 }

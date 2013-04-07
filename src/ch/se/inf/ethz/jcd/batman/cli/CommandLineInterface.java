@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
 
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
 /**
@@ -20,10 +21,8 @@ import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
  * There are some additional features implemented, like a changeable prefix for
  * the input and a way to inform others that a given input was handled.
  * 
- * @see java.io.Console
- * @see ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver
  */
-public class CommandLineInterface extends PrioritizedObservable<String> {
+public class CommandLineInterface implements CommandLine {
     /**
      * String that is used as a format string for the input prefix. The format
      * string should always use two placeholder. The first one being the disk
@@ -42,58 +41,159 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
      */
     private static final String CLI_OUTPUT_PREFIX = "=> ";
 
+    /**
+     * Output prefix for exceptions.
+     */
+    private static final String CLI_EXCEPTION_PREFIX = "!> ";
+
+    /**
+     * Format string for exception output. Should have three string place
+     * holders. First placeholder is the {@link #CLI_EXCEPTION_PREFIX}, second
+     * one the class name of the exception and the third one the exception
+     * message itself.
+     */
+    private static final String CLI_EXCEPTION_FORMAT_STRING = "%s%s: %s";
+
+    /**
+     * String indicating the start of a stack trace.
+     */
+    private static final String CLI_STACKTRACE_BEGIN = "== STACK TRACE ==";
+
+    /**
+     * String indicating the end of a stack trace.
+     */
+    private static final String CLI_STACKTRACE_END = "== STACK END ==";
+
+    /**
+     * String used to separate parts of a user input
+     */
+    private static final String CLI_USER_INPUT_SEPARATOR = " ";
+
     private final BufferedReader in = new BufferedReader(new InputStreamReader(
             System.in));
     private final PrintWriter out = new PrintWriter(System.out);
+    private HashMap<String, Command> aliasCommandMapping;
     private boolean running;
     private VDiskFile curLocation;
 
     public CommandLineInterface() {
-        running = false;
-        curLocation = null;
+        this.running = false;
+        this.curLocation = null;
+        this.aliasCommandMapping = new HashMap<String, Command>();
     }
 
-    /**
-     * Starts the workflow described at class level. A call to stop() will stop
-     * the workflow.
+    /*
+     * (non-Javadoc)
      * 
-     * @throws IOException
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#start()
      */
+    @Override
     public void start() throws IOException {
-        running = true;
+        this.running = true;
 
-        while (running) {
+        while (this.running) {
             readCommand();
         }
     }
 
-    /**
-     * Stops the running workflow.
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#stop()
      */
+    @Override
     public void stop() {
-        running = false;
+        this.running = false;
     }
 
-    /**
-     * Writes the given text into the console. The visible text starts with the
-     * CLI_OUTPUT_PREFIX followed by the given text.
+    /*
+     * (non-Javadoc)
      * 
-     * @param text
-     *            text to write into the console
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#attachCommand(ch.se.inf.ethz
+     * .jcd.batman.cli.Command)
      */
+    @Override
+    public void attachCommand(Command command) {
+        String[] aliasList = command.getAliases();
+        for (String alias : aliasList) {
+            this.aliasCommandMapping.put(alias, command);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#detachCommand(ch.se.inf.ethz
+     * .jcd.batman.cli.Command)
+     */
+    @Override
+    public void detachCommand(Command command) {
+        String[] aliasList = command.getAliases();
+        for (String alias : aliasList) {
+            if (this.aliasCommandMapping.get(alias) == command) {
+                this.aliasCommandMapping.remove(alias);
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.String)
+     */
+    @Override
     public void write(String text) {
-        out.print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
-        out.flush();
+        this.out.print(String.format("%s%s", CLI_OUTPUT_PREFIX, text));
+        this.out.flush();
     }
 
-    /**
-     * Same as write(String) except that it adds a newline at the end.
+    /*
+     * (non-Javadoc)
      * 
-     * @param text
-     *            text to write into the console followed by a newline
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.String,
+     * java.lang.Object)
      */
+    @Override
+    public void write(String format, Object... args) {
+        this.write(String.format(format, args));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#writeln(java.lang.String)
+     */
+    @Override
     public void writeln(String text) {
-        write(text + System.lineSeparator());
+        this.write(text + System.lineSeparator());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#writeln(java.lang.String,
+     * java.lang.Object)
+     */
+    @Override
+    public void writeln(String format, Object... args) {
+        this.write(format + System.lineSeparator(), args);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#write(java.lang.Exception)
+     */
+    @Override
+    public void write(Exception ex) {
+        out.println(String.format(CLI_EXCEPTION_FORMAT_STRING,
+                CLI_EXCEPTION_PREFIX, ex.getClass().getName(), ex.getMessage()));
+
+        out.println(CLI_STACKTRACE_BEGIN);
+        ex.printStackTrace(out);
+        out.println(CLI_STACKTRACE_END);
     }
 
     /**
@@ -102,41 +202,58 @@ public class CommandLineInterface extends PrioritizedObservable<String> {
      * @throws IOException
      */
     private void readCommand() throws IOException {
+        // write prefix depending on current state
         String inputPrefix = null;
-        if(this.curLocation == null) {
-            inputPrefix = String.format(CLI_INPUT_PREFIX_FORMAT_STR, CLI_INPUT_PREFIX_NO_DISK, "");
+        if (this.curLocation == null) {
+            inputPrefix = String.format(CLI_INPUT_PREFIX_FORMAT_STR,
+                    CLI_INPUT_PREFIX_NO_DISK, "");
         } else {
-            String diskName = Paths.get(this.curLocation.getDisk().getHostLocation()).getFileName().toString();
-            inputPrefix = String.format(CLI_INPUT_PREFIX_FORMAT_STR, diskName, this.curLocation.getPath());
+            String diskName = Paths
+                    .get(this.curLocation.getDisk().getHostLocation())
+                    .getFileName().toString();
+            inputPrefix = String.format(CLI_INPUT_PREFIX_FORMAT_STR, diskName,
+                    this.curLocation.getPath());
         }
-        
+
         out.print(inputPrefix);
         out.flush();
 
-        String line = in.readLine();
+        // read user input
+        String userInputLine = in.readLine();
 
-        notifyAll(line.trim());
+        // prepare read input and extract all needed parts.
+        userInputLine = userInputLine.trim();
+        String[] inputParts = userInputLine.split(CLI_USER_INPUT_SEPARATOR);
+        String commandName = inputParts[0];
+        String[] params = Arrays.copyOfRange(inputParts, 1, inputParts.length);
+
+        // check if command is known. if not, inform user
+        Command command = this.aliasCommandMapping.get(commandName);
+        if (command == null) {
+            this.writeln("given command '%s' not found.", commandName);
+        } else {
+            command.execute(this, commandName, params);
+        }
     }
 
-    /**
-     * Returns the current location of the CLI inside the loaded disk.
+    /*
+     * (non-Javadoc)
      * 
-     * @return
+     * @see ch.se.inf.ethz.jcd.batman.cli.CommandLine#getCurrentLocation()
      */
+    @Override
     public VDiskFile getCurrentLocation() {
         return this.curLocation;
     }
 
-    /**
-     * Sets a new location at which the CLI is currently.
+    /*
+     * (non-Javadoc)
      * 
-     * A passed null value indicates that no disk is loaded and therefore no
-     * location available. CommandLineInterface will not call any methods on
-     * the old location / disk. The caller has to make sure to unload everything
-     * the right way.
-     * 
-     * @param newLoc the new location or null if no disk is loaded.
+     * @see
+     * ch.se.inf.ethz.jcd.batman.cli.CommandLine#setCurrentLocation(ch.se.inf
+     * .ethz.jcd.batman.io.VDiskFile)
      */
+    @Override
     public void setCurrentLocation(VDiskFile newLoc) {
         this.curLocation = newLoc;
     }

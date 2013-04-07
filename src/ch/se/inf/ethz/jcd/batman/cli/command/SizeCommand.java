@@ -1,65 +1,40 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
-import java.io.IOException;
-
-import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.Command;
+import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
-public class SizeCommand implements PrioritizedObserver<String> {
+public class SizeCommand implements Command {
 
     private static final String[] COMMAND_STRINGS = { "size" };
 
     @Override
-    public void update(PrioritizedObservable<String> observable, String data) {
-        assert observable instanceof CommandLineInterface;
-        CommandLineInterface cli = (CommandLineInterface) observable;
-
-        String[] lineParts = data.split(" ");
-        for (String command : COMMAND_STRINGS) {
-            if (lineParts[0].equalsIgnoreCase(command)) {
-                cli.setHandled();
-
-                VDiskFile currentLocation = cli.getCurrentLocation();
-                if (currentLocation == null) {
-                    cli.writeln("no disk loaded. command needs loaded disk.");
-                    return;
-                }
-
-                try {
-                    VDiskFile commandRoot = null;
-                    if (lineParts.length == 1) {
-                        commandRoot = currentLocation;
-                    } else if (lineParts.length == 2) {
-                        String pathParam = lineParts[1];
-                        
-                        if (pathParam.startsWith(String
-                                .valueOf(IVirtualDisk.PATH_SEPARATOR))) {
-                            commandRoot = new VDiskFile(pathParam,
-                                    currentLocation.getDisk());
-                        } else {
-                            commandRoot = new VDiskFile(currentLocation,
-                                    pathParam);
-                        }
-                    } else {
-                        cli.writeln("not the right amount of parameters provided.");
-                        return;
-                    }
-
-                    cli.writeln(String.format("%s: %s", commandRoot.getPath(), commandRoot.getTotalSpace()));
-                } catch (IOException ex) {
-                    cli.writeln(String.format(
-                            "following exception occured: %s", ex.getMessage()));
-                }
-            }
-        }
+    public String[] getAliases() {
+        return SizeCommand.COMMAND_STRINGS;
     }
 
     @Override
-    public int getPriority() {
-        return 0;
+    public void execute(CommandLine caller, String alias, String... params) {
+        VDiskFile curLocation = caller.getCurrentLocation();
+        if (curLocation == null) {
+            caller.writeln("no disk loaded.");
+            return;
+        }
+
+        VDiskFile commandRoot = null;
+        if (params.length == 1) {
+            commandRoot = CommandUtil.getFile(caller, params[0]);
+        } else {
+            commandRoot = curLocation;
+        }
+
+        if (commandRoot == null) {
+            caller.write("unknown path '%s'", params[0]);
+            return;
+        }
+
+        caller.writeln("%s: %s bytes", commandRoot.getPath(),
+                commandRoot.getTotalSpace());
     }
 
 }
