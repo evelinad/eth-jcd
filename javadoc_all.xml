@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="javadoc">
     <target name="javadoc">
-        <javadoc access="private" author="true" classpath="/Applications/eclipseJava/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar:/Applications/eclipseJava/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar" destdir="doc" doctitle="Batman Virtual Disk" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="ch.se.inf.ethz.jcd.batman.util,ch.se.inf.ethz.jcd.batman.io,ch.se.inf.ethz.jcd.batman.vdisk,ch.se.inf.ethz.jcd.batman.cli,ch.se.inf.ethz.jcd.batman.cli.command" source="1.7" sourcepath="src:test" splitindex="true" use="true" version="true">
+        <javadoc access="private" author="true" classpath="/Applications/eclipseJava/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar:/Applications/eclipseJava/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar" destdir="doc" doctitle="Batman Virtual Disk" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="ch.se.inf.ethz.jcd.batman.io.util,ch.se.inf.ethz.jcd.batman.cli,ch.se.inf.ethz.jcd.batman.io,ch.se.inf.ethz.jcd.batman.vdisk,ch.se.inf.ethz.jcd.batman.cli.command,ch.se.inf.ethz.jcd.batman.vdisk.util" source="1.7" sourcefiles="src/BlubMain.java" sourcepath="src:slowtests:test" splitindex="true" use="true" version="true">
             <link href="http://www.junit.org/junit/javadoc/4.5"/>
             <link href="http://download.oracle.com/javase/7/docs/api/"/>
         </javadoc>
