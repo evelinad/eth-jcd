@@ -11,6 +11,7 @@ import ch.se.inf.ethz.jcd.batman.cli.command.ExportCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.ImportCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.MoveCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.QueryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.SizeCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
@@ -39,6 +40,7 @@ public class Main {
 		cli.attachCommand(new QueryCommand());
 		cli.attachCommand(new ImportCommand());
 		cli.attachCommand(new ExportCommand());
+		cli.attachCommand(new MoveCommand());
 		
 		// start command line interface
 		cli.start();
