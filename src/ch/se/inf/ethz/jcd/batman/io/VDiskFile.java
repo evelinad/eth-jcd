@@ -1,9 +1,8 @@
-/**
- * 
- */
 package ch.se.inf.ethz.jcd.batman.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -17,13 +16,18 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 /**
+ * Representation of a virtual disk entry (file or directory).
  * 
- *
+ * This class provides everything needed to navigate inside a
+ * {@link IVirtualDisk}.
+ * 
  */
 public class VDiskFile {
 
     private static final String PATH_SEPARATOR = String
             .valueOf(IVirtualDisk.PATH_SEPARATOR);
+    
+    private static final int BUFFER_SIZE = 1024 * 1024; // 1 MiB
 
     // fields
     private String pathname;
@@ -47,7 +51,7 @@ public class VDiskFile {
         this.pathname = pathname;
         this.disk = disk;
         if (!isValidPath(this.pathname)) {
-        	throw new VirtualDiskException("Invalid pathname");
+            throw new VirtualDiskException("Invalid pathname");
         }
         this.pathDiskEntry = getDiskEntry(this.pathname);
     }
@@ -79,7 +83,7 @@ public class VDiskFile {
 
         this.disk = disk;
         if (!isValidPath(this.pathname)) {
-        	throw new VirtualDiskException("Invalid pathname");
+            throw new VirtualDiskException("Invalid pathname");
         }
         this.pathDiskEntry = getDiskEntry(this.pathname);
     }
@@ -104,11 +108,11 @@ public class VDiskFile {
 
     // private methods
 
-    private boolean isValidPath (String path) {
-    	// split path into entry names
+    private boolean isValidPath(String path) {
+        // split path into entry names
         String[] pathParts = pathname.split(PATH_SEPARATOR);
         if (pathParts.length == 0) {
-        	return path.equals(PATH_SEPARATOR);
+            return path.equals(PATH_SEPARATOR);
         }
 
         // check that the path starts with the root
@@ -117,7 +121,7 @@ public class VDiskFile {
         }
         return true;
     }
-    
+
     /**
      * Returns a IVirtualDiskEntry for the given path.
      * 
@@ -143,9 +147,11 @@ public class VDiskFile {
 
             // go one step deeper
             try {
-				currentEntry = VirtualDiskUtil.getDirectoryMember(
-				        (IVirtualDirectory) currentEntry, pathPartName);
-			} catch (IOException e) { }
+                currentEntry = VirtualDiskUtil.getDirectoryMember(
+                        (IVirtualDirectory) currentEntry, pathPartName);
+            } catch (IOException e) {
+                return null;
+            }
 
             // check if we got an entry
             if (currentEntry == null) {
@@ -165,9 +171,11 @@ public class VDiskFile {
          */
         String lastPart = pathParts[pathParts.length - 1];
         try {
-			currentEntry = VirtualDiskUtil.getDirectoryMember(
-			        (IVirtualDirectory) currentEntry, lastPart);
-		} catch (IOException e) { }
+            currentEntry = VirtualDiskUtil.getDirectoryMember(
+                    (IVirtualDirectory) currentEntry, lastPart);
+        } catch (IOException e) {
+            return null;
+        }
 
         return currentEntry;
 
@@ -185,7 +193,7 @@ public class VDiskFile {
      *             TODO
      */
     private Collection<IVirtualDiskEntry> getChilds() throws IOException {
-    	if (exists() && pathDiskEntry instanceof IVirtualDirectory) {
+        if (exists() && pathDiskEntry instanceof IVirtualDirectory) {
             return VirtualDiskUtil
                     .getDirectoryMembers((IVirtualDirectory) pathDiskEntry);
         } else {
@@ -220,7 +228,7 @@ public class VDiskFile {
      * @return true if the represented file or directory exists, otherwise false
      */
     public boolean exists() {
-    	this.pathDiskEntry = getDiskEntry(this.pathname);
+        this.pathDiskEntry = getDiskEntry(this.pathname);
         return pathDiskEntry != null;
     }
 
@@ -230,10 +238,10 @@ public class VDiskFile {
      * @return true if VDiskFile is directory, otherwise false
      */
     public boolean isDirectory() {
-    	if (exists()) {
-    		return pathDiskEntry instanceof IVirtualDirectory;
-    	}
-    	return false;
+        if (exists()) {
+            return pathDiskEntry instanceof IVirtualDirectory;
+        }
+        return false;
     }
 
     /**
@@ -242,10 +250,10 @@ public class VDiskFile {
      * @return true if VDiskFile is a file, otherwise false
      */
     public boolean isFile() {
-    	if (exists()) {
-    		return pathDiskEntry instanceof IVirtualFile;
-    	}
-    	return false;
+        if (exists()) {
+            return pathDiskEntry instanceof IVirtualFile;
+        }
+        return false;
     }
 
     /**
@@ -328,8 +336,7 @@ public class VDiskFile {
     /**
      * Creates a directory for the path represented by the VDiskFile.
      * 
-     * This method will only create a directory if the parent already
-     * exists.
+     * This method will only create a directory if the parent already exists.
      * 
      * @return true if and only if the directory was created
      * @throws IOException
@@ -442,7 +449,63 @@ public class VDiskFile {
         this.pathname = dest.getPath();
         return true;
     }
-    
+
+    /**
+     * Copies the VDiskFile to the given targetFile.
+     * 
+     * Note that only files can be copied, not directories or other virtual disk
+     * objects.
+     * 
+     * @param targetFile
+     *            target for the file
+     * @return true if copy was created successfully, otherwise false TODO:
+     *         implement copyTo for directories
+     */
+    public boolean copyTo(VDiskFile targetFile) {
+        if (targetFile.getDisk() != this.disk) {
+            // we do not support a copy over different disks
+            return false;
+        }
+
+        if (targetFile.exists()) {
+            // we do not overwrite existing data
+            return false;
+        }
+
+        if (!this.exists()) {
+            // file to copy does not exist
+            return false;
+        }
+
+        if (this.isFile()) {
+            try {
+                targetFile.createNewFile(((IVirtualFile) this.pathDiskEntry).getSize());
+
+                InputStream reader = new VDiskFileInputStream(this);
+                OutputStream writer = new VDiskFileOutputStream(targetFile,
+                        false);
+                
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int readAmount = 0;
+                do {
+                    readAmount = reader.read(buffer);
+                    if(readAmount > 0) {
+                        writer.write(buffer, 0, readAmount);
+                    }
+                } while(readAmount > 0);
+                
+                reader.close();
+                writer.close();
+                
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Creates a new, empty file of minimal size.
      * 
@@ -454,20 +517,21 @@ public class VDiskFile {
     public boolean createNewFile() throws IOException {
         return this.createNewFile(1);
     }
-    
+
     /**
      * Creates a new, empty file of given size.
      * 
-     * @param size the size to reserve in advance. Must be greater than zero.
+     * @param size
+     *            the size to reserve in advance. Must be greater than zero.
      * @return true if file could be created in all other cases false
      * @throws IOException
      *             TODO
      */
     public boolean createNewFile(long size) throws IOException {
-        if(size < 1L) {
+        if (size < 1L) {
             return false;
         }
-        
+
         if (this.exists()) {
             return false;
         }
@@ -477,12 +541,12 @@ public class VDiskFile {
             return false;
         }
 
-        
-        try  {
-	        this.pathDiskEntry = this.disk.createFile(
-	                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), size);
+        try {
+            this.pathDiskEntry = this.disk.createFile(
+                    (IVirtualDirectory) parent.getDiskEntry(), this.getName(),
+                    size);
         } catch (FileAlreadyExistsException e) {
-        	return false;
+            return false;
         }
         return true;
     }
@@ -557,31 +621,32 @@ public class VDiskFile {
     }
 
     /**
-     * Deletes the file or directory denoted by this object. If this object denotes a directory, 
-     * then the directory must be empty in order to be deleted.
+     * Deletes the file or directory denoted by this object. If this object
+     * denotes a directory, then the directory must be empty in order to be
+     * deleted.
      * 
      * @return true if the object was successfully deleted, false otherwise.
      */
     public boolean delete() {
-    	if (exists()) {
-    		try {
-	    		if (isDirectory()) {
-	    			//Check if directory is empty
-	    			IVirtualDirectory directory = (IVirtualDirectory) this.pathDiskEntry;
-	    			if (directory.getFirstMember() != null) {
-	    				return false;
-	    			}
-	    		}
-	        	this.pathDiskEntry.delete();
-	        	this.pathDiskEntry = null;
-	        	return true;
-	    	} catch (IOException e) {
-	    		return false;
-	    	}
-    	}
-    	return false;
+        if (exists()) {
+            try {
+                if (isDirectory()) {
+                    // Check if directory is empty
+                    IVirtualDirectory directory = (IVirtualDirectory) this.pathDiskEntry;
+                    if (directory.getFirstMember() != null) {
+                        return false;
+                    }
+                }
+                this.pathDiskEntry.delete();
+                this.pathDiskEntry = null;
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return false;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof VDiskFile) {

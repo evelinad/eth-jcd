@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.cli;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.command.ChangeDirectoryCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.CopyCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateDirectoryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.DeleteCommand;
@@ -41,6 +42,7 @@ public class Main {
 		cli.attachCommand(new ImportCommand());
 		cli.attachCommand(new ExportCommand());
 		cli.attachCommand(new MoveCommand());
+		cli.attachCommand(new CopyCommand());
 		
 		// start command line interface
 		cli.start();

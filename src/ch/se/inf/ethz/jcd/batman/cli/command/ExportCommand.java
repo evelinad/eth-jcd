@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
-import ch.se.inf.ethz.jcd.batman.io.HostBridge;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 
 /**
  * Implements an export command that can be used to export a file on the virtual
@@ -48,7 +48,7 @@ public class ExportCommand implements Command {
             // extract host file
             File hostFile = new File(params[1]);
 
-            if (hostFile.exists()) {
+            if (hostFile.isFile()) {
                 caller.writeln("given host file '%s' already exists",
                         hostFile.getPath());
                 return;

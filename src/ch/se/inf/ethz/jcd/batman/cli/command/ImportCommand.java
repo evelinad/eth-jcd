@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
-import ch.se.inf.ethz.jcd.batman.io.HostBridge;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 
 /**
  * Implements an import command that can be used to import host files into the
@@ -34,8 +34,8 @@ public class ImportCommand implements Command {
             // extract host file
             File hostFile = new File(params[0]);
 
-            if (!hostFile.isFile()) {
-                caller.writeln("given host file '%s' is not a file",
+            if (!hostFile.exists()) {
+                caller.writeln("given host file '%s' does not exist",
                         hostFile.getPath());
                 return;
             }
