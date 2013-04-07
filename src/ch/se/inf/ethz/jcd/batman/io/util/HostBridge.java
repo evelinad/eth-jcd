@@ -38,11 +38,11 @@ public class HostBridge {
     public static void importFile(File hostFile, VDiskFile virtualFile)
             throws IOException {
         File absHostFile = hostFile.getAbsoluteFile();
-        
-        if(!absHostFile.exists()) {
+
+        if (!absHostFile.exists()) {
             throw new FileNotFoundException();
         }
-        
+
         if (virtualFile.exists()) {
             if (absHostFile.isFile() && virtualFile.isDirectory()) {
                 /*
@@ -69,7 +69,10 @@ public class HostBridge {
                  */
                 importFileIntoFile(absHostFile, virtualFile);
             } else if (absHostFile.isDirectory()) {
-                throw new UnsupportedOperationException(); // TODO
+                /*
+                 * Host file is a directory and our target does not exist yet.
+                 */
+                importDirectoryIntoDirectory(absHostFile, virtualFile);
             } else {
                 /*
                  * We only support directories and files for now.
@@ -87,17 +90,19 @@ public class HostBridge {
      *            what to export
      * @param absHostFile
      *            where to export to
-     * @throws IOException TODO
+     * @throws IOException
+     *             TODO
      */
-    public static void exportFile(VDiskFile virtualFile, File hostFile) throws IOException {
+    public static void exportFile(VDiskFile virtualFile, File hostFile)
+            throws IOException {
         File absHostFile = hostFile.getAbsoluteFile();
-        
-        if(!virtualFile.exists()) {
+
+        if (!virtualFile.exists()) {
             throw new FileNotFoundException();
         }
-        
-        if(absHostFile.exists()) {
-            if(virtualFile.isFile() && absHostFile.isDirectory()) {
+
+        if (absHostFile.exists()) {
+            if (virtualFile.isFile() && absHostFile.isDirectory()) {
                 /*
                  * export given virtual file into the given host directory
                  */
@@ -110,25 +115,25 @@ public class HostBridge {
                 throw new FileAlreadyExistsException(absHostFile.getPath());
             }
         } else {
-            if(virtualFile.isFile()) {
+            if (virtualFile.isFile()) {
                 /*
                  * export given virtual file into the host file system by
                  * creating the not yet existing host file
                  */
-                if(!absHostFile.getParentFile().exists()) {
+                if (!absHostFile.getParentFile().exists()) {
                     throw new FileNotFoundException(absHostFile.getParent());
                 }
-                
+
                 exportFileIntoFile(virtualFile, absHostFile);
-            } else if(virtualFile.isDirectory()) {
+            } else if (virtualFile.isDirectory()) {
                 /*
                  * export a virtual directory into a not yet existing directory
                  * on the host system
                  */
-                if(!absHostFile.getParentFile().exists()) {
+                if (!absHostFile.getParentFile().exists()) {
                     throw new FileNotFoundException(absHostFile.getParent());
                 }
-                
+
                 throw new UnsupportedOperationException(); // TODO
             } else {
                 throw new UnsupportedOperationException();
@@ -136,12 +141,13 @@ public class HostBridge {
         }
     }
 
-    private static void exportFileIntoFile(VDiskFile virtualFile, File hostFile) throws IOException {
+    private static void exportFileIntoFile(VDiskFile virtualFile, File hostFile)
+            throws IOException {
         FileOutputStream writer = new FileOutputStream(hostFile);
         VDiskFileInputStream reader = new VDiskFileInputStream(virtualFile);
-        
+
         moveData(reader, writer);
-        
+
         reader.close();
         writer.close();
     }
@@ -166,22 +172,39 @@ public class HostBridge {
         reader.close();
         writer.close();
     }
-    
+
     private static void importFileIntoDirectory(File hostFile,
             VDiskFile virtualDir) throws IOException {
         assert hostFile.isFile();
         assert virtualDir.isDirectory();
-        
+
         VDiskFile targetFile = new VDiskFile(virtualDir, hostFile.getName());
         targetFile.createNewFile(hostFile.length());
-        
+
         FileInputStream reader = new FileInputStream(hostFile);
-        VDiskFileOutputStream writer = new VDiskFileOutputStream(targetFile, false);
-        
+        VDiskFileOutputStream writer = new VDiskFileOutputStream(targetFile,
+                false);
+
         moveData(reader, writer);
-        
+
         reader.close();
         writer.close();
+    }
+
+    private static void importDirectoryIntoDirectory(File hostDir,
+            VDiskFile virtualDir) throws IOException {
+        assert hostDir.isDirectory();
+        assert !virtualDir.exists();
+        
+        virtualDir.mkdir();
+        
+        for(File hostChild : hostDir.listFiles()) {
+            if(hostChild.isFile()) {
+                importFileIntoDirectory(hostChild, virtualDir);
+            } else if(hostChild.isDirectory()) {
+                importDirectoryIntoDirectory(hostChild, new VDiskFile(virtualDir, hostChild.getName()));
+            }
+        }
     }
 
     private static void moveData(InputStream reader, OutputStream writer)
