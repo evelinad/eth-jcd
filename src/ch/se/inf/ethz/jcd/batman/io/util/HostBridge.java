@@ -207,7 +207,8 @@ public class HostBridge {
         assert virtualDir.isDirectory();
 
         VDiskFile targetFile = new VDiskFile(virtualDir, hostFile.getName());
-        targetFile.createNewFile(hostFile.length());
+        long hostFileSize = hostFile.length();
+        targetFile.createNewFile(hostFileSize < 1L ? 1L : hostFileSize);
 
         FileInputStream reader = new FileInputStream(hostFile);
         VDiskFileOutputStream writer = new VDiskFileOutputStream(targetFile,

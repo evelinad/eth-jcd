@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -182,6 +183,67 @@ public class HostBridgeTest {
         reader.close();
 
         assertEquals(NORMAL_SIZE_FILE_CONTENT, contentOut.toString());
+    }
+
+    @Test
+    public void testImportExportDirectory() throws IOException {
+        // create temporary host directory
+        File hostDir = File.createTempFile("HostBridgeTest",
+                "testImportExportDirectory");
+        
+        hostDir.delete();
+        hostDir.mkdir();
+        
+        // create host directory structure
+        File.createTempFile("someFileA", "root", hostDir);
+        File.createTempFile("someFileB", "root", hostDir);
+        
+        File hostSubDir = File.createTempFile("sub", "", hostDir);
+        hostSubDir.delete();
+        hostSubDir.mkdir();
+        
+        File.createTempFile("someFileC", "sub", hostSubDir);
+        
+        // target virtual directory
+        VDiskFile virtualDir = new VDiskFile("/test", disk);
+        VDiskFile virtualSubDir = new VDiskFile(virtualDir, hostSubDir.getName());
+        
+        // import directory structure
+        HostBridge.importFile(hostDir, virtualDir, this.mover);
+        
+        // check virtual structure
+        List<String> hostDirChilds = Arrays.asList(hostDir.list());
+        List<String> virtualDirChilds = Arrays.asList(virtualDir.list());
+        
+        assertEquals(hostDirChilds.size(), virtualDirChilds.size());
+        assertTrue(hostDirChilds.containsAll(virtualDirChilds));
+        
+        List<String> hostSubDirChilds = Arrays.asList(hostSubDir.list());
+        List<String> virtualSubDirChilds = Arrays.asList(virtualSubDir.list());
+        
+        assertEquals(hostSubDirChilds.size(), virtualSubDirChilds.size());
+        assertTrue(hostSubDirChilds.containsAll(virtualSubDirChilds));
+        
+        // export directory structure
+        File exportHostDir = File.createTempFile("exportHostDir", "");
+        exportHostDir.delete();
+        
+        File exportHostSubDir = new File(exportHostDir, virtualSubDir.getName());
+        
+        HostBridge.exportFile(virtualDir, exportHostDir, this.mover);
+        
+        // check exported host dir structure
+        List<String> exportedHostDirChilds = Arrays.asList(exportHostDir.list());
+        assertEquals(virtualDirChilds.size(), exportedHostDirChilds.size());
+        assertTrue(virtualDirChilds.containsAll(exportedHostDirChilds));
+        
+        List<String> exportedHostSubDirChilds = Arrays.asList(exportHostSubDir.list());
+        assertEquals(virtualSubDirChilds.size(), exportedHostSubDirChilds.size());
+        assertTrue(virtualSubDirChilds.containsAll(exportedHostSubDirChilds));
+        
+        // clean up
+        exportHostDir.delete();
+        hostDir.delete();
     }
 
     @Test(expected = FileNotFoundException.class)
