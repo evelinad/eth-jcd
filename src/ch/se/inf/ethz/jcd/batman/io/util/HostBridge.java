@@ -49,7 +49,7 @@ public class HostBridge {
                  * We have to move the host file into an existing virtual
                  * directory
                  */
-                throw new UnsupportedOperationException(); // TODO
+                importFileIntoDirectory(absHostFile, virtualFile);
             } else {
                 /*
                  * Possible cases: - hostFile is a directory and the virtualFile
@@ -163,6 +163,23 @@ public class HostBridge {
 
         moveData(reader, writer);
 
+        reader.close();
+        writer.close();
+    }
+    
+    private static void importFileIntoDirectory(File hostFile,
+            VDiskFile virtualDir) throws IOException {
+        assert hostFile.isFile();
+        assert virtualDir.isDirectory();
+        
+        VDiskFile targetFile = new VDiskFile(virtualDir, hostFile.getName());
+        targetFile.createNewFile(hostFile.length());
+        
+        FileInputStream reader = new FileInputStream(hostFile);
+        VDiskFileOutputStream writer = new VDiskFileOutputStream(targetFile, false);
+        
+        moveData(reader, writer);
+        
         reader.close();
         writer.close();
     }

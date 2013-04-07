@@ -108,6 +108,28 @@ public class HostBridgeTest {
 
     }
 
+    @Test
+    public void testImportNormalSizeFileIntoDirectory() throws IOException {
+        final String virtualDirPath = "/test";
+
+        // import
+        VDiskFile virtualDir = new VDiskFile(virtualDirPath, disk);
+        virtualDir.mkdir();
+        
+        HostBridge.importFile(normalSizeFile, virtualDir);
+        
+        VDiskFile virtualTargetFile = new VDiskFile(virtualDir, normalSizeFile.getName());
+        assertTrue(virtualTargetFile.isFile());
+        
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new VDiskFileInputStream(virtualTargetFile)));
+        
+        String readContent = reader.readLine();
+        reader.close();
+        
+        assertEquals(NORMAL_SIZE_FILE_CONTENT, readContent);
+    }
+
     @Test(expected = FileNotFoundException.class)
     public void testImportNonExistingFile() throws IOException {
         File notExistingFile = File.createTempFile("HostBridgeTest",
@@ -150,18 +172,19 @@ public class HostBridgeTest {
                 "testExportNonExistingFile");
         exportTarget.delete();
         assertFalse(exportTarget.exists());
-        
+
         HostBridge.exportFile(notExistingFile, exportTarget);
     }
-    
+
     @Test(expected = FileAlreadyExistsException.class)
     public void testExportToExistingFile() throws IOException {
         VDiskFile existingFile = new VDiskFile("/file", disk);
         existingFile.createNewFile();
-        
-        File exportTarget = File.createTempFile("HostBridgeTest", "testExportToExistingFile");
+
+        File exportTarget = File.createTempFile("HostBridgeTest",
+                "testExportToExistingFile");
         exportTarget.deleteOnExit();
-        
+
         HostBridge.exportFile(existingFile, exportTarget);
     }
 
