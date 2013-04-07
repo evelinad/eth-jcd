@@ -48,7 +48,7 @@ public class ExportCommand implements Command {
             // extract host file
             File hostFile = new File(params[1]);
 
-            if (hostFile.exists()) {
+            if (hostFile.isFile()) {
                 caller.writeln("given host file '%s' already exists",
                         hostFile.getPath());
                 return;
