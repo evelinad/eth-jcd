@@ -8,14 +8,18 @@ import java.io.OutputStream;
  * Moves files without applying any transformations to the data.
  * 
  * @see HostBridge
- *
+ * 
  */
 public class DefaultMover implements DataMover {
 
     private static final int BUFFER_SIZE = 1024 * 1024; // 1 MiB
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.io.util.DataMover#importMove(java.io.InputStream, java.io.OutputStream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.io.util.DataMover#importMove(java.io.InputStream
+     * , java.io.OutputStream)
      */
     @Override
     public void importMove(InputStream hostSource, OutputStream virtualTarget)
@@ -23,8 +27,12 @@ public class DefaultMover implements DataMover {
         move(hostSource, virtualTarget);
     }
 
-    /* (non-Javadoc)
-     * @see ch.se.inf.ethz.jcd.batman.io.util.DataMover#exportMove(java.io.InputStream, java.io.OutputStream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * ch.se.inf.ethz.jcd.batman.io.util.DataMover#exportMove(java.io.InputStream
+     * , java.io.OutputStream)
      */
     @Override
     public void exportMove(InputStream virtualSource, OutputStream hostTarget)
@@ -32,7 +40,16 @@ public class DefaultMover implements DataMover {
         move(virtualSource, hostTarget);
     }
 
-    private void move(InputStream reader, OutputStream writer)
+    /**
+     * Reads data from reader and writes them into the writer.
+     * 
+     * @param reader
+     *            source to read from
+     * @param writer
+     *            target to write to
+     * @throws IOException
+     */
+    public static void move(InputStream reader, OutputStream writer)
             throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];
 
