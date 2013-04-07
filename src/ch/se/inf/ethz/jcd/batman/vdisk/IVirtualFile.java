@@ -94,7 +94,7 @@ public interface IVirtualFile extends IVirtualDiskEntry {
 	/**
 	 * Returns the actual disk space used to store this files data.
 	 * 
-	 * @return the disk space used to stor this file, measured in bytes.
+	 * @return the disk space used to store this file, measured in bytes.
 	 * @throws IOException  if an I/O error occurs
 	 */
 	long getDataDiskSize () throws IOException;

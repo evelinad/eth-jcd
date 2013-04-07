@@ -9,6 +9,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+
+/*
+ * 0x00 8byte   MagicNumber
+ * 0x08 8byte   Root Directory
+ * 0x10 8byte   Reserved
+ * 0x18 160byte FreeLists
+ */
 public final class VirtualDisk implements IVirtualDisk {
 
 	public static IVirtualDisk load (String path) throws IOException {
@@ -33,15 +40,18 @@ public final class VirtualDisk implements IVirtualDisk {
 	
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
+	/**
+	 * Holds the offset position of the start of each free list.
+	 * The free lists are handled as follows
+	 * FreeListIndex : Size of blocks in the free list
+	 * 1             : 128*2^0-128*2^1 - 1
+	 * 2             : 128*2^1-128*2^2 - 1 
+	 * ...
+	 * 21            : 128*2^21-infinity
+	 */
 	private final List<Long> freeLists = new ArrayList<Long>();
 	private final String path;
 	
-	/*
-	 * 0x00 8byte   MagicNumber
-	 * 0x08 8byte   Root Directory
-	 * 0x10 8byte   Reserved
-	 * 0x18 160byte FreeLists
-	 */
 	private VirtualDisk(String path) {
 		this.path = path;
 	}
@@ -89,13 +99,6 @@ public final class VirtualDisk implements IVirtualDisk {
 		return newSpace;
 	}
 	
-	/*
-	 * Initialize the segregated free lists
-	 * There is a class for each two power size
-	 * 1 : 128-255
-	 * ...
-	 * 21 : 128*2^21-infinity
-	 */
 	private void initializeFreeList () throws IOException {
 		file.seek(FREE_LISTS_POSITION);
 		for (int i = 0; i < NR_FREE_LISTS; i++) {
@@ -116,6 +119,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		super.finalize();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void close() throws IOException {
 		if (file != null) {
@@ -123,16 +129,25 @@ public final class VirtualDisk implements IVirtualDisk {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getSize() throws IOException {
 		return file.length();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDirectory getRootDirectory() {
 		return rootDirectory;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDirectory createDirectory(IVirtualDirectory parent,
 			String name) throws IOException {
@@ -143,6 +158,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		return directory;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualFile createFile(IVirtualDirectory parent, String name, long size) throws IOException {
 		IVirtualFile file = VirtualFile.create(this, name, size);
@@ -152,30 +170,45 @@ public final class VirtualDisk implements IVirtualDisk {
 		return file;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(long pos, byte b) throws IOException {
 		file.seek(pos);
 		file.write(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(long pos, byte[] b) throws IOException {
 		file.seek(pos);
 		file.write(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte read(long pos) throws IOException {
 		file.seek(pos);
 		return file.readByte();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(long pos, byte[] b) throws IOException {
 		file.seek(pos);
 		return file.read(b);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(long pos, byte[] b, int offset, int length)
 			throws IOException {
@@ -183,6 +216,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		file.write(b, offset, length);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(long pos, byte[] b, int offset, int length)
 			throws IOException {
@@ -190,6 +226,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		return file.read(b, offset, length);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void freeBlock(IDataBlock block) throws IOException {
 		if (block.isValid()) {
@@ -197,6 +236,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
     public URI getHostLocation() {
         return new File(path).toURI();
@@ -287,6 +329,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		return dataBlock;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IDataBlock[] allocateBlock(long dataSize) throws IOException {
 		long metaDataSize = DataBlock.METADATA_SIZE;
@@ -351,6 +396,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getFreeSpace() throws IOException {
 		long freeSpace = 0;
@@ -364,6 +412,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		return freeSpace;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getOccupiedSpace() throws IOException {
 		return getSize() - getFreeSpace();

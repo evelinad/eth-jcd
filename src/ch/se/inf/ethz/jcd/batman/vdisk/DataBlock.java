@@ -3,6 +3,31 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.IOException;
 
 
+/**
+ * Represents a block containing meta data and data on the virtual Disk.
+ * 
+ * In contrast to a {@link IFreeBlock} this block contains data that is
+ * meaningful.
+ * 
+ * <i>meta data</i> contains information about the block itself and other blocks
+ * which are in some kind of relation to the block.
+ * 
+ * <i>Data</i> is some kind of data that has to be stored on the virtual disk.
+ * 
+ * The data blocks are stored as a linked list and each data block has a pointer to the next block
+ * in the list.
+ * 
+ * The blocks need at 32 byte to store the meta data the rest can be used for the data. The structure
+ * of the block is as follows:
+ * 0x00 8 byte size and indicator for data block
+ * 0x08 8 byte offset of the next data block in the list
+ * 0x10 8 number of bytes in the data block which are used for data (maximum of data block size - meta data size)
+ * 0xnn n data
+ * end  8 byte size and indicator for data block 
+ * 
+ * @see IVirtualBlock
+ * @see IDataBlock
+ */
 public final class DataBlock extends VirtualBlock implements IDataBlock {
 
 	private static final long NEXT_SIZE = 8;
@@ -10,9 +35,23 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 
 	private static final long METADATA_START_SIZE = VirtualBlock.METADATA_START_SIZE + NEXT_SIZE + DATA_LENGTH_SIZE;
 	private static final long METADATA_END_SIZE = VirtualBlock.METADATA_END_SIZE;
+	/**
+	 * The amount of bytes needed to store the meta data of the data block.
+	 */
 	public static final long METADATA_SIZE = METADATA_START_SIZE + METADATA_END_SIZE;
+	/**
+	 * The size of the smallest possible data block.
+	 */
 	public static final long MIN_BLOCK_SIZE = METADATA_SIZE + 1;
 	
+	/**
+	 * Loads the data block stored at the offset position given by position.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the offset position in bytes of the block
+	 * @return the loaded block
+	 * @throws IOException if the block at the given position is invalid or if an I/O error occurs
+	 */
 	public static IDataBlock load (final IVirtualDisk disk, final long position) throws IOException {
 		final DataBlock block = new DataBlock(disk, position, 0, 0, 0);
 		block.readMetadata();
@@ -20,6 +59,18 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return block;
 	}
 	
+	
+	/**
+	 * Creates a data block at the given offset position.
+	 * 
+	 * @param disk the disk on which the block is created
+	 * @param position the offset position in bytes of the block
+	 * @param size the size of the newly created block
+	 * @param dataSize the size in the block which can be used to store data
+	 * @param next the offset position of the next block in the list
+	 * @return the created block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IDataBlock create (final IVirtualDisk disk, final long position, final long size, final long dataSize, final long next) throws IOException {
 		final DataBlock block = new DataBlock(disk, position, size, dataSize, next);
 		block.updateMetadata();
@@ -63,13 +114,19 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(final long pos, final byte data) throws IOException {
 		checkValidTrue();
 		checkDataRange(pos, BYTE_LENGTH);
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
-
+	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(final long pos, final byte[] data) throws IOException {
 		checkValidTrue();
@@ -77,6 +134,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void writeLong(final long pos, final long data) throws IOException {
 		checkValidTrue();
@@ -84,6 +144,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		writeRealPosition(pos + METADATA_START_SIZE, data);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte read(final long pos) throws IOException {
 		checkValidTrue();
@@ -91,6 +154,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return readRealPosition(pos + METADATA_START_SIZE);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(final long pos, final byte[] data) throws IOException {
 		checkValidTrue();
@@ -98,6 +164,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return readRealPosition(pos + METADATA_START_SIZE, data);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long readLong(final long pos) throws IOException {
 		checkValidTrue();
@@ -105,11 +174,17 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return readLongRealPosition(pos + METADATA_START_SIZE);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getNextBlock() {
 		return next;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getDataSize() {
 		return dataSize;
@@ -119,11 +194,17 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return getDiskSize() - METADATA_SIZE;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getFreeSize() {
 		return getMaxDataSize() - dataSize;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setDataSize(final long size) throws IOException {
 		checkValidTrue();
@@ -131,6 +212,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		updateDataSize();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void write(final long pos, final byte[] b, final int offset, final int length)
 			throws IOException {
@@ -139,6 +223,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		writeRealPosition(pos + METADATA_START_SIZE, b, offset, length);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int read(final long pos, final byte[] data, final int offset, final int length)
 			throws IOException {
@@ -147,6 +234,9 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		return readRealPosition(pos + METADATA_START_SIZE, data, offset, length);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setNextBlock(final long nextBlock) throws IOException {
 		checkValidTrue();
@@ -170,11 +260,17 @@ public final class DataBlock extends VirtualBlock implements IDataBlock {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isValid () {
 		return valid;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void free() throws IOException {
 		if (isValid()) {

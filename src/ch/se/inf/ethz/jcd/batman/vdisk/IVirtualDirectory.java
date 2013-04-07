@@ -12,12 +12,12 @@ import java.io.IOException;
  */
 public interface IVirtualDirectory extends IVirtualDiskEntry {
 	/**
-	 * Removes the given member from the list.
+	 * Removes the given member from the directory.
 	 * 
 	 * @param member
-	 *            member to remove from the list
-	 * @throws VirtualDiskException
-	 *             TODO
+	 *            member to remove from the directory
+	 * @throws VirtualDiskException if the member is not part of this directory
+	 * @throws IOException if an I/O error occurs
 	 */
 	void removeMember(IVirtualDiskEntry member) throws VirtualDiskException,
 			IOException;
@@ -35,7 +35,7 @@ public interface IVirtualDirectory extends IVirtualDiskEntry {
 	 * 
 	 * @see IVirtualDiskEntry#getNextEntry()
 	 * @return the first member of the list.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	IVirtualDiskEntry getFirstMember() throws IOException;
 }

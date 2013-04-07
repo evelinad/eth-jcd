@@ -8,8 +8,24 @@ import java.util.Iterator;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualEntryIterator;
 
+/**
+ * Represents an entry inside the virtual disk. This is the basic interface that
+ * is extended by directories ({@link IVirtualDirectory}) and files (
+ * {@link IVirtualFile}.
+ * 
+ */
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
+	/**
+	 * Loads a {@link IVirtualDiskEntry} located at the offset position given by position.
+	 * The returned {@link IVirtualDiskEntry} is either an instance of {@link IVirtualDirectory} or
+	 * {@link IVirtualFile}.
+	 * 
+	 * @param disk the disk on which the entry is stored
+	 * @param position the offset position of the entry
+	 * @return the loaded entry
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static IVirtualDiskEntry load (IVirtualDisk disk, long position) throws IOException {
 		IVirtualDiskSpace space = VirtualDiskSpace.load(disk, position);
 		if (VirtualDirectory.isDirectory(space)) {
@@ -32,7 +48,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	private long timestamp;
 	private FileState state;
 	
-	public VirtualDiskEntry (IVirtualDisk disk) throws IOException {
+	protected VirtualDiskEntry (IVirtualDisk disk) throws IOException {
 		this.disk = disk;
 		state = FileState.CREATED;
 	}
@@ -74,6 +90,9 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setName(String name) throws IOException {
 		checkNameValid(name);
@@ -84,26 +103,41 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	
 	protected abstract void updateName () throws IOException;
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDirectory getParent() {
 		return parent;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setParent(IVirtualDirectory parent) throws IOException {
 		this.parent = parent;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDiskEntry getPreviousEntry() {
 		return previous;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setPreviousEntry(IVirtualDiskEntry previous) {
 		this.previous = previous;
@@ -111,6 +145,9 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
 	protected abstract IVirtualDiskEntry loadNextEntry() throws IOException;
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IVirtualDiskEntry getNextEntry() throws IOException {
 		if (!nextEntryLoaded) {
@@ -124,6 +161,9 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 		return next;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setNextEntry(IVirtualDiskEntry next) throws IOException {
 		this.next = next;
@@ -133,11 +173,17 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	
 	protected abstract void updateNextEntry() throws IOException;
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getTimestamp() {
 		return timestamp;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setTimestamp(long timestamp) throws IOException {
 		this.timestamp = timestamp;
@@ -146,20 +192,34 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 	
 	protected abstract void updateTimestamp () throws IOException;
 	
+	/**
+	 * Return the disk on which this entry is stored.
+	 * 
+	 * @return the disk on which this entry is stored.
+	 */
 	public IVirtualDisk getDisk () {
 		return disk;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete () throws IOException {
 		state = FileState.DELETED;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean exists () {
 		return state == FileState.CREATED;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Iterator<IVirtualDiskEntry> iterator() {
 	    return new VirtualEntryIterator(this);

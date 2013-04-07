@@ -3,18 +3,52 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Represents a block on the virtual disk.
+ * 
+ * This interface provides the common contract that all kinds of blocks have to
+ * provide to the outside world.
+ * 
+ * @see IDataBlock
+ * @see IFreeBlock
+ *
+ */
 public abstract class VirtualBlock implements IVirtualBlock {
 
+	/**
+	 * Loads the previous block.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the offset position in bytes of the current block
+	 * @return the previous block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final IVirtualBlock loadPreviousBlock (IVirtualDisk disk, long position) throws IOException {
 		long previousBlockSize = removeMetaFlagFromSize(readLong(disk, position - BLOCK_LENGTH_SIZE));
 		return loadBlock(disk, position - previousBlockSize);
 	}
 	
+	/**
+	 * Loads the next block.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the offset position in bytes of the current block
+	 * @return the next block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final IVirtualBlock loadNextBlock (IVirtualDisk disk, long position) throws IOException {
 		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
 		return loadBlock(disk, position + currentBlockSize);
 	}
 	
+	/**
+	 * Loads the block ad the offset position given by position.
+	 * 
+	 * @param disk the disk on which the block is stored.
+	 * @param position the offset position of the block
+	 * @return the loaded block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final IVirtualBlock loadBlock (IVirtualDisk disk, long position) throws IOException {
 		long size = readLong(disk, position);
 		if (checkIfAllocatedFlagSet(size)) {
@@ -24,19 +58,51 @@ public abstract class VirtualBlock implements IVirtualBlock {
 		}
 	}
 	
+	/**
+	 * Return the size in bytes of the next block.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the offset position of the current block
+	 * @return the size in bytes of the next block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final long getSizeOfNextBlock (IVirtualDisk disk, long position) throws IOException {
 		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
 		return removeMetaFlagFromSize(readLong(disk, position + currentBlockSize));
 	}
 	
+	/**
+	 * Return the size in bytes of the previous block.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the offset position of the current block
+	 * @return the size in bytes of the previous block
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final long getSizeOfPreviousBlock (IVirtualDisk disk, long position) throws IOException {
 		return removeMetaFlagFromSize(readLong(disk, position - BLOCK_LENGTH_SIZE));
 	}
 	
+	/**
+	 * Checks if the previous block is an instance of {@link IFreeBlock}.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the position of the current block
+	 * @return true if the previous block is an instance of {@link IFreeBlock} otherwise false
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final boolean checkIfPreviousFree (IVirtualDisk disk, long position) throws IOException {
 		return !checkIfAllocatedFlagSet(readLong(disk, position - BLOCK_LENGTH_SIZE));
 	}
 	
+	/**
+	 * Checks if the next block is an instance of {@link IFreeBlock}.
+	 * 
+	 * @param disk the disk on which the block is stored
+	 * @param position the position of the current block
+	 * @return true if the next block is an instance of {@link IFreeBlock} otherwise false
+	 * @throws IOException if an I/O error occurs
+	 */
 	public static final boolean checkIfNextFree (IVirtualDisk disk, long position) throws IOException {
 		long currentBlockSize = removeMetaFlagFromSize(readLong(disk, position));
 		return !checkIfAllocatedFlagSet(readLong(disk, position + currentBlockSize));
@@ -105,11 +171,17 @@ public abstract class VirtualBlock implements IVirtualBlock {
 		return disk;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getBlockPosition() {
 		return blockPosition;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long getDiskSize() {
 		return size;
