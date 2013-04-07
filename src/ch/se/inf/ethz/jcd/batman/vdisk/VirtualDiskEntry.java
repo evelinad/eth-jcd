@@ -71,7 +71,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
     protected abstract String loadName() throws IOException;
 
     protected void checkNameValid(String name) throws VirtualDiskException {
-        if (name == null || name.contains("/")) {
+        if (name == null || name.contains("" + IVirtualDisk.PATH_SEPARATOR)) {
             throw new VirtualDiskException("Invalid name");
         }
     }

@@ -9,11 +9,19 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-/*
+/**
+ * 
+ * The VirtualDisk needs at least 192(superblock) + 128(root directory entry) byte to store its meta data. 
+ * The first 192 byte are structured as follows:
+ * 
  * 0x00 8byte   MagicNumber
- * 0x08 8byte   Root Directory
+ * 0x08 8byte   Root Directory offset
  * 0x10 8byte   Reserved
- * 0x18 160byte FreeLists
+ * 0x18 168byte FreeLists
+ * 
+ * The first entry after the free lists is usually the root directory. But because there is
+ * an offset saved in the superblock which gives the offset of the root directory, it could
+ * also be saved in another place. 
  */
 public final class VirtualDisk implements IVirtualDisk {
 
