@@ -1,6 +1,8 @@
 package ch.se.inf.ethz.jcd.batman.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -24,6 +26,8 @@ public class VDiskFile {
 
     private static final String PATH_SEPARATOR = String
             .valueOf(IVirtualDisk.PATH_SEPARATOR);
+    
+    private static final int BUFFER_SIZE = 1024 * 1024; // 1 MiB
 
     // fields
     private String pathname;
@@ -444,6 +448,62 @@ public class VDiskFile {
 
         this.pathname = dest.getPath();
         return true;
+    }
+
+    /**
+     * Copies the VDiskFile to the given targetFile.
+     * 
+     * Note that only files can be copied, not directories or other virtual disk
+     * objects.
+     * 
+     * @param targetFile
+     *            target for the file
+     * @return true if copy was created successfully, otherwise false TODO:
+     *         implement copyTo for directories
+     */
+    public boolean copyTo(VDiskFile targetFile) {
+        if (targetFile.getDisk() != this.disk) {
+            // we do not support a copy over different disks
+            return false;
+        }
+
+        if (targetFile.exists()) {
+            // we do not overwrite existing data
+            return false;
+        }
+
+        if (!this.exists()) {
+            // file to copy does not exist
+            return false;
+        }
+
+        if (this.isFile()) {
+            try {
+                targetFile.createNewFile(((IVirtualFile) this.pathDiskEntry).getSize());
+
+                InputStream reader = new VDiskFileInputStream(this);
+                OutputStream writer = new VDiskFileOutputStream(targetFile,
+                        false);
+                
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int readAmount = 0;
+                do {
+                    readAmount = reader.read(buffer);
+                    if(readAmount > 0) {
+                        writer.write(buffer, 0, readAmount);
+                    }
+                } while(readAmount > 0);
+                
+                reader.close();
+                writer.close();
+                
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
