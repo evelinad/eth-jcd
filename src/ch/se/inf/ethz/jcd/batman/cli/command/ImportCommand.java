@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
-import ch.se.inf.ethz.jcd.batman.io.HostBridge;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 
 /**
  * Implements an import command that can be used to import host files into the

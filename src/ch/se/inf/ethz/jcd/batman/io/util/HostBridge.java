@@ -1,4 +1,4 @@
-package ch.se.inf.ethz.jcd.batman.io;
+package ch.se.inf.ethz.jcd.batman.io.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileAlreadyExistsException;
+
+import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFileInputStream;
+import ch.se.inf.ethz.jcd.batman.io.VDiskFileOutputStream;
 
 /**
  * Provides static methods that can be used to create connections between the
