@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
 
+import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
 
 /**
  * This class implements an interface for the command line (CLI).
@@ -21,7 +21,7 @@ import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
  * the input and a way to inform others that a given input was handled.
  * 
  * @see java.io.Console
- * @see ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver
+ * @see ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver
  */
 public class CommandLineInterface extends PrioritizedObservable<String> {
     /**

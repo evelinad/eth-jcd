@@ -1,4 +1,4 @@
-package ch.se.inf.ethz.jcd.batman.util;
+package ch.se.inf.ethz.jcd.batman.cli.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,7 @@ import java.util.List;
  * specific order. Observing observers are called in ascending order
  * of their priority returned by getPriority().
  *
- * @see ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver
+ * @see ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver
  * @param <T> type of the data object used in notifyAll
  */
 public class PrioritizedObservable<T> {

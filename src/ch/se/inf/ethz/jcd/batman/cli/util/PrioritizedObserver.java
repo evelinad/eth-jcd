@@ -1,10 +1,10 @@
-package ch.se.inf.ethz.jcd.batman.util;
+package ch.se.inf.ethz.jcd.batman.cli.util;
 
 /**
  * Interface which an observer for a PrioritizedObservable instance has
  * to implement.
  *
- * @see ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable
+ * @see ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable
  * @param <T> type of the data received by update()
  */
 public interface PrioritizedObserver<T> {

@@ -3,9 +3,9 @@ package ch.se.inf.ethz.jcd.batman.cli.command;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
+import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
+import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
-import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 public class ChangeDirectoryCommand implements PrioritizedObserver<String> {

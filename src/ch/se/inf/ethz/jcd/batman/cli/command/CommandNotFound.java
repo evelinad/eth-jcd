@@ -1,8 +1,8 @@
 package ch.se.inf.ethz.jcd.batman.cli.command;
 
 import ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface;
-import ch.se.inf.ethz.jcd.batman.util.PrioritizedObservable;
-import ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver;
+import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObservable;
+import ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver;
 
 /**
  * As a last resort an instance of this class will inform the user

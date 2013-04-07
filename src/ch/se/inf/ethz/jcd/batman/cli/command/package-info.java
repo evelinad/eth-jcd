@@ -3,7 +3,7 @@
  * commands used by {@link ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface}.
  * 
  * @see ch.se.inf.ethz.jcd.batman.cli.CommandLineInterface
- * @see ch.se.inf.ethz.jcd.batman.util.PrioritizedObserver
+ * @see ch.se.inf.ethz.jcd.batman.cli.util.PrioritizedObserver
  */
 
 package ch.se.inf.ethz.jcd.batman.cli.command;
