@@ -7,6 +7,7 @@ import java.io.IOException;
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 
 /**
@@ -56,7 +57,7 @@ public class ExportCommand implements Command {
 
             // export it
             try {
-                HostBridge.exportFile(virtualFile, hostFile);
+                HostBridge.exportFile(virtualFile, hostFile, new DefaultMover());
                 caller.writeln("exported '%s' into '%s'",
                         virtualFile.getPath(), hostFile.getPath());
             } catch (IOException e) {

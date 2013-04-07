@@ -7,6 +7,7 @@ import java.io.IOException;
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 
 /**
@@ -56,7 +57,7 @@ public class ImportCommand implements Command {
 
             // import it
             try {
-                HostBridge.importFile(hostFile, virtualFile);
+                HostBridge.importFile(hostFile, virtualFile, new DefaultMover());
                 caller.writeln("imported '%s' into '%s'", hostFile.getPath(),
                         virtualFile.getPath());
             } catch (IOException e) {

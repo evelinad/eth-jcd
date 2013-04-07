@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
@@ -69,7 +70,7 @@ public class HostBridgeTest {
 
         // import normalSizeFile
         VDiskFile virtualFileImport = new VDiskFile(virtualFilePath, disk);
-        HostBridge.importFile(normalSizeFile, virtualFileImport);
+        HostBridge.importFile(normalSizeFile, virtualFileImport, new DefaultMover());
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new VDiskFileInputStream(virtualFileImport)));
@@ -92,7 +93,7 @@ public class HostBridgeTest {
 
         VDiskFile virtualFileExport = new VDiskFile(virtualFilePath, disk);
 
-        HostBridge.exportFile(virtualFileExport, exportTarget);
+        HostBridge.exportFile(virtualFileExport, exportTarget, new DefaultMover());
 
         // read exported file
         BufferedReader exportedFileReader = new BufferedReader(new FileReader(
@@ -116,7 +117,7 @@ public class HostBridgeTest {
         VDiskFile virtualDir = new VDiskFile(virtualDirPath, disk);
         virtualDir.mkdir();
         
-        HostBridge.importFile(normalSizeFile, virtualDir);
+        HostBridge.importFile(normalSizeFile, virtualDir, new DefaultMover());
         
         VDiskFile virtualTargetFile = new VDiskFile(virtualDir, normalSizeFile.getName());
         assertTrue(virtualTargetFile.isFile());
@@ -140,7 +141,7 @@ public class HostBridgeTest {
 
         VDiskFile importTarget = new VDiskFile("/import", disk);
 
-        HostBridge.importFile(notExistingFile, importTarget);
+        HostBridge.importFile(notExistingFile, importTarget, new DefaultMover());
     }
 
     @Test(expected = FileAlreadyExistsException.class)
@@ -150,7 +151,7 @@ public class HostBridgeTest {
 
         assertTrue(existingFile.createNewFile());
 
-        HostBridge.importFile(normalSizeFile, existingFile);
+        HostBridge.importFile(normalSizeFile, existingFile, new DefaultMover());
     }
 
     @Test(expected = FileNotFoundException.class)
@@ -160,7 +161,7 @@ public class HostBridgeTest {
         assertFalse(noParentFile.exists());
         assertFalse(noParentFile.getParentFile().exists());
 
-        HostBridge.importFile(normalSizeFile, noParentFile);
+        HostBridge.importFile(normalSizeFile, noParentFile, new DefaultMover());
     }
 
     @Test(expected = FileNotFoundException.class)
@@ -173,7 +174,7 @@ public class HostBridgeTest {
         exportTarget.delete();
         assertFalse(exportTarget.exists());
 
-        HostBridge.exportFile(notExistingFile, exportTarget);
+        HostBridge.exportFile(notExistingFile, exportTarget, new DefaultMover());
     }
 
     @Test(expected = FileAlreadyExistsException.class)
@@ -185,7 +186,7 @@ public class HostBridgeTest {
                 "testExportToExistingFile");
         exportTarget.deleteOnExit();
 
-        HostBridge.exportFile(existingFile, exportTarget);
+        HostBridge.exportFile(existingFile, exportTarget, new DefaultMover());
     }
 
 }
