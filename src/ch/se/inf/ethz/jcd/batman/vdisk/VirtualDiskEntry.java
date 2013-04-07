@@ -68,7 +68,7 @@ public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 			Collection<IVirtualDiskEntry> directoryEntrys = VirtualDiskUtil.getDirectoryMembers(parent);
 			for (IVirtualDiskEntry entry : directoryEntrys) {
 				if (entry.getName().equals(name)) {
-					throw new VirtualDiskException("Name already in use");
+					throw new FileAlreadyExistsException();
 				}
 			}
 		}

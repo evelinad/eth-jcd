@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.FileAlreadyExistsException;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
@@ -45,6 +46,9 @@ public class VDiskFile {
     public VDiskFile(String pathname, IVirtualDisk disk) throws IOException {
         this.pathname = pathname;
         this.disk = disk;
+        if (!isValidPath(this.pathname)) {
+        	throw new VirtualDiskException("Invalid pathname");
+        }
         this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
@@ -74,6 +78,9 @@ public class VDiskFile {
         }
 
         this.disk = disk;
+        if (!isValidPath(this.pathname)) {
+        	throw new VirtualDiskException("Invalid pathname");
+        }
         this.pathDiskEntry = getDiskEntry(this.pathname);
     }
 
@@ -97,6 +104,20 @@ public class VDiskFile {
 
     // private methods
 
+    private boolean isValidPath (String path) {
+    	// split path into entry names
+        String[] pathParts = pathname.split(PATH_SEPARATOR);
+        if (pathParts.length == 0) {
+        	return path.equals(PATH_SEPARATOR);
+        }
+
+        // check that the path starts with the root
+        if (!pathParts[0].isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+    
     /**
      * Returns a IVirtualDiskEntry for the given path.
      * 
@@ -104,24 +125,12 @@ public class VDiskFile {
      *            path for which to return a IVirtualDiskEntry
      * @return the corresponding IVirtualDiskEntry or null. Null is returned if
      *         the path is not valid or no disk entry exists yet
-     * @throws IOException
-     *             TODO
      */
-    private IVirtualDiskEntry getDiskEntry(String path) throws IOException {
+    private IVirtualDiskEntry getDiskEntry(String path) {
         // split path into entry names
         String[] pathParts = pathname.split(PATH_SEPARATOR);
         if (pathParts.length == 0) {
-            if (path.equals(PATH_SEPARATOR)) {
-                return disk.getRootDirectory();
-            } else {
-                throw new VirtualDiskException(String.format(
-                        "'%s' not a valid path", path));
-            }
-        }
-
-        // check that the path starts with the root
-        if (!pathParts[0].isEmpty()) {
-            throw new VirtualDiskException("Path does not start at root");
+            return disk.getRootDirectory();
         }
 
         /*
@@ -133,8 +142,10 @@ public class VDiskFile {
             String pathPartName = pathParts[curPartIndex];
 
             // go one step deeper
-            currentEntry = VirtualDiskUtil.getDirectoryMember(
-                    (IVirtualDirectory) currentEntry, pathPartName);
+            try {
+				currentEntry = VirtualDiskUtil.getDirectoryMember(
+				        (IVirtualDirectory) currentEntry, pathPartName);
+			} catch (IOException e) { }
 
             // check if we got an entry
             if (currentEntry == null) {
@@ -153,8 +164,10 @@ public class VDiskFile {
          * it's child, that we search, does not have to be
          */
         String lastPart = pathParts[pathParts.length - 1];
-        currentEntry = VirtualDiskUtil.getDirectoryMember(
-                (IVirtualDirectory) currentEntry, lastPart);
+        try {
+			currentEntry = VirtualDiskUtil.getDirectoryMember(
+			        (IVirtualDirectory) currentEntry, lastPart);
+		} catch (IOException e) { }
 
         return currentEntry;
 
@@ -172,7 +185,7 @@ public class VDiskFile {
      *             TODO
      */
     private Collection<IVirtualDiskEntry> getChilds() throws IOException {
-        if (pathDiskEntry instanceof IVirtualDirectory) {
+    	if (exists() && pathDiskEntry instanceof IVirtualDirectory) {
             return VirtualDiskUtil
                     .getDirectoryMembers((IVirtualDirectory) pathDiskEntry);
         } else {
@@ -207,6 +220,9 @@ public class VDiskFile {
      * @return true if the represented file or directory exists, otherwise false
      */
     public boolean exists() {
+    	if (pathDiskEntry == null) {
+    		this.pathDiskEntry = getDiskEntry(this.pathname);
+    	}
         return pathDiskEntry != null;
     }
 
@@ -216,7 +232,10 @@ public class VDiskFile {
      * @return true if VDiskFile is directory, otherwise false
      */
     public boolean isDirectory() {
-        return pathDiskEntry instanceof IVirtualDirectory;
+    	if (exists()) {
+    		return pathDiskEntry instanceof IVirtualDirectory;
+    	}
+    	return false;
     }
 
     /**
@@ -225,7 +244,10 @@ public class VDiskFile {
      * @return true if VDiskFile is a file, otherwise false
      */
     public boolean isFile() {
-        return pathDiskEntry instanceof IVirtualFile;
+    	if (exists()) {
+    		return pathDiskEntry instanceof IVirtualFile;
+    	}
+    	return false;
     }
 
     /**
@@ -457,9 +479,13 @@ public class VDiskFile {
             return false;
         }
 
-        this.pathDiskEntry = this.disk.createFile(
-                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), size);
-
+        
+        try  {
+	        this.pathDiskEntry = this.disk.createFile(
+	                (IVirtualDirectory) parent.getDiskEntry(), this.getName(), size);
+        } catch (FileAlreadyExistsException e) {
+        	return false;
+        }
         return true;
     }
 
