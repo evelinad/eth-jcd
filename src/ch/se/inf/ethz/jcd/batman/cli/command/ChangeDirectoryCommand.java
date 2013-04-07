@@ -18,6 +18,7 @@ public class ChangeDirectoryCommand implements Command {
         VDiskFile curLocation = caller.getCurrentLocation();
         if(curLocation == null) {
             caller.writeln("no disk loaded.");
+            return;
         }
         
         if(params.length == 1) {

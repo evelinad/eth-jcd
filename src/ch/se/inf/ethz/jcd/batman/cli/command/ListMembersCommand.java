@@ -24,27 +24,28 @@ public class ListMembersCommand implements Command {
         VDiskFile curLocation = caller.getCurrentLocation();
         if (curLocation == null) {
             caller.writeln("no disk loaded.");
-        } else {
-            VDiskFile listRoot = null;
-            if (params.length == 1) {
-                listRoot = CommandUtil.getFile(caller, params[0]);
-            } else {
-                listRoot = curLocation;
-            }
+            return;
+        }
 
-            try {
-                for (VDiskFile child : listRoot.listFiles()) {
-                    if (child.isDirectory()) {
-                        caller.writeln("%s [D]", child.getName());
-                    } else if (child.isFile()) {
-                        caller.writeln("%s [F]", child.getName());
-                    } else {
-                        caller.writeln("%s [?]", child.getName());
-                    }
+        VDiskFile listRoot = null;
+        if (params.length == 1) {
+            listRoot = CommandUtil.getFile(caller, params[0]);
+        } else {
+            listRoot = curLocation;
+        }
+
+        try {
+            for (VDiskFile child : listRoot.listFiles()) {
+                if (child.isDirectory()) {
+                    caller.writeln("%s [D]", child.getName());
+                } else if (child.isFile()) {
+                    caller.writeln("%s [F]", child.getName());
+                } else {
+                    caller.writeln("%s [?]", child.getName());
                 }
-            } catch (IOException e) {
-                caller.write(e);
             }
+        } catch (IOException e) {
+            caller.write(e);
         }
     }
 
