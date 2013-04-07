@@ -25,6 +25,11 @@ public class ExportCommand implements Command {
 
     @Override
     public void execute(CommandLine caller, String alias, String... params) {
+        if(caller.getCurrentLocation() == null) {
+            caller.writeln("no disk loaded.");
+            return;
+        }
+        
         if (params.length == 2) {
             // extract virtual file
             VDiskFile virtualFile = CommandUtil.getFile(caller, params[0]);

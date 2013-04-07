@@ -25,6 +25,11 @@ public class ImportCommand implements Command {
 
     @Override
     public void execute(CommandLine caller, String alias, String... params) {
+        if(caller.getCurrentLocation() == null) {
+            caller.writeln("no disk loaded.");
+            return;
+        }
+        
         if (params.length == 2) {
             // extract host file
             File hostFile = new File(params[0]);
