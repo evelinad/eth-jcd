@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.cli;
 
 import java.io.IOException;
 
+import ch.se.inf.ethz.jcd.batman.cli.command.ChangeDirectoryCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
@@ -21,6 +22,7 @@ public class Main {
 		cli.attachCommand(new StopCommand());
 		cli.attachCommand(new UnloadCommand());
 		cli.attachCommand(new CreateCommand());
+		cli.attachCommand(new ChangeDirectoryCommand());
 		
 		// start command line interface
 		cli.start();
