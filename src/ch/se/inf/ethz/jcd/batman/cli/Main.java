@@ -9,6 +9,7 @@ import ch.se.inf.ethz.jcd.batman.cli.command.DeleteCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.DestroyCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.ListMembersCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
+import ch.se.inf.ethz.jcd.batman.cli.command.SizeCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
 
@@ -31,6 +32,7 @@ public class Main {
 		cli.attachCommand(new ListMembersCommand());
 		cli.attachCommand(new DeleteCommand());
 		cli.attachCommand(new DestroyCommand());
+		cli.attachCommand(new SizeCommand());
 		
 		// start command line interface
 		cli.start();
