@@ -134,7 +134,7 @@ public class HostBridge {
                     throw new FileNotFoundException(absHostFile.getParent());
                 }
 
-                throw new UnsupportedOperationException(); // TODO
+                exportDirectoryIntoDirectory(virtualFile, absHostFile);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -156,17 +156,33 @@ public class HostBridge {
             File hostDir) throws IOException {
         assert virtualFile.exists();
         assert hostDir.isDirectory();
-        
+
         File hostFile = new File(hostDir, virtualFile.getName());
         hostFile.createNewFile();
-        
+
         FileOutputStream writer = new FileOutputStream(hostFile);
         VDiskFileInputStream reader = new VDiskFileInputStream(virtualFile);
-        
+
         moveData(reader, writer);
-        
+
         reader.close();
         writer.close();
+    }
+
+    private static void exportDirectoryIntoDirectory(VDiskFile virtualDir,
+            File hostDir) throws IOException {
+        assert !hostDir.exists();
+        assert virtualDir.isDirectory();
+        
+        hostDir.mkdir();
+        
+        for(VDiskFile child : virtualDir.listFiles()) {
+            if(child.isFile()) {
+                exportFileIntoDirectory(child, hostDir);
+            } else if(child.isDirectory()) {
+                exportDirectoryIntoDirectory(child, new File(hostDir, child.getName()));
+            }
+        }
     }
 
     private static void importFileIntoFile(File hostFile, VDiskFile virtualFile)
