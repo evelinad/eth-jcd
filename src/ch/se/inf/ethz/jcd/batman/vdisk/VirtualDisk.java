@@ -128,12 +128,7 @@ public final class VirtualDisk implements IVirtualDisk {
 	public long getSize() throws IOException {
 		return file.length();
 	}
-
-	@Override
-	public int getSuperblockSize() {
-		return SUPERBLOCK_SIZE;
-	}
-
+	
 	@Override
 	public IVirtualDirectory getRootDirectory() {
 		return rootDirectory;
@@ -355,6 +350,24 @@ public final class VirtualDisk implements IVirtualDisk {
 		for (int i = 0; i < NR_FREE_LISTS; i++) {
 			freeLists.add(file.readLong());
 		}
+	}
+
+	@Override
+	public long getFreeSpace() throws IOException {
+		long freeSpace = 0;
+		for (Long freeListPosition : freeLists) {
+			IFreeBlock freeBlock = null;
+			for (long nextEntry = freeListPosition; nextEntry != 0; nextEntry = freeBlock.getNextBlock()) {
+				 freeBlock = FreeBlock.load(this, nextEntry);
+				 freeSpace += freeBlock.getDiskSize();
+			}
+		}
+		return freeSpace;
+	}
+
+	@Override
+	public long getOccupiedSpace() throws IOException {
+		return getSize() - getFreeSpace();
 	}
 	
 }
