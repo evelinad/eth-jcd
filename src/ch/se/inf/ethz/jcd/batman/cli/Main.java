@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.cli;
 
 import java.io.IOException;
 
+import ch.se.inf.ethz.jcd.batman.cli.command.CreateCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.LoadCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.StopCommand;
 import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
@@ -19,6 +20,7 @@ public class Main {
 		cli.attachCommand(new LoadCommand());
 		cli.attachCommand(new StopCommand());
 		cli.attachCommand(new UnloadCommand());
+		cli.attachCommand(new CreateCommand());
 		
 		// start command line interface
 		cli.start();
