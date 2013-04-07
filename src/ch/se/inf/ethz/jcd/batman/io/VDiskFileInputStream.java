@@ -78,7 +78,7 @@ public class VDiskFileInputStream extends InputStream {
             this.file.seek(currentPosition);
             int readValue = this.file.read() & 0xFF;
             this.currentPosition = this.file.getFilePointer();
-            
+
             return readValue;
         } else {
             return -1;
@@ -87,27 +87,35 @@ public class VDiskFileInputStream extends InputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        this.file.seek(currentPosition);
-        int readAmount = this.file.read(b);
-        this.currentPosition = this.file.getFilePointer();
+        if (currentPosition < this.file.getSize()) {
+            this.file.seek(currentPosition);
+            int readAmount = this.file.read(b);
+            this.currentPosition = this.file.getFilePointer();
 
-        return readAmount;
+            return readAmount;
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        this.file.seek(currentPosition);
+        if (currentPosition < this.file.getSize()) {
+            this.file.seek(currentPosition);
 
-        byte[] readBytes = new byte[len];
-        int readCount = this.file.read(readBytes);
+            byte[] readBytes = new byte[len];
+            int readCount = this.file.read(readBytes);
 
-        for (int i = off; i < off + len; i++) {
-            b[i] = readBytes[i - off];
+            for (int i = off; i < off + len; i++) {
+                b[i] = readBytes[i - off];
+            }
+
+            this.currentPosition = this.file.getFilePointer();
+
+            return readCount;
+        } else {
+            return -1;
         }
-
-        this.currentPosition = this.file.getFilePointer();
-
-        return readCount;
     }
 
     @Override

@@ -132,7 +132,7 @@ public class VDiskFileInputOutputStreamsTest {
         byte[] readBuffer = { 0x0, 0x0, 0x0 };
         byte[] expected = Arrays.copyOf(readBuffer, readBuffer.length);
 
-        // we should not be able to read anything as we skiped to the end.
+        // we should not be able to read anything as we skipped to the end.
         assertEquals(-1, reader.read(readBuffer));
         assertArrayEquals(expected, readBuffer);
     }
