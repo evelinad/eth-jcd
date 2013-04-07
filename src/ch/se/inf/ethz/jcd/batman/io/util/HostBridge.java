@@ -150,9 +150,6 @@ public class HostBridge {
         VDiskFileInputStream reader = new VDiskFileInputStream(virtualFile);
 
         mover.exportMove(reader, writer);
-
-        reader.close();
-        writer.close();
     }
 
     private static void exportFileIntoDirectory(VDiskFile virtualFile,
@@ -167,9 +164,6 @@ public class HostBridge {
         VDiskFileInputStream reader = new VDiskFileInputStream(virtualFile);
 
         mover.exportMove(reader, writer);
-
-        reader.close();
-        writer.close();
     }
 
     private static void exportDirectoryIntoDirectory(VDiskFile virtualDir,
@@ -205,9 +199,6 @@ public class HostBridge {
                 false);
 
         mover.importMove(reader, writer);
-
-        reader.close();
-        writer.close();
     }
 
     private static void importFileIntoDirectory(File hostFile,
@@ -223,9 +214,6 @@ public class HostBridge {
                 false);
 
         mover.importMove(reader, writer);
-
-        reader.close();
-        writer.close();
     }
 
     private static void importDirectoryIntoDirectory(File hostDir,

@@ -25,6 +25,9 @@ public class DefaultMover implements DataMover {
     public void importMove(InputStream hostSource, OutputStream virtualTarget)
             throws IOException {
         move(hostSource, virtualTarget);
+        
+        hostSource.close();
+        virtualTarget.close();
     }
 
     /*
@@ -38,6 +41,9 @@ public class DefaultMover implements DataMover {
     public void exportMove(InputStream virtualSource, OutputStream hostTarget)
             throws IOException {
         move(virtualSource, hostTarget);
+        
+        virtualSource.close();
+        hostTarget.close();
     }
 
     /**

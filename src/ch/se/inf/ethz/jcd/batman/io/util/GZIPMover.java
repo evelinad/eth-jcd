@@ -21,6 +21,7 @@ public class GZIPMover implements DataMover {
         
         compressedOut.finish();
         compressedOut.close();
+        hostSource.close();
     }
 
     @Override
@@ -29,6 +30,9 @@ public class GZIPMover implements DataMover {
         GZIPInputStream compressedIn = new GZIPInputStream(virtualSource);
         
         DefaultMover.move(compressedIn, hostTarget);
+        
+        virtualSource.close();
+        hostTarget.close();
     }
 
 }
