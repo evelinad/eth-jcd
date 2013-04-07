@@ -23,7 +23,6 @@ public final class VirtualDisk implements IVirtualDisk {
 		return virtualDisk;
 	}
 	
-	private static final byte[] MAGIC_NUMBER = new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xC0, (byte) 0xFF, (byte) 0xEE, 0x00, 0x00, 0x00};
 	private static final int SUPERBLOCK_SIZE = 192;  
 	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
