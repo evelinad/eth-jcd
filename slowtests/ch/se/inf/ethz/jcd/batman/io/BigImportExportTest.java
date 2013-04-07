@@ -16,6 +16,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
@@ -65,7 +66,7 @@ public class BigImportExportTest {
         VDiskFile virtualTarget = new VDiskFile("/big", disk);
 
         long importStartTime = System.currentTimeMillis();
-        HostBridge.importFile(bigHostFile, virtualTarget);
+        HostBridge.importFile(bigHostFile, virtualTarget, new DefaultMover());
         long importStopTime = System.currentTimeMillis();
 
         long importTimeDelta = importStopTime - importStartTime;
