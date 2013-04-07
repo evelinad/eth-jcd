@@ -4,6 +4,13 @@ import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
+/**
+ * Interface for a command line.
+ * 
+ * @see CommandLineInterface
+ * @see Command
+ * 
+ */
 public interface CommandLine {
 
     /**
@@ -93,7 +100,8 @@ public interface CommandLine {
     /**
      * Returns the current location of the CLI inside the loaded disk.
      * 
-     * @return
+     * @return the location at which the CLI currently is or null if no disk is
+     *         loaded.
      */
     VDiskFile getCurrentLocation();
 

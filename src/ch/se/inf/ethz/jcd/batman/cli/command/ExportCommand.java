@@ -14,7 +14,8 @@ import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
  * Implements an export command that can be used to export a file on the virtual
  * disk into a file on the host's disk.
  * 
- * @see HostBridge#exportFile(VDiskFile, File)
+ * @see HostBridge#exportFile(VDiskFile, File,
+ *      ch.se.inf.ethz.jcd.batman.io.util.DataMover)
  */
 public class ExportCommand implements Command {
     private static final String[] COMMAND_STRINGS = { "export" };
@@ -26,11 +27,11 @@ public class ExportCommand implements Command {
 
     @Override
     public void execute(CommandLine caller, String alias, String... params) {
-        if(caller.getCurrentLocation() == null) {
+        if (caller.getCurrentLocation() == null) {
             caller.writeln("no disk loaded.");
             return;
         }
-        
+
         if (params.length == 2) {
             // extract virtual file
             VDiskFile virtualFile = CommandUtil.getFile(caller, params[0]);
@@ -57,7 +58,8 @@ public class ExportCommand implements Command {
 
             // export it
             try {
-                HostBridge.exportFile(virtualFile, hostFile, new DefaultMover());
+                HostBridge
+                        .exportFile(virtualFile, hostFile, new DefaultMover());
                 caller.writeln("exported '%s' into '%s'",
                         virtualFile.getPath(), hostFile.getPath());
             } catch (IOException e) {

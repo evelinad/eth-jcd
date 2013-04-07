@@ -26,7 +26,7 @@ public class VDiskFile {
 
     private static final String PATH_SEPARATOR = String
             .valueOf(IVirtualDisk.PATH_SEPARATOR);
-    
+
     private static final int BUFFER_SIZE = 1024 * 1024; // 1 MiB
 
     // fields
@@ -479,24 +479,25 @@ public class VDiskFile {
 
         if (this.isFile()) {
             try {
-                targetFile.createNewFile(((IVirtualFile) this.pathDiskEntry).getSize());
+                targetFile.createNewFile(((IVirtualFile) this.pathDiskEntry)
+                        .getSize());
 
                 InputStream reader = new VDiskFileInputStream(this);
                 OutputStream writer = new VDiskFileOutputStream(targetFile,
                         false);
-                
+
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int readAmount = 0;
                 do {
                     readAmount = reader.read(buffer);
-                    if(readAmount > 0) {
+                    if (readAmount > 0) {
                         writer.write(buffer, 0, readAmount);
                     }
-                } while(readAmount > 0);
-                
+                } while (readAmount > 0);
+
                 reader.close();
                 writer.close();
-                
+
                 return true;
             } catch (IOException e) {
                 return false;

@@ -6,7 +6,7 @@ import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
 /**
  * Implements a create directory command for the CLI.
- *
+ * 
  */
 public class CreateDirectoryCommand implements Command {
 
@@ -21,11 +21,11 @@ public class CreateDirectoryCommand implements Command {
     @Override
     public void execute(CommandLine caller, String alias, String... params) {
         VDiskFile curLocation = caller.getCurrentLocation();
-        if(curLocation == null) {
+        if (curLocation == null) {
             caller.writeln("no disk loaded.");
             return;
         }
-        
+
         if (params.length == 2) {
             boolean createParents = params[0]
                     .equalsIgnoreCase(CREATE_PARENTS_FLAG);

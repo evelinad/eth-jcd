@@ -36,7 +36,7 @@ public class CommandUtil {
         } catch (IOException e) {
             cli.write(e);
         }
-        
+
         return file;
     }
 }

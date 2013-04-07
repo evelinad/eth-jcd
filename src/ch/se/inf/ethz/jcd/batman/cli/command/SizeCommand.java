@@ -4,6 +4,12 @@ import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
+/**
+ * Implements a command to query the disk size of a file or directory.
+ * 
+ * This command allways returns the size on the disk, which may be greater than
+ * the size of the "useful" data of a file.
+ */
 public class SizeCommand implements Command {
 
     private static final String[] COMMAND_STRINGS = { "size" };

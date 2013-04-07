@@ -42,7 +42,7 @@ public class LoadCommand implements Command {
                 IVirtualDisk disk = VirtualDisk.load(hostPath.toString());
                 VDiskFile rootDir = new VDiskFile(
                         String.valueOf(IVirtualDisk.PATH_SEPARATOR), disk);
-                
+
                 caller.setCurrentLocation(rootDir);
 
             } catch (IOException e) {

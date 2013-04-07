@@ -14,7 +14,8 @@ import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
  * Implements an import command that can be used to import host files into the
  * virtual disk.
  * 
- * @see HostBridge#importFile(File, VDiskFile)
+ * @see HostBridge#importFile(File, VDiskFile,
+ *      ch.se.inf.ethz.jcd.batman.io.util.DataMover)
  */
 public class ImportCommand implements Command {
     private static final String[] COMMAND_STRINGS = { "import" };
@@ -26,11 +27,11 @@ public class ImportCommand implements Command {
 
     @Override
     public void execute(CommandLine caller, String alias, String... params) {
-        if(caller.getCurrentLocation() == null) {
+        if (caller.getCurrentLocation() == null) {
             caller.writeln("no disk loaded.");
             return;
         }
-        
+
         if (params.length == 2) {
             // extract host file
             File hostFile = new File(params[0]);
@@ -57,7 +58,8 @@ public class ImportCommand implements Command {
 
             // import it
             try {
-                HostBridge.importFile(hostFile, virtualFile, new DefaultMover());
+                HostBridge
+                        .importFile(hostFile, virtualFile, new DefaultMover());
                 caller.writeln("imported '%s' into '%s'", hostFile.getPath(),
                         virtualFile.getPath());
             } catch (IOException e) {

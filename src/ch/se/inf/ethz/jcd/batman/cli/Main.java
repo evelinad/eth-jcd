@@ -20,32 +20,32 @@ import ch.se.inf.ethz.jcd.batman.cli.command.UnloadCommand;
 
 /**
  * Starts the CLI interface.
- *
+ * 
  */
 public class Main {
 
-	public static void main(String[] args) throws IOException {
-		CommandLine cli = new CommandLineInterface();
-		
-		// register commands
-		cli.attachCommand(new LoadCommand());
-		cli.attachCommand(new StopCommand());
-		cli.attachCommand(new UnloadCommand());
-		cli.attachCommand(new CreateCommand());
-		cli.attachCommand(new ChangeDirectoryCommand());
-		cli.attachCommand(new CreateDirectoryCommand());
-		cli.attachCommand(new ListMembersCommand());
-		cli.attachCommand(new DeleteCommand());
-		cli.attachCommand(new DestroyCommand());
-		cli.attachCommand(new SizeCommand());
-		cli.attachCommand(new QueryCommand());
-		cli.attachCommand(new ImportCommand());
-		cli.attachCommand(new ExportCommand());
-		cli.attachCommand(new MoveCommand());
-		cli.attachCommand(new CopyCommand());
-		
-		// start command line interface
-		cli.start();
-	}
+    public static void main(String[] args) throws IOException {
+        CommandLine cli = new CommandLineInterface();
+
+        // register commands
+        cli.attachCommand(new LoadCommand());
+        cli.attachCommand(new StopCommand());
+        cli.attachCommand(new UnloadCommand());
+        cli.attachCommand(new CreateCommand());
+        cli.attachCommand(new ChangeDirectoryCommand());
+        cli.attachCommand(new CreateDirectoryCommand());
+        cli.attachCommand(new ListMembersCommand());
+        cli.attachCommand(new DeleteCommand());
+        cli.attachCommand(new DestroyCommand());
+        cli.attachCommand(new SizeCommand());
+        cli.attachCommand(new QueryCommand());
+        cli.attachCommand(new ImportCommand());
+        cli.attachCommand(new ExportCommand());
+        cli.attachCommand(new MoveCommand());
+        cli.attachCommand(new CopyCommand());
+
+        // start command line interface
+        cli.start();
+    }
 
 }

@@ -9,18 +9,18 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 
 /**
- * A {@link DataMover} implementation that encrypts imported files and
- * exports decrypted ones.
+ * A {@link DataMover} implementation that encrypts imported files and exports
+ * decrypted ones.
  * 
  * @see DataMover
  * @see Cipher
- *
+ * 
  */
 public class EncryptedMover implements DataMover {
-    
+
     private final Cipher encryptCipher;
     private final Cipher decryptCipher;
-    
+
     public EncryptedMover(Cipher encrypt, Cipher decrypt) {
         this.encryptCipher = encrypt;
         this.decryptCipher = decrypt;
@@ -29,10 +29,11 @@ public class EncryptedMover implements DataMover {
     @Override
     public void importMove(InputStream hostSource, OutputStream virtualTarget)
             throws IOException {
-        CipherOutputStream encryptedOut = new CipherOutputStream(virtualTarget, this.encryptCipher);
-        
+        CipherOutputStream encryptedOut = new CipherOutputStream(virtualTarget,
+                this.encryptCipher);
+
         DefaultMover.move(hostSource, encryptedOut);
-        
+
         encryptedOut.close();
         hostSource.close();
     }
@@ -40,10 +41,11 @@ public class EncryptedMover implements DataMover {
     @Override
     public void exportMove(InputStream virtualSource, OutputStream hostTarget)
             throws IOException {
-        CipherInputStream decryptIn = new CipherInputStream(virtualSource, this.decryptCipher);
-        
+        CipherInputStream decryptIn = new CipherInputStream(virtualSource,
+                this.decryptCipher);
+
         DefaultMover.move(decryptIn, hostTarget);
-        
+
         hostTarget.close();
         decryptIn.close();
     }

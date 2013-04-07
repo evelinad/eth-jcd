@@ -26,7 +26,8 @@ public interface IDataBlock extends IVirtualBlock {
      *            position to write the byte into
      * @param b
      *            the byte to write at position pos
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void write(long pos, byte b) throws IOException;
 
@@ -41,7 +42,8 @@ public interface IDataBlock extends IVirtualBlock {
      *            position at which to start writing the content of b
      * @param b
      *            the data to write from position pos
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void write(long pos, byte[] b) throws IOException;
 
@@ -55,7 +57,8 @@ public interface IDataBlock extends IVirtualBlock {
      *            position at which the long l should be written
      * @param l
      *            the value to be written at position pos
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void writeLong(long pos, long l) throws IOException;
 
@@ -77,7 +80,8 @@ public interface IDataBlock extends IVirtualBlock {
      *            the index of the first byte to use from the byte array b
      * @param length
      *            the amount of bytes to write using the given byte array b
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void write(long pos, byte[] b, int offset, int length) throws IOException;
 
@@ -90,7 +94,8 @@ public interface IDataBlock extends IVirtualBlock {
      * @param pos
      *            position of the byte to be read
      * @return the read byte at position pos
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     byte read(long pos) throws IOException;
 
@@ -106,7 +111,8 @@ public interface IDataBlock extends IVirtualBlock {
      * @param b
      *            byte array to fill the read bytes into
      * @return the amount of read bytes
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     int read(long pos, byte[] b) throws IOException;
 
@@ -129,7 +135,8 @@ public interface IDataBlock extends IVirtualBlock {
      * @param length
      *            the amount of bytes to read
      * @return the amount of bytes read
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     int read(long pos, byte[] b, int offset, int length) throws IOException;
 
@@ -142,7 +149,8 @@ public interface IDataBlock extends IVirtualBlock {
      * @param pos
      *            position to start reading the long
      * @return the read long value
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     long readLong(long pos) throws IOException;
 
@@ -166,7 +174,8 @@ public interface IDataBlock extends IVirtualBlock {
      * @see #getNextBlock()
      * @param nextBlock
      *            the address of the next block.
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void setNextBlock(long nextBlock) throws IOException;
 
@@ -189,26 +198,29 @@ public interface IDataBlock extends IVirtualBlock {
 
     /**
      * Changes the size of the data inside the block. This can be used to
-     * allocate more space for data or to shrink the space. 
+     * allocate more space for data or to shrink the space.
      * 
      * @param size
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void setDataSize(long size) throws IOException;
-    
+
     /**
      * Frees this data blocks on the virtual disk. After freeing the data block
      * it can't be used and it's status is invalid.
      * 
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
-    void free () throws IOException;
-    
+    void free() throws IOException;
+
     /**
-     * Returns if the data block is currently valid, or if it has already been freed.
+     * Returns if the data block is currently valid, or if it has already been
+     * freed.
      * 
-     * @return true if its still valid 
+     * @return true if its still valid
      */
-    boolean isValid ();
+    boolean isValid();
 
 }

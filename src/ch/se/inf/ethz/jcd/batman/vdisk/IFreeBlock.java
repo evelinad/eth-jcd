@@ -31,7 +31,8 @@ public interface IFreeBlock extends IVirtualBlock {
      * @see #getNextBlock()
      * @param nextBlock
      *            the position of the next free block.
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void setNextBlock(long nextBlock) throws IOException;
 
@@ -51,7 +52,8 @@ public interface IFreeBlock extends IVirtualBlock {
      * 
      * @param previousBlock
      *            the position of the previous free block
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void setPreviousBlock(long previousBlock) throws IOException;
 

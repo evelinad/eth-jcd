@@ -27,7 +27,7 @@ public class HostBridge {
      * The parent of virtualFile has to exists otherwise an
      * {@link UnsupportedOperationException} is thrown.
      * 
-     * @param absHostFile
+     * @param hostFile
      *            what to import
      * @param virtualFile
      *            where to import into
@@ -89,7 +89,7 @@ public class HostBridge {
      * 
      * @param virtualFile
      *            what to export
-     * @param absHostFile
+     * @param hostFile
      *            where to export to
      * @param mover
      *            a moving strategy
