@@ -220,9 +220,7 @@ public class VDiskFile {
      * @return true if the represented file or directory exists, otherwise false
      */
     public boolean exists() {
-    	if (pathDiskEntry == null) {
-    		this.pathDiskEntry = getDiskEntry(this.pathname);
-    	}
+    	this.pathDiskEntry = getDiskEntry(this.pathname);
         return pathDiskEntry != null;
     }
 
@@ -330,7 +328,7 @@ public class VDiskFile {
     /**
      * Creates a directory for the path represented by the VDiskFile.
      * 
-     * This method will only create a directory if the parent if it already
+     * This method will only create a directory if the parent already
      * exists.
      * 
      * @return true if and only if the directory was created
