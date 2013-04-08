@@ -11,6 +11,16 @@
 % TODO: Add your group name
 \newcommand{\groupname}{Batman\xspace}
 
+% src: http://tex.stackexchange.com/questions/299/how-to-get-long-texttt-sections-to-break
+\newcommand*\justify{%
+  \fontdimen2\font=0.4em% interword space
+  \fontdimen3\font=0.2em% interword stretch
+  \fontdimen4\font=0.1em% interword shrink
+  \fontdimen7\font=0.1em% extra space
+  \hyphenchar\font=`\-% allowing hyphenation
+}
+
+\newcommand{\package}[1]{\texttt{\justify #1}}
 
 \title{
 Project Report \\ 
@@ -44,18 +54,178 @@ This document describes the design and implementation of the \emph{Personal Virt
 %TODO: Remove this text and replace it with actual content
 \emph{Give a short description (1-2 paragraphs) of what VFS Core is.}
 
+Our VFS core consists of two parts and an additional package that implements an Command Line Interface (\package{.cli}). The first big part is \package{.vdisk} which contains interfaces for a virtual disk implementation and an implementation itself. The other part is \package{.io} that contains convenient classes inspired by \package{java.io.*} to work with the virtual disk.
 
 \subsection{Requirements}
 
 % TODO: Remove this text and replace it with actual content
 \emph{Describe which requirements (and possibly bonus requirements) you have implemented in this part. Give a quick description (1-2 sentences) of each requirement. List the software elements (classes and or functions) that are mainly involved in implementing each requirement.}
 
+\subsubsection{Virtual Disk in Single File}
+This requirement is best visible in the implementation of our ``create" CLI command (\package{.cli.command.CreateCommand}) which needs only a single file path to create the disk.
+
+The implementation itself can be viewed at \package{.vdisk.impl.VirtualDisk\\.create(String)} or \package{.vdisk.impl.VirtualDisk.load(String)}. Both methods take a single file path and use it to create/load the virtual disk.
+
+\subsubsection{Multiple Virtual Disk Support}
+Using the CLI a user can load and unload different disks. Therefore it is no problem to have multiple disks on the same system.
+
+As visible inside our virtual disk implementation (\package{.vdisk.impl.*}) our classes don't have any global state and it's therefore possible to have multiple instances of \package{VirtualDisk} at the same time. \package{VDiskFile} (our \package{java.io.File} inspired class) even checks if the operations are performed on the same disk or not.
+
+\subsubsection{Disposing Disk}
+We've implemented a disposing command called ``destroy" for our CLI \\(\package{.cli.command.DestroyCommand}). However, as the disk is a single file it can be just deleted. Our ``destroy" command has just the addition that it checks the file for our magic number before deleting the file.
+
+\subsubsection{Creating/Deleting/Renaming Directories and Files}
+Creating a file is handled for example by \package{.io.VDiskFile.createNewFile(int)}.
+A directory can be created by using \package{.io.VDiskFile.mkdir()}.
+Deleting a file or a directory can be achieved by using \package{.io.VDiskFile.delete()}.
+To rename a file or directory one uses preferably \package{.io.VDiskFile.renameTo(VDiskFile)}.
+
+Of course all this methods of \package{.io.VDiskFile} use the underlying interface of the virtual disk and it's content. Therefore this methods only wrap around methods provided by the implementation.
+
+\subsubsection{Navigation and Listing of Files/Directories}
+For navigation one uses preferably \package{.io.VDiskFile}. To showcase the navigation we implemented a ``change directory" command (\package{.cli.command\\.ChangeDirectoryCommand}).
+
+To get the content of a directory one can use \package{.io.VDiskFile.list()} or \package{.io.VDiskFile.listFiles()}. Inside our CLI the ``list members" command (\package{.cli.command.ListMembersCommand}) is available.
+
+As before these methods and classes work on the virtual disk interface and just wrap around it for convenience. Our virtual disk implementation has the notion of a directory and a file. It also includes the concept of virtual disk entries belonging to a parent. However, our virtual disk does not enforce a specific path scheme. It just makes sure that the special character ``/" is not used as a name to allow the implementation of a path scheme.
+
+\subsubsection{Moving/Copying Directories and Files}
+Moving a file or directory is implemented as the ``move" CLI command (\package{.cli.command.MoveCommand}). The logic behind this is implemented inside \package{.io.VDiskFile.renameTo(VDiskFile)} and uses the virtual disk interface to complete the task: \package{.vdisk.IVirtualDirectory\\.removeMember(IVirtualDiskEntry)}, \package{.vdisk.IVirtualDirectory\\.addMember(IVirtualDiskEntry)} and \package{.vdisk.IVirtualDiskEntry\\.setName(String)}.
+
+Copying a file or directory is again implemented by it's own ``copy" CLI command (\package{.cli.command.CopyCommand}). This uses \package{.io.VDiskFile\\.copyTo(VDiskFile)} which again uses the virtual disk interfaces to achieve the task.
+
+\subsubsection{Importing / Exporting Files and Directories}
+For this task we provide the user with an ``import" (\package{.cli.command\\.ImportCommand}) and ``export" (\package{.cli.command.ExportCommand}) CLI command. Those commands use basically the \package{.io.util.HostBridge} which takes care of the needed logic to import/export single files or whole directory structures.
+
+\subsubsection{Querying Virtual Disk Information}
+Our virtual disk implementation provides multiple methods to query for different metrics about the virtual disk. We made the required and most interesting ones available as CLI commands.
+
+The ``size" Command (\package{.cli.command.SizeCommand}) returns the size a file or directory needs on the disk.
+
+The ``query" Command (\package{.cli.command.QueryCommand}) takes an argument that specifies which virtual disk metric should be returned:
+\begin{description}
+    \item[``occupied"] returns the used space inside the virtual disk
+    \item[``free"] returns the already allocated but free space inside the virtual disk
+    \item[``total"] returns the size of the virtual disk on host's system
+\end{description}
+
+\subsubsection{Bonus: Compression}
+As we implemented our own \package{java.io.InputStream} and \package{java.io.OutputStream} it is easy to decorate them with compression. To showcase this we implemented \package{.io.util.GZIPMover} which implements \package{.io.util.DataMover}. Therefore it's possible to import uncompressed files from the host system and compress them before writing the data onto the virtual disk.
+
+The compression is tested by \package{.io.HostBridgeTest} inside our \package{test} directory.
+
+\subsubsection{Bonus: Encryption}
+As with compression, we implemented \package{.io.util.EncryptedMover} which allows to encrypt the data before writing it onto the virtual disk or decrypt it before exporting it back.
+
+For encryption we use the standard Java streams: \package{javax.crypto.CipherOutputStream} and \package{javax.crypto.CipherInputStream}.
+
+The encryption is tested by \package{.io.HostBridgeTest} inside our \package{test} directory.
+
+\subsubsection{Bonus: Elastic disk}
+Our disk is always elastic and changes it's size corresponding to the needed space. The corresponding implementation can be found in \package{.vdisk.impl\\.VirtualDisk.extend(long)} and \package{.vdisk.impl.VirtualDisk\\.shrink(long)}.
+
+\subsubsection{Bonus: Large Data}
+We provide a test case inside \package{.io.BigImportExportTest} which is located inside our \package{slowtests} directory. This test will create a 15 GiB file on the host's disk and import it afterwards. The time it took to import the large file is recorded and printed out into the standard output. On a MacBook Pro (current generation) it took a bit less than three minutes to import the 15 GiB. During the import the Java runtime used always less than 20 MByte of main memory.
+
+As the MacBook Pro has 16 GByte of memory we tested the same test case on a Sony Vaio notebook with 6 GByte of memory. The test was successful. The Java runtime used a bit less than 17 MByte of memory.
 
 \subsection{Design}
 
-% TODO: Remove this text and replace it with actual content
-\emph{Give an overview of the design of this part and describe in general terms how the implementation works. You can mention design patterns used, class diagrams, definition of custom file formats, network protocols, or anything else that helps understand the implementation.}
+\subsubsection{Packages}
+As already mentioned we use different packages to separate the different parts of our implementation. A short overview follows.
 
+\paragraph{\package{.vdisk}}
+This package contains interfaces that describe the contract between a virtual disk implementation and it's users. It also contains exception classes used by the interfaces.
+
+\paragraph{\package{.vdisk.impl}}
+Contains the implementation of our virtual disk and it's file system.
+
+\paragraph{\package{.vdisk.util}}
+Consists of classes that come in handy while using the \package{.vdisk} interfaces. Those classes allowed us to follow the DRY principle and prevent duplicate code.
+
+\paragraph{\package{.io}}
+Contains classes which were inspired (and partially implement) classes inside the \package{java.io} package.
+
+\paragraph{\package{.io.util}}
+This package contains utility classes that provide easy to use interfaces to often needed functionality. At the same time they hide to some extend the logical complexity of some processes. Again, this helps to follow the DRY principle and prevent duplicate code.
+
+\paragraph{\package{.cli}}
+This package contains the only class with a \package{main} method (\package{Main.main}). This class starts the CLI which can be used to explore virtual disk, create them and modify them.
+
+\paragraph{\package{.cli.command}}
+Contains the implementation of the different CLI commands.
+
+\subsubsection{Virtual Disk Structure}
+Our virtual disk starts with a super block. This block contains our magic number for identification and basic information about the disk itself.
+
+The super block is followed by virtual blocks (\package{.vdisk.IVirtualBlock}). Those blocks may be a data block (\package{.vdisk.IDataBlock}) or a free block (\package{.vdisk.IFreeBlock}).
+
+In the following we will talk about positions/addresses inside the virtual disk. These are implemented as \package{long} values that represent the location of the first byte of the addressed object inside the file representing the virtual disk.
+
+\paragraph{Superblock}
+As already mentioned the super block starts with our magic number. This can be used to check if the file is likely to be a virtual disk.
+
+After that follows the position of the root directory. This is followed by eight bytes which are reserved for future use and 21 addresses pointing to the first elements of segregated free lists.
+
+The super block can be accessed through \package{.vdisk.IVirtualDisk}.
+
+\paragraph{Virtual Block}
+A virtual block can be a data block or a free block. Every virtual block has a header and a footer, each being 8 bytes long.
+
+The first bit of the virtual block identifies which of the two it is. The rest of the eight byte header and footer contains the length of the block. Our virtual blocks do not have a fixed size.
+
+The minimum size is limited by the header and footer size. The maximum size is limited of the length that can be represented inside the header/footer which is $2^{64-1} - 1$.
+
+The virtual block can be used through \package{.vdisk.IVirtualBlock}.
+
+\paragraph{Data Block}
+A data block is a special kind of virtual block. Therefore it starts with the virtual block header and ends with the virtual block footer.
+
+Additionally the data block has it's own header. The header contains an address to the next data block creating a singly linked list. After that follows the size of the data stored inside the data block. This is needed as the data block could be much bigger than the data stored inside.
+
+The data block can be used through \package{.vdisk.IDataBlock}.
+
+\paragraph{Free Block}
+A free block is a special kind of virtual block. Therefore it starts with the virtual block header and ends with the virtual block footer.
+
+Additionally the free block has it's own header. The header contains two addresses, the first pointing to the previous free block (or 0x0 if none) and the second pointing to the next free block (or 0x0 if none). Therefore free blocks create a doubly linked list.
+
+The free block can be used through \package{.vdisk.IFreeBlock}.
+
+\paragraph{Virtual Disk Space}
+As mentioned data blocks build a singly linked list. So we decided to implement a simple abstraction for them. A virtual disk space consists of a list of data blocks and provides an interface that allows to work with them as if they were one continuous block.
+
+In addition the virtual disk space takes care of expanding and shrinking depending on how much space is needed. It is important to understand that the virtual disk space is a simplification and does not come up inside the virtual disk file itself.
+
+The virtual disk space can be used through \package{.vdisk.IVirtualDiskSpace}.
+
+\paragraph{Disk Entry}
+A disk entry is an abstract description for objects stored inside the virtual disk. It is the common interface for files and directories. Every disk entry has a parent which is a directory. Only the root directory has no parent.
+
+Disk entries contain a reference to the previous and next disk entry, creating a doubly linked list. This list contains entries which are on the same logical level inside the hierarchy. In other words: all elements inside the list have the same parent.
+
+The disk entry can be used through \package{.vdisk.IVirtualDiskEntry}.
+
+\paragraph{Directory}
+A directory is a specialisation of a disk entry. It describes an object that has a name and contains children of type disk entry.
+
+The metadata used by the directory are stored inside a virtual disk space.
+
+The directory can be used through \package{.vdisk.IVirtualDirectory}.
+
+\paragraph{File}
+A file is a specialisation of a disk entry. It describes an object that has a name and contains metadata and data.
+
+The metadata and data are stored in separate virtual disk spaces. This allows to implement hard and soft links at a later point.
+
+The file can be used through \package{.vdisk.IVirtualFile}.
+
+\subsubsection{InputStream / OutputStream}
+An important goal for us was to create an implementation that is easy to understand for Java developers familiar with Java's I/O. Therefore we implemented \package{.io.VDiskFileInputStream} that implements \package{java.io.InputStream} and \package{.io.VDiskFileOutputStream} that implements \package{java.io.OutputStream}. Because of this design choice it is very easy to encrypt, compress or transform the data in any possible way while reading or writing data.
+
+A good example of such stream decorations are our compression and encryption implementations which can be found at \package{.io.util.GZIPMover} and \package{.io.util.EncryptedMover}. The implementation of both classes is, as you can see, very simple and readable.
+
+\newpage
 
 
 % PART II: VFS Browser
