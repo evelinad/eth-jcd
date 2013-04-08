@@ -207,7 +207,8 @@ public class VirtualDiskTest extends NewDiskPerTest {
 	
 	@Test
 	public void freeOccupiedTest() throws IOException {
-	    assertEquals(disk.getSize(), disk.getOccupiedSpace());
+	    long diskStartSize = disk.getSize();
+		assertEquals(disk.getSize(), disk.getOccupiedSpace());
 	    assertEquals(0, disk.getFreeSpace());
 	    IDataBlock[] allocateBlock = disk.allocateBlock(200);
 	    long totalAllocatedBlockSize = 0;
@@ -215,10 +216,11 @@ public class VirtualDiskTest extends NewDiskPerTest {
 	    	totalAllocatedBlockSize += block.getDiskSize();
 	    }
 	    assertEquals(0, disk.getFreeSpace());
+	    assertEquals(diskStartSize + totalAllocatedBlockSize, disk.getOccupiedSpace());
 	    for (IDataBlock block : allocateBlock) {
 	    	block.free();
 	    }
-	    assertEquals(disk.getSize() - totalAllocatedBlockSize, disk.getOccupiedSpace());
-	    assertEquals(totalAllocatedBlockSize, disk.getFreeSpace());
+	    assertEquals(diskStartSize, disk.getOccupiedSpace());
+	    assertEquals(0, disk.getFreeSpace());
 	}
 }

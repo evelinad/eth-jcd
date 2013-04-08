@@ -9,7 +9,7 @@ import java.net.URI;
  * 
  * The VirtualDisk manages {@link IDataBlock} which can be dynamically allocated
  * and freed. The {@link IDataBlock} are persistently stored. It's also possible
- * to directly write/read from the underlining storage unit with the different
+ * to directly write/read from the underlying storage unit with the different
  * read/write methods.
  */
 public interface IVirtualDisk extends AutoCloseable, Closeable {

@@ -31,7 +31,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
  * because there is an offset saved in the superblock which gives the offset of
  * the root directory, it could also be saved in another place.
  * 
- * The VirtualDisk will dynamically increase the underlining file and add the new
+ * The VirtualDisk will dynamically increase the underlying file and add the new
  * space to the free lists. Which are used when new {@link IDataBlock} need to be 
  * allocated.
  */
@@ -123,6 +123,11 @@ public final class VirtualDisk implements IVirtualDisk {
 		return newSpace;
 	}
 
+	private void shrink (long amount) throws IOException {
+		long previousSize = file.length();
+		file.setLength(previousSize - amount);
+	}
+	
 	private void initializeFreeList() throws IOException {
 		file.seek(FREE_LISTS_POSITION);
 		for (int i = 0; i < NR_FREE_LISTS; i++) {
@@ -290,21 +295,25 @@ public final class VirtualDisk implements IVirtualDisk {
 			}
 		}
 	}
-
+	
 	private void addFreeBlockToList(IFreeBlock block) throws IOException {
-		int freeListIndex = getFreeListIndex(block.getDiskSize());
-		long firstFreeListEntry = freeLists.get(freeListIndex);
-		if (firstFreeListEntry == 0) {
-			block.setNextBlock(0);
+		if (isLastBlock(block.getBlockPosition(), block.getDiskSize())) {
+			shrink(block.getDiskSize());
 		} else {
-			IFreeBlock previousFirstBlock = FreeBlock.load(this,
-					firstFreeListEntry);
-			previousFirstBlock.setPreviousBlock(block.getBlockPosition());
-			block.setNextBlock(previousFirstBlock.getBlockPosition());
+			int freeListIndex = getFreeListIndex(block.getDiskSize());
+			long firstFreeListEntry = freeLists.get(freeListIndex);
+			if (firstFreeListEntry == 0) {
+				block.setNextBlock(0);
+			} else {
+				IFreeBlock previousFirstBlock = FreeBlock.load(this,
+						firstFreeListEntry);
+				previousFirstBlock.setPreviousBlock(block.getBlockPosition());
+				block.setNextBlock(previousFirstBlock.getBlockPosition());
+			}
+			freeLists.set(freeListIndex, block.getBlockPosition());
+			file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
+			file.writeLong(block.getBlockPosition());
 		}
-		freeLists.set(freeListIndex, block.getBlockPosition());
-		file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
-		file.writeLong(block.getBlockPosition());
 	}
 
 	private int getFreeListIndex(long length) {
