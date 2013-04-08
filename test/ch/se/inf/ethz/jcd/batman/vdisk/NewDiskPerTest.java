@@ -6,6 +6,8 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
+
 public class NewDiskPerTest {
 
 	private static final String TEST_DISK_DIR = System

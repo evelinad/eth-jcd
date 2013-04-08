@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 public class VirtualDiskTest extends NewDiskPerTest {

@@ -1,9 +1,14 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import ch.se.inf.ethz.jcd.batman.vdisk.IDataBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskSpace;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
  * A {@link IVirtualDiskSpace} is a simple abstraction of a list of

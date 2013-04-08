@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.DataBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualBlock;
+
 public class DataBlockTest extends NewDiskPerTest {
 
 	@Test

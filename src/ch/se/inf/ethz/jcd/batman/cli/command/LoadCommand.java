@@ -8,7 +8,7 @@ import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 /**
  * Provides a command to load a disk.

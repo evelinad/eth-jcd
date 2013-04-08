@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDiskSpace;
+
 public class VirtualDiskSpaceTest extends NewDiskPerTest {
 
     @Test

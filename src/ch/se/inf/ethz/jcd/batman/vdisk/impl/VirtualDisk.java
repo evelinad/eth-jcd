@@ -1,4 +1,4 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import ch.se.inf.ethz.jcd.batman.vdisk.IDataBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IFreeBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 
 /**
  * 

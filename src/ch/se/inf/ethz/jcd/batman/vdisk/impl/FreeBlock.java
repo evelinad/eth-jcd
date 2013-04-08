@@ -1,6 +1,11 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 
 import java.io.IOException;
+
+import ch.se.inf.ethz.jcd.batman.vdisk.IDataBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IFreeBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualBlock;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
  * Represents a block that is not used to save useful data.

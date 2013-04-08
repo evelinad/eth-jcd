@@ -1,10 +1,18 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.FileAlreadyExistsException;
+import ch.se.inf.ethz.jcd.batman.vdisk.FileState;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskSpace;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualEntryIterator;
 

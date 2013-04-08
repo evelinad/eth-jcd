@@ -40,7 +40,7 @@ import ch.se.inf.ethz.jcd.batman.io.util.EncryptedMover;
 import ch.se.inf.ethz.jcd.batman.io.util.GZIPMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 @RunWith(value = Parameterized.class)
 public class HostBridgeTest {

@@ -16,7 +16,7 @@ import org.junit.Test;
 import ch.se.inf.ethz.jcd.batman.io.util.DefaultMover;
 import ch.se.inf.ethz.jcd.batman.io.util.HostBridge;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 public class BigImportExportTest {
 

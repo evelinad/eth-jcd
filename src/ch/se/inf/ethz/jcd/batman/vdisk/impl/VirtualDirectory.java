@@ -1,7 +1,12 @@
-package ch.se.inf.ethz.jcd.batman.vdisk;
+package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 
 import java.io.IOException;
 
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskSpace;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 /**

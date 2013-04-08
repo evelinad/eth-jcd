@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 /**
  * Provides a CLI command to create a new virtual disk.

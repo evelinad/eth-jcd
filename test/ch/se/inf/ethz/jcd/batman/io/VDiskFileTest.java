@@ -13,8 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
-import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 public class VDiskFileTest {
 
