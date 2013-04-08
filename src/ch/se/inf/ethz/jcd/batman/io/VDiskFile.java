@@ -132,7 +132,7 @@ public class VDiskFile {
      */
     private IVirtualDiskEntry getDiskEntry(String path) {
         // split path into entry names
-        String[] pathParts = pathname.split(PATH_SEPARATOR);
+        String[] pathParts = path.split(PATH_SEPARATOR);
         if (pathParts.length == 0) {
             return disk.getRootDirectory();
         }
