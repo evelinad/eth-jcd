@@ -20,7 +20,7 @@
   \hyphenchar\font=`\-% allowing hyphenation
 }
 
-\newcommand{\package}[1]{\texttt{\justify #1}}
+\newcommand{\mono}[1]{\texttt{\justify #1}}
 
 \title{
 Project Report \\ 
@@ -48,84 +48,77 @@ This document describes the design and implementation of the \emph{Personal Virt
 
 \section{VFS Core}
 
-% TODO: Remove this line
-\textbf{[This section has to be completed by April 8th.]}
+Our VFS core consists of two parts and an additional package that implements a Command Line Interface (\mono{.cli}). The first big part is \mono{.vdisk} which contains interfaces for a virtual disk implementation and an implementation of it. The other part is \mono{.io} that contains convenient classes inspired by \mono{java.io.*} to work with the virtual disk in a typical Java I/O manner.
 
-%TODO: Remove this text and replace it with actual content
-\emph{Give a short description (1-2 paragraphs) of what VFS Core is.}
-
-Our VFS core consists of two parts and an additional package that implements an Command Line Interface (\package{.cli}). The first big part is \package{.vdisk} which contains interfaces for a virtual disk implementation and an implementation itself. The other part is \package{.io} that contains convenient classes inspired by \package{java.io.*} to work with the virtual disk.
+\emph{Note:} Monospaced text with a leading dot are package names of our project. As our full package name would be to long to write every time. The base for all these package names is: \mono{ch.se.inf.ethz.jcd.batman}.
 
 \subsection{Requirements}
 
-% TODO: Remove this text and replace it with actual content
-\emph{Describe which requirements (and possibly bonus requirements) you have implemented in this part. Give a quick description (1-2 sentences) of each requirement. List the software elements (classes and or functions) that are mainly involved in implementing each requirement.}
-
 \subsubsection{Virtual Disk in Single File}
-This requirement is best visible in the implementation of our ``create" CLI command (\package{.cli.command.CreateCommand}) which needs only a single file path to create the disk.
+This requirement is best visible in the implementation of our ``create" CLI command (\mono{.cli.command.CreateCommand}) which only needs a single file path to create the disk.
 
-The implementation itself can be viewed at \package{.vdisk.impl.VirtualDisk\\.create(String)} or \package{.vdisk.impl.VirtualDisk.load(String)}. Both methods take a single file path and use it to create/load the virtual disk.
+The implementation of the logic behind this command can be viewed at \mono{.vdisk.impl.VirtualDisk.create(String)} or \mono{.vdisk.impl.VirtualDisk\\.load(String)}. Both methods take a single file path and use it to create/load the virtual disk.
 
 \subsubsection{Multiple Virtual Disk Support}
 Using the CLI a user can load and unload different disks. Therefore it is no problem to have multiple disks on the same system.
 
-As visible inside our virtual disk implementation (\package{.vdisk.impl.*}) our classes don't have any global state and it's therefore possible to have multiple instances of \package{VirtualDisk} at the same time. \package{VDiskFile} (our \package{java.io.File} inspired class) even checks if the operations are performed on the same disk or not.
+As visible inside our virtual disk implementation (\mono{.vdisk.impl.*}) our classes don't have any global state and it's therefore possible to have multiple instances of \mono{VirtualDisk} at the same time. \mono{VDiskFile} (our \mono{java.io.File} inspired class) even checks if the operations are performed on the same disk or not.
 
 \subsubsection{Disposing Disk}
-We've implemented a disposing command called ``destroy" for our CLI \\(\package{.cli.command.DestroyCommand}). However, as the disk is a single file it can be just deleted. Our ``destroy" command has just the addition that it checks the file for our magic number before deleting the file.
+We've implemented a disposing command called ``destroy" for our CLI \\(\mono{.cli.command.DestroyCommand}). However, as the disk is a single file it can just be deleted. Our ``destroy" command has an additional check that examins the file for our magic number before deleting the file.
 
 \subsubsection{Creating/Deleting/Renaming Directories and Files}
-Creating a file is handled for example by \package{.io.VDiskFile.createNewFile(int)}.
-A directory can be created by using \package{.io.VDiskFile.mkdir()}.
-Deleting a file or a directory can be achieved by using \package{.io.VDiskFile.delete()}.
-To rename a file or directory one uses preferably \package{.io.VDiskFile.renameTo(VDiskFile)}.
+Creating a file for example is handled by \mono{.io.VDiskFile.createNewFile(int)}.
+A directory can be created by using \mono{.io.VDiskFile.mkdir()}.
+Deleting a file or a directory can be achieved by using \mono{.io.VDiskFile.delete()}.
+To rename a file or directory one uses preferably \mono{.io.VDiskFile.renameTo(VDiskFile)}.
 
-Of course all this methods of \package{.io.VDiskFile} use the underlying interface of the virtual disk and it's content. Therefore this methods only wrap around methods provided by the implementation.
+Of course all this methods of \mono{.io.VDiskFile} use the underlying interface of the virtual disk and it's content.
 
 \subsubsection{Navigation and Listing of Files/Directories}
-For navigation one uses preferably \package{.io.VDiskFile}. To showcase the navigation we implemented a ``change directory" command (\package{.cli.command\\.ChangeDirectoryCommand}).
+The easiest way to navigate is by using \mono{.io.VDiskFile}. To showcase the navigation we implemented a ``change directory" command (\mono{.cli.command\\.ChangeDirectoryCommand}).
 
-To get the content of a directory one can use \package{.io.VDiskFile.list()} or \package{.io.VDiskFile.listFiles()}. Inside our CLI the ``list members" command (\package{.cli.command.ListMembersCommand}) is available.
+To get the content of a directory one can use \mono{.io.VDiskFile.list()} or \mono{.io.VDiskFile.listFiles()}. Inside our CLI the ``list members" command (\mono{.cli.command.ListMembersCommand}) is available.
 
-As before these methods and classes work on the virtual disk interface and just wrap around it for convenience. Our virtual disk implementation has the notion of a directory and a file. It also includes the concept of virtual disk entries belonging to a parent. However, our virtual disk does not enforce a specific path scheme. It just makes sure that the special character ``/" is not used as a name to allow the implementation of a path scheme.
+As before these methods and classes work on the virtual disk interface and just wrap around it for convenience. Our virtual disk implementation has the notion of a directory and a file. It also includes the concept of virtual disk entries belonging to a parent. However, our virtual disk does not enforce a specific path scheme. It just makes sure that the special character ``/" is not used inside a name to allow the implementation of a path scheme.
 
 \subsubsection{Moving/Copying Directories and Files}
-Moving a file or directory is implemented as the ``move" CLI command (\package{.cli.command.MoveCommand}). The logic behind this is implemented inside \package{.io.VDiskFile.renameTo(VDiskFile)} and uses the virtual disk interface to complete the task: \package{.vdisk.IVirtualDirectory\\.removeMember(IVirtualDiskEntry)}, \package{.vdisk.IVirtualDirectory\\.addMember(IVirtualDiskEntry)} and \package{.vdisk.IVirtualDiskEntry\\.setName(String)}.
+Moving a file or directory is implemented as the ``move" CLI command (\mono{.cli.command.MoveCommand}). The logic behind this is implemented inside \mono{.io.VDiskFile.renameTo(VDiskFile)} and uses these virtual disk methods to complete the task: \mono{.vdisk.IVirtualDirectory\\.removeMember(IVirtualDiskEntry)}, \mono{.vdisk.IVirtualDirectory\\.addMember(IVirtualDiskEntry)} and \mono{.vdisk.IVirtualDiskEntry\\.setName(String)}.
 
-Copying a file or directory is again implemented by it's own ``copy" CLI command (\package{.cli.command.CopyCommand}). This uses \package{.io.VDiskFile\\.copyTo(VDiskFile)} which again uses the virtual disk interfaces to achieve the task.
+Copying a file or directory is provided by the ``copy" CLI command (\mono{.cli.command.CopyCommand}). Which uses the \mono{.io.VDiskFile\\.copyTo(VDiskFile)} method to achieve the task.
 
 \subsubsection{Importing / Exporting Files and Directories}
-For this task we provide the user with an ``import" (\package{.cli.command\\.ImportCommand}) and ``export" (\package{.cli.command.ExportCommand}) CLI command. Those commands use basically the \package{.io.util.HostBridge} which takes care of the needed logic to import/export single files or whole directory structures.
+For this task we provide the user with an ``import" (\mono{.cli.command\\.ImportCommand}) and ``export" (\mono{.cli.command.ExportCommand}) CLI command. Those commands use the \mono{.io.util.HostBridge} class which takes care of the needed logic to import/export single files or whole directory structures.
 
 \subsubsection{Querying Virtual Disk Information}
 Our virtual disk implementation provides multiple methods to query for different metrics about the virtual disk. We made the required and most interesting ones available as CLI commands.
 
-The ``size" Command (\package{.cli.command.SizeCommand}) returns the size a file or directory needs on the disk.
+The ``size" Command (\mono{.cli.command.SizeCommand}) returns the size a file or directory occupies on the disk.
 
-The ``query" Command (\package{.cli.command.QueryCommand}) takes an argument that specifies which virtual disk metric should be returned:
+The ``query" Command (\mono{.cli.command.QueryCommand}) takes an argument that specifies which virtual disk metric should be returned:
 \begin{description}
     \item[``occupied"] returns the used space inside the virtual disk
     \item[``free"] returns the already allocated but free space inside the virtual disk
-    \item[``total"] returns the size of the virtual disk on host's system
+    \item[``total"] returns the size the virtual disk occupies on the host system
 \end{description}
 
 \subsubsection{Bonus: Compression}
-As we implemented our own \package{java.io.InputStream} and \package{java.io.OutputStream} it is easy to decorate them with compression. To showcase this we implemented \package{.io.util.GZIPMover} which implements \package{.io.util.DataMover}. Therefore it's possible to import uncompressed files from the host system and compress them before writing the data onto the virtual disk.
+As we implemented our own \mono{java.io.InputStream} and \mono{java.io.OutputStream} it is easy to decorate them with compression. To showcase this we implemented \mono{.io.util.GZIPMover} which implements \mono{.io.util.DataMover}. Therefore it's possible to import uncompressed files from the host system and compress them before writing the data onto the virtual disk.
 
-The compression is tested by \package{.io.HostBridgeTest} inside our \package{test} directory.
+The compression is tested by \mono{.io.HostBridgeTest} inside our \mono{test} directory.
 
 \subsubsection{Bonus: Encryption}
-As with compression, we implemented \package{.io.util.EncryptedMover} which allows to encrypt the data before writing it onto the virtual disk or decrypt it before exporting it back.
+As with compression, we implemented \mono{.io.util.EncryptedMover} which allows to encrypt the data before writing it onto the virtual disk or decrypt it before exporting it back.
 
-For encryption we use the standard Java streams: \package{javax.crypto.CipherOutputStream} and \package{javax.crypto.CipherInputStream}.
+For encryption we use the standard Java streams: \mono{javax.crypto\\.CipherOutputStream} and \mono{javax.crypto.CipherInputStream}.
 
-The encryption is tested by \package{.io.HostBridgeTest} inside our \package{test} directory.
+The encryption is tested by \mono{.io.HostBridgeTest} inside our \mono{test} directory.
 
 \subsubsection{Bonus: Elastic disk}
-Our disk is always elastic and changes it's size corresponding to the needed space. The corresponding implementation can be found in \package{.vdisk.impl\\.VirtualDisk.extend(long)} and \package{.vdisk.impl.VirtualDisk\\.shrink(long)}.
+Our disk is always elastic and changes it's size corresponding to the needed space. The corresponding implementation can be found in \mono{.vdisk.impl\\.VirtualDisk.allocateBlock(long)} \mono{.vdisk.impl.VirtualDisk.extend(long)} and \mono{.vdisk.impl.VirtualDisk.shrink(long)}.
 
 \subsubsection{Bonus: Large Data}
-We provide a test case inside \package{.io.BigImportExportTest} which is located inside our \package{slowtests} directory. This test will create a 15 GiB file on the host's disk and import it afterwards. The time it took to import the large file is recorded and printed out into the standard output. On a MacBook Pro (current generation) it took a bit less than three minutes to import the 15 GiB. During the import the Java runtime used always less than 20 MByte of main memory.
+We provide a test case inside \mono{.io.BigImportExportTest} which is located inside our \mono{slowtests} directory. This test will create a 15 GiB file on the host's disk and import it afterwards. The time it took to import the large file is recorded and printed out into the standard output. On a MacBook Pro (current generation) it took a bit less than three minutes to import the 15 GiB. During the import the Java runtime used always less than 20 MByte of main memory.
 
 As the MacBook Pro has 16 GByte of memory we tested the same test case on a Sony Vaio notebook with 6 GByte of memory. The test was successful. The Java runtime used a bit less than 17 MByte of memory.
 
@@ -134,96 +127,94 @@ As the MacBook Pro has 16 GByte of memory we tested the same test case on a Sony
 \subsubsection{Packages}
 As already mentioned we use different packages to separate the different parts of our implementation. A short overview follows.
 
-\paragraph{\package{.vdisk}}
-This package contains interfaces that describe the contract between a virtual disk implementation and it's users. It also contains exception classes used by the interfaces.
+\paragraph{\mono{.vdisk}}
+This package contains interfaces that describe the contract between a virtual disk implementation and it's users. It also contains exceptions used by the interfaces.
 
-\paragraph{\package{.vdisk.impl}}
+\paragraph{\mono{.vdisk.impl}}
 Contains the implementation of our virtual disk and it's file system.
 
-\paragraph{\package{.vdisk.util}}
-Consists of classes that come in handy while using the \package{.vdisk} interfaces. Those classes allowed us to follow the DRY principle and prevent duplicate code.
+\paragraph{\mono{.vdisk.util}}
+Consists of classes that come in handy while using the \mono{.vdisk} interfaces. Those classes allowed us to follow the DRY principle and prevents duplicate code.
 
-\paragraph{\package{.io}}
-Contains classes which were inspired (and partially implement) classes inside the \package{java.io} package.
+\paragraph{\mono{.io}}
+Contains classes which were inspired by the \mono{java.io} package.
 
-\paragraph{\package{.io.util}}
-This package contains utility classes that provide easy to use interfaces to often needed functionality. At the same time they hide to some extend the logical complexity of some processes. Again, this helps to follow the DRY principle and prevent duplicate code.
+\paragraph{\mono{.io.util}}
+This package contains utility classes providing easy to use interfaces for often needed functionality. At the same time they hide to some extend the logical complexity of some processes. Again, this helps to follow the DRY principle and prevents duplicate code.
 
-\paragraph{\package{.cli}}
-This package contains the only class with a \package{main} method (\package{Main.main}). This class starts the CLI which can be used to explore virtual disk, create them and modify them.
+\paragraph{\mono{.cli}}
+This package contains the only class with a \mono{main} method (\mono{Main.main}). This class starts the CLI which can be used to explore, create and modify virtual disks.
 
-\paragraph{\package{.cli.command}}
+\paragraph{\mono{.cli.command}}
 Contains the implementation of the different CLI commands.
 
 \subsubsection{Virtual Disk Structure}
-Our virtual disk starts with a super block. This block contains our magic number for identification and basic information about the disk itself.
+Our virtual disk starts with a super block. This block contains basic information about the disk itself.
 
-The super block is followed by virtual blocks (\package{.vdisk.IVirtualBlock}). Those blocks may be a data block (\package{.vdisk.IDataBlock}) or a free block (\package{.vdisk.IFreeBlock}).
+The super block is followed by virtual blocks (\mono{.vdisk.IVirtualBlock}). Those blocks may be a data block (\mono{.vdisk.IDataBlock}) or a free block (\mono{.vdisk.IFreeBlock}).
 
-In the following we will talk about positions/addresses inside the virtual disk. These are implemented as \package{long} values that represent the location of the first byte of the addressed object inside the file representing the virtual disk.
+In the following we will talk about positions/addresses inside the virtual disk. These are implemented as \mono{long} values that represent the location of the first byte of the addressed object inside the file representing the virtual disk.
 
 \paragraph{Superblock}
-As already mentioned the super block starts with our magic number. This can be used to check if the file is likely to be a virtual disk.
+The super block starts with our magic number. This can be used to check if the file is likely to be a virtual disk.
 
-After that follows the position of the root directory. This is followed by eight bytes which are reserved for future use and 21 addresses pointing to the first elements of segregated free lists.
+After the magic number follows the position of the root directory. This is followed by eight bytes which are reserved for future use and 21 addresses pointing to the first elements of segregated free lists.
 
-The super block can be accessed through \package{.vdisk.IVirtualDisk}.
+The super block can be accessed through \mono{.vdisk.IVirtualDisk}.
 
 \paragraph{Virtual Block}
-A virtual block can be a data block or a free block. Every virtual block has a header and a footer, each being 8 bytes long.
+A virtual block can be a data block or a free block. Every virtual block has a header and a footer, each being 8 bytes long. The first bit of the header/footer indicates if the virtual block is free or not. The rest of the eight byte header and footer contains the length of the block. Our virtual blocks do not have a fixed size.
 
-The first bit of the virtual block identifies which of the two it is. The rest of the eight byte header and footer contains the length of the block. Our virtual blocks do not have a fixed size.
+The minimum size is limited by the header and footer size. The maximum size is limited by the length that can be represented inside the header/footer which is $2^{64-1} - 1$.
 
-The minimum size is limited by the header and footer size. The maximum size is limited of the length that can be represented inside the header/footer which is $2^{64-1} - 1$.
-
-The virtual block can be used through \package{.vdisk.IVirtualBlock}.
+The virtual block can be used through \mono{.vdisk.IVirtualBlock}.
 
 \paragraph{Data Block}
-A data block is a special kind of virtual block. Therefore it starts with the virtual block header and ends with the virtual block footer.
+A data block is a special kind of virtual block. Therefore it starts/ends with the virtual block header/footer.
 
-Additionally the data block has it's own header. The header contains an address to the next data block creating a singly linked list. After that follows the size of the data stored inside the data block. This is needed as the data block could be much bigger than the data stored inside.
+Additionally the data block has it's own header. The header contains an address to the next data block creating a singly linked list. After that follows the size of the data stored inside the data block. This is needed because the data block could be much bigger than the data stored inside it.
 
-The data block can be used through \package{.vdisk.IDataBlock}.
+The data block can be used through \mono{.vdisk.IDataBlock}.
 
 \paragraph{Free Block}
-A free block is a special kind of virtual block. Therefore it starts with the virtual block header and ends with the virtual block footer.
+A free block is a special kind of virtual block. Therefore it starts/ends with the virtual block header/footer.
 
 Additionally the free block has it's own header. The header contains two addresses, the first pointing to the previous free block (or 0x0 if none) and the second pointing to the next free block (or 0x0 if none). Therefore free blocks create a doubly linked list.
 
-The free block can be used through \package{.vdisk.IFreeBlock}.
+The free block can be used through \mono{.vdisk.IFreeBlock}.
 
 \paragraph{Virtual Disk Space}
 As mentioned data blocks build a singly linked list. So we decided to implement a simple abstraction for them. A virtual disk space consists of a list of data blocks and provides an interface that allows to work with them as if they were one continuous block.
 
 In addition the virtual disk space takes care of expanding and shrinking depending on how much space is needed. It is important to understand that the virtual disk space is a simplification and does not come up inside the virtual disk file itself.
 
-The virtual disk space can be used through \package{.vdisk.IVirtualDiskSpace}.
+The virtual disk space can be used through \mono{.vdisk.IVirtualDiskSpace}.
 
 \paragraph{Disk Entry}
-A disk entry is an abstract description for objects stored inside the virtual disk. It is the common interface for files and directories. Every disk entry has a parent which is a directory. Only the root directory has no parent.
+A disk entry is an abstract description for objects stored inside the virtual disk. It is the common interface for files and directories. Every disk entry has a directory as its parent. Only the root directory has no parent.
 
 Disk entries contain a reference to the previous and next disk entry, creating a doubly linked list. This list contains entries which are on the same logical level inside the hierarchy. In other words: all elements inside the list have the same parent.
 
-The disk entry can be used through \package{.vdisk.IVirtualDiskEntry}.
+The disk entry can be used through \mono{.vdisk.IVirtualDiskEntry}.
 
 \paragraph{Directory}
 A directory is a specialisation of a disk entry. It describes an object that has a name and contains children of type disk entry.
 
 The metadata used by the directory are stored inside a virtual disk space.
 
-The directory can be used through \package{.vdisk.IVirtualDirectory}.
+The directory can be used through \mono{.vdisk.IVirtualDirectory}.
 
 \paragraph{File}
 A file is a specialisation of a disk entry. It describes an object that has a name and contains metadata and data.
 
 The metadata and data are stored in separate virtual disk spaces. This allows to implement hard and soft links at a later point.
 
-The file can be used through \package{.vdisk.IVirtualFile}.
+The file can be used through \mono{.vdisk.IVirtualFile}.
 
 \subsubsection{InputStream / OutputStream}
-An important goal for us was to create an implementation that is easy to understand for Java developers familiar with Java's I/O. Therefore we implemented \package{.io.VDiskFileInputStream} that implements \package{java.io.InputStream} and \package{.io.VDiskFileOutputStream} that implements \package{java.io.OutputStream}. Because of this design choice it is very easy to encrypt, compress or transform the data in any possible way while reading or writing data.
+An important goal for us was to create an implementation that is easy to understand for Java developers familiar with Java's I/O. Therefore we implemented \mono{.io.VDiskFileInputStream} that implements \mono{java.io.InputStream} and \mono{.io.VDiskFileOutputStream} that implements \mono{java.io.OutputStream}. Because of this design choice, it is very easy to encrypt, compress or transform the data in any possible way while reading or writing data.
 
-A good example of such stream decorations are our compression and encryption implementations which can be found at \package{.io.util.GZIPMover} and \package{.io.util.EncryptedMover}. The implementation of both classes is, as you can see, very simple and readable.
+A good example of such stream decorations are our compression and encryption implementations, which can be found at \mono{.io.util.GZIPMover} and \mono{.io.util.EncryptedMover}. The implementation of both classes is, as you can see, very simple and readable.
 
 \newpage
 
@@ -295,11 +286,34 @@ A good example of such stream decorations are our compression and encryption imp
 
 \section{Quick Start Guide}
 
-% TODO: Remove this line
-\textbf{[optional: This part has to be completed by April 8th.]}
+\subsection{How to run the CLI}
+To run the Command Line Interface just run \mono{.cli.Main.java}. A host system path is a path that is valid for the host system. A virtual disk path is a valid path for the virtual disk.
 
-% TODO: Remove this text and replace it with actual content
-\emph{If you have a command line interface for your VFS, describe here the commands available (e.g. ls, copy, import).} \\ \\ \\
+\subsection{Commands}
+Following a list of available commands with a description what they do.
+\begin{description}
+    \item [stop] Stops the CLI and shuts down the application. Example: \mono{stop}
+    \item [create] Takes a valid file path (host system) where it will create a new, empty virtual disk. Example: \mono{create /home/user/test.vdisk}
+    \item [destroy] Takes a valid file path (host system) where a virtual disk is located. After successfully checking for the magic number it will delete the disk from the host's system. Example: \mono{destroy /home/user/test.vdisk}
+    \item [load] Takes a valid file path (host system) where a virtual disk is located. Will load the given file as a virtual disk. Example: \mono{load /home/user/test.vdisk}
+    \item [unload] Unloads the currently loaded virtual disk. Example: \mono{unload}
+    \item [ls] Takes an \textit{otional} argument with an absolute or relative path (virtual disk). Will print out all children (files and directories) inside the given path or for the current location. Example \mono{ls /}
+    \item [mkdir] Takes an absolute or relative path (virtual disk) and creates a directory at the given location. It is possible to pass ``-p" as the first argument and a path as the second one, in this case it will create all needed directories to satisfy the given path.\\ Example: \mono{mkdir -p /test/some/stuff} will create the directories /test, /test/some and /test/some/stuff.
+    \item [cd] Takes an absolute or relative path (virtual disk) as its argument. Changes the current directory to the given path. Example: \mono{cd /test/some}
+    \item [size] Takes an \textit{optional} relative or absolute path as its argument. Returns the size of the object represented by the given path (or the size of the current one, if no path provided). Example: \mono{size /test}
+    \item [query] Takes ``occupied", ``free" or ``total" as its first argument. Example: \mono{query total}
+    \begin{description}
+        \item [occupied] Shows the amount of used space inside the virtual disk
+        \item [free] Shows the amount of not used space inside the virtual disk
+        \item [total] Shows the size of the disk on the host system
+    \end{description}
+    \item [delete] Takes an absolute or relative path to a directory or file inside the virtual disk. Deletes the given object. Example: \mono{delete /test}
+    \item [move] Takes two absolute or relative paths (virtual disk). The first being the source and the second being the target. Moves the source file or directory to the given target. Example: \mono{move /test/some/file /test/} would move the file ``/test/some/file" into the directory ``/test/" (resulting in a new file ``/test/file")
+    \item [copy] Takes two absolute or relative paths (virtual disk). The first being the source and the second being the target. Creates a copy of the source at the given target location. Example: \mono{copy /test/some/file /test/file}
+    \item [import] Takes two absolute or relative paths. The first one being a source (host system) and the second one being a target (virtual disk). Will import the file or directory from the host system into the given target inside the virtual disk. Example: \mono{import /home/user/movies/awesome.avi /awesome.avi}
+    \item [export] Takes two absolute or relative paths. The first one being a source (virtual disk) and the second one being a target (host system). Exports the given source file or directory into the given target. Example: \mono{export /awesome.avi /home/user/movies/}
+\end{description}
+
 
 
 % TODO: Remove this line
