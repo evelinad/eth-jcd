@@ -10,12 +10,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 /**
- * Represents a directory on the virtual disk.
- * 
- * A directory contains members ({@link IVirtualDiskEntry}) which belong to the
- * directory. This includes files and subdirectories inside the directory. As
- * defined by the {@link IVirtualDiskEntry} the member list is a doubly linked
- * list.
+ * Implementation of {@link IVirtualDirectory}.
  * 
  * The data stored in the directory is handled by a {@link IVirtualDiskSpace}.
  * The structure of the data is structured as follows:

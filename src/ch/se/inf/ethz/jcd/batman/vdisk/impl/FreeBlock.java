@@ -8,11 +8,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 
 /**
- * Represents a block that is not used to save useful data.
- * 
- * This interface allows to create an implicit doubly linked list of free blocks
- * in the virtual disk. Large parts, which are normally used to store data (see
- * {@link IDataBlock}), are not used and may contain garbage.
+ * Implementation of {@link IFreeBlock}.
  * 
  * The blocks need at least 32 byte to store the data needed for the free list.
  * The data is structured as follows: 0x00 8 byte size and indicator for free
