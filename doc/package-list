@@ -1,0 +1,7 @@
+ch.se.inf.ethz.jcd.batman.cli
+ch.se.inf.ethz.jcd.batman.cli.command
+ch.se.inf.ethz.jcd.batman.io
+ch.se.inf.ethz.jcd.batman.io.util
+ch.se.inf.ethz.jcd.batman.vdisk
+ch.se.inf.ethz.jcd.batman.vdisk.impl
+ch.se.inf.ethz.jcd.batman.vdisk.util
