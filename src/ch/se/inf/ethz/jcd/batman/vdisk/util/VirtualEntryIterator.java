@@ -5,6 +5,16 @@ import java.util.Iterator;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskEntry;
 
+/**
+ * Implementation of {@link Iterator} for {@link IVirtualDiskEntry}.
+ * 
+ * This Iterator allows to iterate over the implicit list that
+ * {@link IVirtualDiskEntry} build.
+ * 
+ * @see Iterator
+ * @see Iterable
+ * @see IVirtualDiskEntry
+ */
 public class VirtualEntryIterator implements Iterator<IVirtualDiskEntry> {
 
     private IVirtualDiskEntry nextEntry;
