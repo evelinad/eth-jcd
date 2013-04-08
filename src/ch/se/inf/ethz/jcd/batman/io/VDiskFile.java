@@ -426,11 +426,10 @@ public class VDiskFile {
         } catch (IOException e) {
             try {
                 oldParentDir.addMember(this.pathDiskEntry);
+                return true;
             } catch (IOException eInner) {
-                throw new RuntimeException(eInner);
+                return false;
             }
-
-            return false;
         }
 
         try {
@@ -439,11 +438,11 @@ public class VDiskFile {
             try {
                 this.pathDiskEntry.setName(this.getName());
                 oldParentDir.addMember(this.pathDiskEntry);
+                
+                return true;
             } catch (IOException eInner) {
-                throw new RuntimeException(eInner);
+                return false;
             }
-
-            return false;
         }
 
         this.pathname = dest.getPath();
