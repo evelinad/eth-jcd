@@ -31,7 +31,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
  * because there is an offset saved in the superblock which gives the offset of
  * the root directory, it could also be saved in another place.
  * 
- * The VirtualDisk will dynamically increase the underlining file and add the new
+ * The VirtualDisk will dynamically increase the underlying file and add the new
  * space to the free lists. Which are used when new {@link IDataBlock} need to be 
  * allocated.
  */
