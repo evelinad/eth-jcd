@@ -10,7 +10,7 @@
 
 ## Documentation
 * [Report](report.pdf)
-* [JavaDoc](/doc/)
+* [JavaDoc](/eth-jcd/doc/)
 
 ## Other Resources
 * [Repository](https://github.com/groggi/eth-jcd/)
