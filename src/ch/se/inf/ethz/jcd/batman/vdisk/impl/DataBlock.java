@@ -3,21 +3,12 @@ package ch.se.inf.ethz.jcd.batman.vdisk.impl;
 import java.io.IOException;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.IDataBlock;
-import ch.se.inf.ethz.jcd.batman.vdisk.IFreeBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
- * Represents a block containing meta data and data on the virtual Disk.
- * 
- * In contrast to a {@link IFreeBlock} this block contains data that is
- * meaningful.
- * 
- * <i>meta data</i> contains information about the block itself and other blocks
- * which are in some kind of relation to the block.
- * 
- * <i>Data</i> is some kind of data that has to be stored on the virtual disk.
+ * Implementation of {@link IDataBlock}.
  * 
  * The data blocks are stored as a linked list and each data block has a pointer
  * to the next block in the list.

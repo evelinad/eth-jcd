@@ -9,9 +9,10 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
- * Represents a file on the virtual disk. The file contains two separate
- * {@link IVirtualDiskSpace} on stores the meta data of the file and one stores
- * the data of the file.
+ * Implementation of {@link IVirtualFile}.
+ * 
+ * The file contains two separate {@link IVirtualDiskSpace} on stores the meta data of
+ * the file and one stores the data of the file.
  * 
  * The {@link IVirtualDiskSpace} which handles the meta data is structured as
  * follows:

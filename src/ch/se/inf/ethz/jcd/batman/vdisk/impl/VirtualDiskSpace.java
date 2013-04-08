@@ -11,13 +11,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskSpace;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
- * A {@link IVirtualDiskSpace} is a simple abstraction of a list of
- * {@link IDataBlock}.
- * 
- * A virtual disk space allows to work with a continuous space on the disk
- * without handling the jumps between data blocks and the management that is
- * connected with it.
- * 
+ * Implementation of {@link IVirtualDiskSpace}.
  */
 public class VirtualDiskSpace implements IVirtualDiskSpace {
 

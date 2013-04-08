@@ -17,10 +17,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualEntryIterator;
 
 /**
- * Represents an entry inside the virtual disk. This is the basic interface that
- * is extended by directories ({@link IVirtualDirectory}) and files (
- * {@link IVirtualFile}.
- * 
+ * Implementation of {@link IVirtualDiskEntry}.
  */
 public abstract class VirtualDiskEntry implements IVirtualDiskEntry {
 
