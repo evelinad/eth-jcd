@@ -2,9 +2,10 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 /**
  * Represents the states in which a virtual disk entry (
- * {@link IVirtualDiskEntry}, {@link VirtualDiskEntry}) can be.
+ * {@link IVirtualDiskEntry},
+ * {@link ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDiskEntry}) can be.
  * 
- * @see VirtualDiskEntry
+ * @see ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDiskEntry
  */
 public enum FileState {
     /**

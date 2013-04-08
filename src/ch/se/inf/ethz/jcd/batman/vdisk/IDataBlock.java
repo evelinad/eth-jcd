@@ -160,7 +160,8 @@ public interface IDataBlock extends IVirtualBlock {
      * The address (location) is relative to the beginning of the underlying
      * virtual disk. Therefore position 0 is the first byte of the disk itself.
      * 
-     * @see DataBlock#load(IVirtualDisk, long)
+     * @see ch.se.inf.ethz.jcd.batman.vdisk.impl.DataBlock#load(IVirtualDisk,
+     *      long)
      * @return the address of the next block.
      */
     long getNextBlock();
