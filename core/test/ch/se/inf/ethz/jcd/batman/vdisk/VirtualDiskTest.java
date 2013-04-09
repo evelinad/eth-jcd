@@ -2,7 +2,9 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import org.junit.Test;
 
@@ -11,6 +13,62 @@ import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 public class VirtualDiskTest extends NewDiskPerTest {
     
+	@Test(expected=IllegalArgumentException.class)
+	public void invalidCreateAlreadyExistsTest () throws IOException {
+		VirtualDisk.create(disk.getHostLocation().getPath());
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void invalidLoadDoesNotExistTest () throws IOException {
+		VirtualDisk.load("notexistingfile.vdisk");
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void invalidLoadCorruptDetaTest () throws IOException {
+		File corruptDisk = new File("corruptdisk.vdisk");
+		corruptDisk.createNewFile();
+		try {
+			VirtualDisk.load("corruptdisk.vdisk");	
+		} finally {
+			corruptDisk.delete();
+		}
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void invalidLoadWrontTypeTest () throws IOException {
+		RandomAccessFile corruptDisk = new RandomAccessFile("wrongType.vdisk", "rw");
+		corruptDisk.setLength(1000);
+		corruptDisk.close();
+		try {
+			VirtualDisk.load("wrongType.vdisk");	
+		} finally {
+			File deleteFile = new File("wrongType.vdisk");
+			deleteFile.delete();
+		}
+	}
+	
+	@Test()
+	public void createFileTest () throws IOException {
+		IVirtualFile file = disk.createFile(null, "foo", 100);
+		assertEquals(null, file.getParent());
+		disk.getRootDirectory().addMember(file);
+		assertEquals(disk.getRootDirectory(), file.getParent());
+	}
+	
+	@Test()
+	public void freeListTest () throws IOException {
+		IVirtualFile file1 = disk.createFile(disk.getRootDirectory(), "foo1", 100);
+		IVirtualFile file2 = disk.createFile(disk.getRootDirectory(), "foo2", 150);
+		IVirtualFile file3 = disk.createFile(disk.getRootDirectory(), "foo3", 100);
+		disk.createFile(disk.getRootDirectory(), "foo4", 100);
+		long maxDiskSize = disk.getSize();
+		file1.delete();
+		file2.delete();
+		file3.delete();
+		disk.createFile(disk.getRootDirectory(), "foo5", 150);
+		assertTrue(disk.getSize() <= maxDiskSize);
+	}
+	
 	/**
      * Creates a directory structure of the following form: <code>
      * / --> /A/ --> /A/Asub/ --> /A/Asub/AsubSub/

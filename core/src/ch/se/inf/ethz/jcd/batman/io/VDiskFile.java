@@ -273,7 +273,11 @@ public class VDiskFile {
      * @return VDiskFile representing the parent
      */
     public VDiskFile getParentFile() {
-        int lastSeperatorIndex = pathname.lastIndexOf(PATH_SEPARATOR);
+    	if (PATH_SEPARATOR.equals(pathname)) {
+    		return null;
+    	}
+    	
+    	int lastSeperatorIndex = pathname.lastIndexOf(PATH_SEPARATOR);
         String parentPath = pathname.substring(0, lastSeperatorIndex);
 
         if (parentPath.isEmpty()) {

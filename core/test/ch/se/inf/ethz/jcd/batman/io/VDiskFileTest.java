@@ -61,10 +61,15 @@ public class VDiskFileTest {
         new VDiskFile("a", disk);
     }
 
+    @Test(expected = VirtualDiskException.class)
+    public void invalidCreateTest() throws IOException {
+    	new VDiskFile("bar", "foo", disk);
+    }
+    
     @Test
     public void createDeleteTest() throws IOException {
         // Test create File
-        VDiskFile testFile = new VDiskFile("/test", disk);
+    	VDiskFile testFile = new VDiskFile("/test", disk);
         assertFalse(testFile.isDirectory());
         assertFalse(testFile.isFile());
         assertFalse(testFile.delete());
@@ -80,6 +85,11 @@ public class VDiskFileTest {
         assertEquals(disk.getRootDirectory(), testFile.getParentFile()
                 .getDiskEntry());
 
+        //Create with parent
+        VDiskFile parent = new VDiskFile("/", disk);
+        VDiskFile withParent = new VDiskFile(parent, "foo");
+        assertEquals("/foo", withParent.getPath());
+        
         // Test create File under /test/foo
         VDiskFile testFooFile = new VDiskFile("/test/foo", disk);
         assertFalse(testFooFile.createNewFile());
@@ -131,13 +141,17 @@ public class VDiskFileTest {
         assertFalse(fooDirectory.delete());
         assertTrue(mkdirsTestDirectory.delete());
         assertTrue(fooDirectory.delete());
+        VDiskFile failMkdir = new VDiskFile("/", disk);
+        assertFalse(failMkdir.mkdir());
     }
 
     @Test
     public void listTest() throws IOException {
         VDiskFile testFile = new VDiskFile("/test", disk);
+        assertEquals(0, testFile.list().length);
+        assertEquals(0, testFile.listFiles().length);
         testFile.createNewFile();
-        assertTrue(testFile.list().length == 0);
+        assertEquals(0,testFile.list().length);
 
         VDiskFile testDirectory = new VDiskFile("/foo", disk);
         testDirectory.mkdir();
