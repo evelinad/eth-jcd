@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
-  <widgets xsi:type="model:Window" id="1" x="48" y="80" width="697" text="Batman File Browser" measuredWidth="697" measuredHeight="300" minimizeButton="true" maximizeButton="true"/>
-  <widgets xsi:type="model:WidgetGroup" id="8" x="48" y="125" height="255" measuredWidth="230" measuredHeight="255">
-    <widgets xsi:type="model:Tree" id="3" width="230" height="255" text="v /&#xA;-[>] bin&#xA;-[>] lib&#xA;-[v] home&#xA;--[v] user&#xA;---[>] Documents&#xA;----[>] important&#xA;--[>] other user" measuredWidth="230" measuredHeight="255" verticalScrollbar="true">
+  <widgets xsi:type="model:Window" id="21" x="48" y="8" width="825" text="Batman File Browser" measuredWidth="825" measuredHeight="300" minimizeButton="true" maximizeButton="true"/>
+  <widgets xsi:type="model:WidgetGroup" id="22" x="48" y="49" measuredWidth="230" measuredHeight="259">
+    <widgets xsi:type="model:Tree" id="23" width="230" height="259" text="v /&#xA;-[>] bin&#xA;-[>] lib&#xA;-[v] home&#xA;--[v] user&#xA;---[>] Documents&#xA;----[>] important&#xA;--[>] other user" measuredWidth="230" measuredHeight="259" verticalScrollbar="true">
       <items x="0" y="5" width="213" height="21" text="v /"/>
       <items x="0" y="26" width="213" height="21" text="-[>] bin"/>
       <items x="0" y="47" width="213" height="21" text="-[>] lib"/>
@@ -14,29 +14,35 @@
       <font/>
     </widgets>
   </widgets>
-  <widgets xsi:type="model:VSplitter" id="4" x="277" y="125" height="255" measuredWidth="11" measuredHeight="255"/>
-  <widgets xsi:type="model:Panel" id="10" x="279" y="98" width="466" height="28" measuredWidth="466" measuredHeight="28"/>
-  <widgets xsi:type="model:SearchField" id="9" x="624" y="99" width="121" text="Search" measuredWidth="121" measuredHeight="24">
+  <widgets xsi:type="model:VSplitter" id="24" x="277" y="27" height="281" measuredWidth="11" measuredHeight="281"/>
+  <widgets xsi:type="model:SearchField" id="25" x="751" y="26" width="121" text="Search" measuredWidth="121" measuredHeight="24">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Breadcrumbs" id="2" x="284" y="99" text="/, home, user, Documents, important" measuredWidth="273" measuredHeight="23">
+  <widgets xsi:type="model:Breadcrumbs" id="26" x="564" y="26" text="...,Documents, important" measuredWidth="179" measuredHeight="23">
     <font/>
-    <items x="0" y="0" width="7" height="23" text="/"/>
-    <items x="27" y="0" width="33" height="23" text="home"/>
-    <items x="80" y="0" width="26" height="23" text="user"/>
-    <items x="126" y="0" width="66" height="23" text="Documents"/>
-    <items x="212" y="0" width="58" height="23" text="important"/>
+    <items x="0" y="0" width="12" height="23" text="..."/>
+    <items x="32" y="0" width="66" height="23" text="Documents"/>
+    <items x="118" y="0" width="58" height="23" text="important"/>
   </widgets>
-  <widgets xsi:type="model:Table" id="11" x="287" y="122" width="458" height="258" text="Name, Size&#xA;File A, 500 Bytes&#xA;File B, 1.2 GiB&#xA;File C, 20 KiB" measuredWidth="458" measuredHeight="258" selection="" verticalScrollbar="true" alternative="#eeeeee">
+  <widgets xsi:type="model:Table" id="27" x="287" y="48" width="585" height="260" text=",Name, Size&#xA;{closed},Dir A,&#xA;{closed},Dir B,&#xA;{new},File A, 500 Bytes&#xA;{new},File B, 1.2 GiB&#xA;{new},File C, 20 KiB" measuredWidth="585" measuredHeight="260" selection="" verticalScrollbar="true" alternative="#eeeeee">
     <font/>
   </widgets>
-  <widgets xsi:type="model:ButtonBar" id="13" x="48" y="98" width="232" text="{closed},{add}{desc},{delete},{options}" measuredWidth="232" measuredHeight="28" selection="">
+  <widgets xsi:type="model:ButtonBar" id="28" x="48" y="26" width="230" height="24" text="{closed},{options}" measuredWidth="230" measuredHeight="24" selection="">
     <font/>
-    <items x="0" y="0" width="52" height="28" text="{closed}"/>
-    <items x="52" y="0" width="73" height="28" text="{add}{desc}"/>
-    <items x="125" y="0" width="51" height="28" text="{delete}"/>
-    <items x="176" y="0" width="56" height="28" text="{options}"/>
+    <items x="0" y="0" width="111" height="24" text="{closed}"/>
+    <items x="111" y="0" width="119" height="24" text="{options}"/>
   </widgets>
+  <widgets xsi:type="model:ButtonBar" id="29" x="287" y="27" height="23" text="{arrow-up},{arrow-left},{arrow-right},{add}{desc},{delete},{curved-arrow-down},{curved-arrow-up}" measuredWidth="270" measuredHeight="23" selection="">
+    <font/>
+    <items x="0" y="0" width="37" height="23" text="{arrow-up}"/>
+    <items x="37" y="0" width="36" height="23" text="{arrow-left}"/>
+    <items x="73" y="0" width="36" height="23" text="{arrow-right}"/>
+    <items x="109" y="0" width="52" height="23" text="{add}{desc}"/>
+    <items x="161" y="0" width="36" height="23" text="{delete}"/>
+    <items x="197" y="0" width="36" height="23" text="{curved-arrow-down}"/>
+    <items x="233" y="0" width="37" height="23" text="{curved-arrow-up}"/>
+  </widgets>
+  <widgets xsi:type="model:Hotspot" id="30" x="144" y="184" width="65" height="17" measuredWidth="65" measuredHeight="17"/>
   <hRuler/>
   <vRuler/>
   <font size="12px"/>
