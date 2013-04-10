@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Window" id="16" x="48" width="825" text="Batman File Browser" measuredWidth="825" measuredHeight="300" minimizeButton="true" maximizeButton="true"/>
+  <widgets xsi:type="model:VSplitter" id="17" x="277" y="19" height="281" measuredWidth="11" measuredHeight="281"/>
+  <widgets xsi:type="model:SearchField" id="18" x="750" y="19" width="121" text="Search" measuredWidth="121" measuredHeight="24" state="disabled">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:ButtonBar" id="19" x="48" y="18" width="230" height="24" text="{closed},{options}" measuredWidth="230" measuredHeight="24" selection="">
+    <font/>
+    <items x="0" y="0" width="111" height="24" text="{closed}"/>
+    <items x="111" y="0" width="119" height="24" text="{options}"/>
+  </widgets>
+  <widgets xsi:type="model:ButtonBar" id="20" x="287" y="19" height="23" text="%(color:gray){arrow-up}%,%(color:gray){arrow-left}%,%(color:gray){arrow-right}%,%(color:gray){add}{desc}%,%(color:gray){delete}%,%(color:gray){curved-arrow-down}%,%(color:gray){curved-arrow-up}%" measuredWidth="270" measuredHeight="23" selection="">
+    <font/>
+    <items x="0" y="0" width="37" height="23" text="%(color:gray){arrow-up}%"/>
+    <items x="37" y="0" width="36" height="23" text="%(color:gray){arrow-left}%"/>
+    <items x="73" y="0" width="36" height="23" text="%(color:gray){arrow-right}%"/>
+    <items x="109" y="0" width="52" height="23" text="%(color:gray){add}{desc}%"/>
+    <items x="161" y="0" width="36" height="23" text="%(color:gray){delete}%"/>
+    <items x="197" y="0" width="36" height="23" text="%(color:gray){curved-arrow-down}%"/>
+    <items x="233" y="0" width="37" height="23" text="%(color:gray){curved-arrow-up}%"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="21" x="416" y="144" text="no disk loaded" measuredWidth="313" measuredHeight="59">
+    <font size="43px"/>
+  </widgets>
+  <hRuler/>
+  <vRuler/>
+  <font size="12px"/>
+</model:Screen>
