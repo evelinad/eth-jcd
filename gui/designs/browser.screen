@@ -18,13 +18,15 @@
   <widgets xsi:type="model:SearchField" id="25" x="751" y="26" width="121" text="Search" measuredWidth="121" measuredHeight="24">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Breadcrumbs" id="26" x="564" y="26" text="...,Documents, important" measuredWidth="179" measuredHeight="23">
+  <widgets xsi:type="model:Breadcrumbs" id="26" x="288" y="49" text="/,home,user,Documents, important" measuredWidth="273" measuredHeight="23">
     <font/>
-    <items x="0" y="0" width="12" height="23" text="..."/>
-    <items x="32" y="0" width="66" height="23" text="Documents"/>
-    <items x="118" y="0" width="58" height="23" text="important"/>
+    <items x="0" y="0" width="7" height="23" text="/"/>
+    <items x="27" y="0" width="33" height="23" text="home"/>
+    <items x="80" y="0" width="26" height="23" text="user"/>
+    <items x="126" y="0" width="66" height="23" text="Documents"/>
+    <items x="212" y="0" width="58" height="23" text="important"/>
   </widgets>
-  <widgets xsi:type="model:Table" id="27" x="287" y="48" width="585" height="260" text=",Name, Size&#xA;{closed},Dir A,&#xA;{closed},Dir B,&#xA;{new},File A, 500 Bytes&#xA;{new},File B, 1.2 GiB&#xA;{new},File C, 20 KiB" measuredWidth="585" measuredHeight="260" selection="" verticalScrollbar="true" alternative="#eeeeee">
+  <widgets xsi:type="model:Table" id="27" x="287" y="71" width="585" height="237" text=",Name, Size&#xA;{closed},Dir A,&#xA;{closed},Dir B,&#xA;{new},File A, 500 Bytes&#xA;{new},File B, 1.2 GiB&#xA;{new},File C, 20 KiB" measuredWidth="585" measuredHeight="237" selection="" verticalScrollbar="true" alternative="#eeeeee">
     <font/>
   </widgets>
   <widgets xsi:type="model:ButtonBar" id="28" x="48" y="26" width="230" height="24" text="{closed},{options}" measuredWidth="230" measuredHeight="24" selection="">
