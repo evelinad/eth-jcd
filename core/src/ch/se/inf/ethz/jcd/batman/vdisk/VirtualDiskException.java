@@ -14,4 +14,8 @@ public class VirtualDiskException extends IOException {
     public VirtualDiskException(String message) {
         super(message);
     }
+    
+    public VirtualDiskException(String message, Throwable throwable) {
+        super(message);
+    }
 }
