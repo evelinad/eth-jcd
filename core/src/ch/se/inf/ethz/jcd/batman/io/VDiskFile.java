@@ -615,6 +615,29 @@ public class VDiskFile {
     }
 
     /**
+     * Returns the file size of the file represented by VDiskFile.
+     * 
+     * If the object does not yet exist on disk or is not a {@link IVirtualFile} 
+     * 0L is returned. In case of an exception a negative value is returned.
+     * 
+     * @return file size in bytes of the represented file. If the object does not
+     *         exist yet or is not a {@link IVirtualFile} 0L is returned and 
+     *         in case of an error a negative value.
+     */   
+    public long getFileSize() {
+        if (this.exists() && isFile()) {
+        	IVirtualFile file = (IVirtualFile) this.pathDiskEntry;
+            try {
+                return file.getSize();
+            } catch (IOException e) {
+                return -1L;
+            }
+        } else {
+            return 0L;
+        }
+    }
+    
+    /**
      * Returns the IVirtualDiskEntry belonging to the represented object.
      * 
      * @return the IVirtualDiskEntry representing the VDiskFile or null if
