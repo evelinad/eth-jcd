@@ -1,6 +1,8 @@
 # general #
 *~
 tmp
+bin
+gui/ressources
 
 # eclipse #
 .checkstyle
