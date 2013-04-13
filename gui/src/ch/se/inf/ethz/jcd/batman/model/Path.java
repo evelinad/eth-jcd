@@ -27,6 +27,10 @@ public class Path implements Serializable {
 	}
 
 	public Path getParentPath () {
+		if(path.equals(SEPERATOR)) {
+			return null;
+		}
+		
 		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
 		if (lastSeperatorIndex <= 0) {
 			return new Path(SEPERATOR);
@@ -35,8 +39,14 @@ public class Path implements Serializable {
 	}
 	
 	public String getName() {
-		String[] splitPath = path.split(SEPERATOR);
-		return splitPath[splitPath.length - 1];
+		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
+		String namePart = path.substring(lastSeperatorIndex + 1);
+		
+		if(namePart.isEmpty()) {
+			return SEPERATOR;
+		} else {
+			return namePart;
+		}
 	}
 	
 	@Override
