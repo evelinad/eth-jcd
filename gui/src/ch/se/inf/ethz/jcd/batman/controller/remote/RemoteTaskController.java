@@ -41,36 +41,50 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public void connect(boolean createNewIfNecessary) throws ConnectionException {
-		try {
-			Registry registry;
-			if (uri.getPort() == -1) {
-				registry = LocateRegistry.getRegistry(uri.getHost());
-			} else {
-				registry = LocateRegistry.getRegistry(uri.getHost(), uri.getPort());
-			}
-			remoteDisk = (IRemoteVirtualDisk) registry.lookup(SERVICE_NAME);
-			if (remoteDisk.diskExists(diskPath)) {
-				diskId = remoteDisk.loadDisk(diskPath);
-			} else {
-				if (createNewIfNecessary) {
-					diskId = remoteDisk.createDisk(diskPath);
-				} else {
-					throw new ConnectionException("Disk does not exist.");
-				}
-			}
-		} catch (RemoteException | NotBoundException | VirtualDiskException e) {
-			throw new ConnectionException(e);
+	public Task<Void> createConnectTask(final boolean createNewIfNecessary) {
+		if (isConnected()) {
+			throw new IllegalStateException("Already connected.");
 		}
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				if (isConnected()) {
+					throw new IllegalStateException("Already connected.");
+				}
+				try {
+					Registry registry;
+					if (uri.getPort() == -1) {
+						registry = LocateRegistry.getRegistry(uri.getHost());
+					} else {
+						registry = LocateRegistry.getRegistry(uri.getHost(), uri.getPort());
+					}
+					remoteDisk = (IRemoteVirtualDisk) registry.lookup(SERVICE_NAME);
+					if (remoteDisk.diskExists(diskPath)) {
+						diskId = remoteDisk.loadDisk(diskPath);
+					} else {
+						if (createNewIfNecessary) {
+							diskId = remoteDisk.createDisk(diskPath);
+						} else {
+							throw new ConnectionException("Disk does not exist.");
+						}
+					}
+				} catch (RemoteException | NotBoundException | VirtualDiskException e) {
+					throw new ConnectionException(e);
+				}
+				return null;
+			}
+			
+		};
 	}
 
 	@Override
-	public boolean connected() {
+	public boolean isConnected() {
 		return diskId != null;
 	}
 	
 	private void checkIsConnected() {
-		if (!connected()) {
+		if (!isConnected()) {
 			throw new IllegalStateException("Controller is not connected");
 		}
 	}
@@ -93,7 +107,7 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Entry[]> getDirectoryEntrysTask(final Directory directory) {
+	public Task<Entry[]> createDirectoryEntrysTask(final Directory directory) {
 		checkIsConnected();
 		return new Task<Entry[]>() {
 
@@ -107,7 +121,7 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> getFreeSpaceTask() {
+	public Task<Long> createFreeSpaceTask() {
 		checkIsConnected();
 		return new Task<Long>() {
 
@@ -121,7 +135,7 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> getOccupiedSpaceTask() {
+	public Task<Long> createOccupiedSpaceTask() {
 		checkIsConnected();
 		return new Task<Long>() {
 
@@ -135,7 +149,7 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> getUsedSpaceTask() {
+	public Task<Long> createUsedSpaceTask() {
 		checkIsConnected();
 		return new Task<Long>() {
 
@@ -149,28 +163,30 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<File> createFileTask(final File file) {
+	public Task<Void> createFileTask(final File file) {
 		checkIsConnected();
-		return new Task<File>() {
+		return new Task<Void>() {
 
 			@Override
-			protected File call() throws Exception {
+			protected Void call() throws Exception {
 				checkIsConnected();
-				return remoteDisk.createFile(diskId, file.getPath(), file.getSize());
+				remoteDisk.createFile(diskId, file.getPath(), file.getSize());
+				return null;
 			}
 			
 		};
 	}
 
 	@Override
-	public Task<Directory> createDirectoryTask(final Directory directory) {
+	public Task<Void> createDirectoryTask(final Directory directory) {
 		checkIsConnected();
-		return new Task<Directory>() {
+		return new Task<Void>() {
 
 			@Override
-			protected Directory call() throws Exception {
+			protected Void call() throws Exception {
 				checkIsConnected();
-				return remoteDisk.createDirectory(diskId, directory.getPath());
+				remoteDisk.createDirectory(diskId, directory.getPath());
+				return null;
 			}
 			
 		};

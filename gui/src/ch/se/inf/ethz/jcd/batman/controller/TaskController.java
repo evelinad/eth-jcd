@@ -7,21 +7,21 @@ import javafx.concurrent.Task;
 
 public interface TaskController {
 
-	Task<File> createFileTask(File file);
+	Task<Void> createFileTask(File file);
 	
-	Task<Directory> createDirectoryTask(Directory directory);
+	Task<Void> createDirectoryTask(Directory directory);
 	
-	Task<Entry[]> getDirectoryEntrysTask(Directory directory);
+	Task<Entry[]> createDirectoryEntrysTask(Directory directory);
 	
-	Task<Long> getFreeSpaceTask();
+	Task<Long> createFreeSpaceTask();
 	
-	Task<Long> getOccupiedSpaceTask();
+	Task<Long> createOccupiedSpaceTask();
 	
-	Task<Long> getUsedSpaceTask();
+	Task<Long> createUsedSpaceTask();
 	
-	void connect(boolean createNewIfNecessary) throws ConnectionException;
+	Task<Void> createConnectTask(boolean createNewIfNecessary);
 	
-	boolean connected();
+	boolean isConnected();
 	
 	void close();
 	
