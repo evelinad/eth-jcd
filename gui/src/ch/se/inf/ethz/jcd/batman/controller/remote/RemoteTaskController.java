@@ -192,4 +192,65 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
+	@Override
+	public Task<Void> createDeleteEntryTask(Entry entry) {
+		checkIsConnected();
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				checkIsConnected();
+				//TODO check how many files are in this directory/file delete starting from branches
+				//update task
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+
+	@Override
+	public Task<Void> createImportTask(String sourcePath, Entry destination) {
+		checkIsConnected();
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				checkIsConnected();
+				//TODO
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+
+	@Override
+	public Task<Void> createExportTask(Entry sourceEntry, String destinationPath) {
+		checkIsConnected();
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				checkIsConnected();
+				//TODO
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+
+	@Override
+	public Task<Void> createRenameTask(Entry source, Entry destination) {
+		checkIsConnected();
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				checkIsConnected();
+				//TODO
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+
 }
