@@ -13,10 +13,15 @@ public class Entry implements Serializable {
 		path = new Path();
 	}
 	
+	public Entry(Path path) {
+		this.path = path;
+	}
+	
 	public Entry(Path path, long timestamp) {
 		this.path = path;
 		this.timestamp = timestamp;
 	}
+	
 	public Path getPath() {
 		return path;
 	}

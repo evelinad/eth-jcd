@@ -17,6 +17,8 @@ public interface IRemoteVirtualDisk extends Remote {
 	
 	int loadDisk(Path path) throws RemoteException, VirtualDiskException;
 	
+	boolean diskExists (Path path) throws RemoteException, VirtualDiskException;
+	
 	void unloadDisk(int id) throws RemoteException, VirtualDiskException;
 	
 	long getFreeSpace(int id) throws RemoteException, VirtualDiskException;

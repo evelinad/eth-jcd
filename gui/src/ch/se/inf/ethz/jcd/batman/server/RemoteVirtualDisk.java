@@ -1,6 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.server;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -215,18 +216,10 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	@Override
 	public void deleteDisk(Path path) throws RemoteException, VirtualDiskException {
-        try  {
-        	// buffer for magic number
-    		byte[] readMagicNumber = new byte[IVirtualDisk.MAGIC_NUMBER.length];
-	
-	        java.io.File hostFile = new java.io.File(path.getPath());
-	        FileInputStream reader = new FileInputStream(
-	                hostFile.getAbsolutePath());
-	        reader.read(readMagicNumber);
-	        reader.close();
-	
-	        if (Arrays.equals(IVirtualDisk.MAGIC_NUMBER, readMagicNumber)) {
-	            if (!hostFile.delete()) {
+		try  {
+	        java.io.File diskFile = new java.io.File(path.getPath());
+	        if (isVirtualDisk(diskFile)) {
+	            if (!diskFile.delete()) {
 	            	throw new VirtualDiskException("Could not delete virtual disk at " + path); 
 	            }
 	        } else {
@@ -235,6 +228,31 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		} catch (Exception e) {
 			throw new VirtualDiskException("Could not delete virtual disk at " + path, e);
 		}
+	}
+
+	private boolean isVirtualDisk (java.io.File diskFile)  {
+		if (!diskFile.exists()) {
+			return false;
+		}
+		// buffer for magic number
+		byte[] readMagicNumber = new byte[IVirtualDisk.MAGIC_NUMBER.length];
+        FileInputStream reader;
+		try {
+			reader = new FileInputStream(
+			        diskFile.getAbsolutePath());
+	        reader.read(readMagicNumber);
+	        reader.close();
+		} catch (IOException e) {
+			return false;
+		}
+
+        return Arrays.equals(IVirtualDisk.MAGIC_NUMBER, readMagicNumber);
+	}
+	
+	@Override
+	public boolean diskExists(Path path) throws RemoteException,
+			VirtualDiskException {
+		return isVirtualDisk(new java.io.File(path.getPath()));
 	}
 	
 }

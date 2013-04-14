@@ -8,6 +8,10 @@ public class Directory extends Entry {
 		super();
 	}
 	
+	public Directory(Path path) {
+		super(path);
+	}
+	
 	public Directory(Path path, long timestamp) {
 		super(path, timestamp);
 	}
