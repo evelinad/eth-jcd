@@ -200,7 +200,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 	
 	@Override
-	public Entry[] getEntrys(int id, Entry entry)
+	public Entry[] getEntries(int id, Entry entry)
 			throws RemoteException, VirtualDiskException {
 		try {
 			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(), getDisk(id));
@@ -216,7 +216,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public Entry[] getAllSubEntrys(int id, Entry entry)
+	public Entry[] getAllSubEntries(int id, Entry entry)
 			throws RemoteException, VirtualDiskException {
 		try {
 			List<Entry> subEntrys = new LinkedList<Entry>();

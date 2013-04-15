@@ -8,19 +8,21 @@ import javafx.concurrent.Task;
 
 public interface TaskController {
 
-	Task<Void> createImportTask(String sourcePath, Entry destination);
+	Task<Void> createImportTask(String[] sourcePaths, Entry[] destinationEntries);
 	
-	Task<Void> createExportTask(Entry sourceEntry, String destinationPath);
+	Task<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths);
 	
-	Task<Void> createRenameTask(Entry source, Path destination);
+	Task<Void> createMoveTask(Entry[] sourceEntries, Path[] destinationPaths);
+	
+	Task<Void> createCopyTask(Entry[] sourceEntries, Path[] destinationPaths);
+	
+	Task<Void> createDeleteEntriesTask(Entry[] entries);
 	
 	Task<Void> createFileTask(File file);
 	
 	Task<Void> createDirectoryTask(Directory directory);
 	
-	Task<Entry[]> createDirectoryEntrysTask(Directory directory);
-	
-	Task<Void> createDeleteEntryTask(Entry entry);
+	Task<Entry[]> createDirectoryEntriesTask(Directory directory);
 	
 	Task<Long> createFreeSpaceTask();
 	

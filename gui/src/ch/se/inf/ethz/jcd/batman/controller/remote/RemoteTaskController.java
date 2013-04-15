@@ -137,14 +137,14 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Entry[]> createDirectoryEntrysTask(final Directory directory) {
+	public Task<Entry[]> createDirectoryEntriesTask(final Directory directory) {
 		checkIsConnected();
 		return new Task<Entry[]>() {
 
 			@Override
 			protected Entry[] call() throws Exception {
 				checkIsConnected();
-				return remoteDisk.getEntrys(diskId, directory);
+				return remoteDisk.getEntries(diskId, directory);
 			}
 			
 		};
@@ -223,37 +223,57 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createDeleteEntryTask(final Entry entry) {
+	public Task<Void> createDeleteEntriesTask(final Entry[] entries) {
 		checkIsConnected();
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
+				/*TODO
 				updateTitle("Delete entry");
 				
 				updateMessage("Discovering items");
-				Entry[] subEntrys = remoteDisk.getAllSubEntrys(diskId, entry);
+				Entry[] subEntries = remoteDisk.getAllSubEntries(diskId, entries);
 				
-				Arrays.sort(subEntrys, fileEntryDirectoryComp);
-				int totalEntrys = subEntrys.length + 1;
-				updateProgress(0, totalEntrys);
-				for (int i = 0; i < subEntrys.length; i++) {
-					updateMessage("Deleting entry " + (i + 1) + " of " + totalEntrys);
-					remoteDisk.deleteEntry(diskId, subEntrys[i].getPath());
-					updateProgress((i + 1), totalEntrys);
+				Arrays.sort(subEntries, fileEntryDirectoryComp);
+				int totalEntries = subEntries.length + 1;
+				updateProgress(0, totalEntries);
+				for (int i = 0; i < subEntries.length; i++) {
+					updateMessage("Deleting entry " + (i + 1) + " of " + totalEntries);
+					remoteDisk.deleteEntry(diskId, subEntries[i].getPath());
+					updateProgress((i + 1), totalEntries);
 				}
-				updateMessage("Deleting entry " + totalEntrys + " of " + totalEntrys);
-				remoteDisk.deleteEntry(diskId, entry.getPath());
-				updateProgress(totalEntrys, totalEntrys);
+				updateMessage("Deleting entry " + totalEntries + " of " + totalEntries);
+				remoteDisk.deleteEntry(diskId, entries.getPath());
+				updateProgress(totalEntries, totalEntries);
 				return null;
+				*/
+				throw new UnsupportedOperationException();
 			}
 			
 		};
 	}
 
 	@Override
-	public Task<Void> createImportTask(String sourcePath, Entry destination) {
+	public Task<Void> createMoveTask(final Entry[] sourceEntries, final Path[] destinationPaths) {
+		checkIsConnected();
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				checkIsConnected();
+				//TODO
+				//remoteDisk.renameEntry(diskId, source, destination);
+				//return null;
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+	
+	@Override
+	public Task<Void> createImportTask(String[] sourcePaths, Entry[] destinationEntries) {
 		checkIsConnected();
 		return new Task<Void>() {
 
@@ -268,7 +288,7 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createExportTask(Entry sourceEntry, String destinationPath) {
+	public Task<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths) {
 		checkIsConnected();
 		return new Task<Void>() {
 
@@ -283,15 +303,15 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createRenameTask(final Entry source, final Path destination) {
+	public Task<Void> createCopyTask(Entry[] sourceEntries, Path[] destinationPaths) {
 		checkIsConnected();
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				remoteDisk.renameEntry(diskId, source, destination);
-				return null;
+				//TODO
+				throw new UnsupportedOperationException();
 			}
 			
 		};
