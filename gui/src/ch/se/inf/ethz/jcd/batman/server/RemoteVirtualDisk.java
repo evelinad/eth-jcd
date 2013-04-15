@@ -190,22 +190,44 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 	
+	private void addAllSubEntrysToList (VDiskFile directory, List<Entry> entryList) throws IOException {
+		for (VDiskFile entry : directory.listFiles()) {
+			entryList.add(createModel(entry));
+			if (entry.isDirectory()) {
+				addAllSubEntrysToList(entry, entryList);
+			}
+		}
+	}
+	
 	@Override
-	public Entry[] getEntrys(int id, Directory directory)
+	public Entry[] getEntrys(int id, Entry entry)
 			throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(directory.getPath().getPath(), getDisk(id));
-			VDiskFile[] entrys = diskFile.listFiles();
+			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(), getDisk(id));
+			VDiskFile[] diskEntrys = directoryEntry.listFiles();
 			List<Entry> entryList = new LinkedList<Entry>();
-			for (VDiskFile entry : entrys) {
-				entryList.add(createModel(entry));
+			for (VDiskFile diskEntry : diskEntrys) {
+				entryList.add(createModel(diskEntry));
 			}
 			return entryList.toArray(new Entry[entryList.size()]);
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query entrys for directory " + directory.getPath(), e);
+			throw new VirtualDiskException("Could not query entrys for entry " + entry.getPath(), e);
 		}
 	}
 
+	@Override
+	public Entry[] getAllSubEntrys(int id, Entry entry)
+			throws RemoteException, VirtualDiskException {
+		try {
+			List<Entry> subEntrys = new LinkedList<Entry>();
+			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(), getDisk(id));
+			addAllSubEntrysToList(directoryEntry, subEntrys);
+			return subEntrys.toArray(new Entry[subEntrys.size()]);
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not query all sub entrys for entry " + entry.getPath(), e);
+		}
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {
@@ -253,6 +275,21 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	public boolean diskExists(Path path) throws RemoteException,
 			VirtualDiskException {
 		return isVirtualDisk(new java.io.File(path.getPath()));
+	}
+
+	@Override
+	public void renameEntry(int id, Entry entry, Path newPath) throws RemoteException,
+			VirtualDiskException {
+		try  {
+			IVirtualDisk disk = getDisk(id);
+			VDiskFile diskEntry = new VDiskFile(entry.getPath().getPath(), disk);
+			VDiskFile renameEntry = new VDiskFile(newPath.getPath(), disk);
+			if (!diskEntry.renameTo(renameEntry)) {
+				throw new VirtualDiskException();
+			}
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not rename entry " + entry.getPath() + " to " + newPath, e);
+		}
 	}
 	
 }

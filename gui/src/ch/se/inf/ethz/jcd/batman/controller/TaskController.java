@@ -3,6 +3,7 @@ package ch.se.inf.ethz.jcd.batman.controller;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
+import ch.se.inf.ethz.jcd.batman.model.Path;
 import javafx.concurrent.Task;
 
 public interface TaskController {
@@ -11,7 +12,7 @@ public interface TaskController {
 	
 	Task<Void> createExportTask(Entry sourceEntry, String destinationPath);
 	
-	Task<Void> createRenameTask(Entry source, Entry destination);
+	Task<Void> createRenameTask(Entry source, Path destination);
 	
 	Task<Void> createFileTask(File file);
 	

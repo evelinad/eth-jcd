@@ -37,6 +37,10 @@ public interface IRemoteVirtualDisk extends Remote {
 	
 	byte[] read(int id, File file, long fileOffset, int length) throws RemoteException, VirtualDiskException; 
 	
-	Entry[] getEntrys(int id, Directory directory) throws RemoteException, VirtualDiskException;
+	Entry[] getEntrys(int id, Entry entry) throws RemoteException, VirtualDiskException;
+	
+	Entry[] getAllSubEntrys(int id, Entry entry) throws RemoteException, VirtualDiskException;
+	
+	void renameEntry(int id, Entry entry, Path newPath) throws RemoteException, VirtualDiskException;
 	
 }

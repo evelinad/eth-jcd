@@ -5,6 +5,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javafx.concurrent.Task;
 
@@ -19,8 +21,36 @@ import ch.se.inf.ethz.jcd.batman.server.VirtualDiskServer;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class RemoteTaskController implements TaskController {
+	
+	/**
+	 * Sort order from biggest to smallest is: File -> Entry -> Directory
+	 */
+	private static final class FileEntryDirectoryComparator implements Comparator<Entry> {
 
+		@Override
+		public int compare(Entry entry1, Entry entry2) {
+			if (entry1 instanceof File) {
+				if (entry2 instanceof File) {
+					return 0;
+				} else {
+					return 1;
+				}
+			} else if (entry1 instanceof Directory) {
+				if (entry2 instanceof Directory) {
+					return 0;
+				} else {
+					return -1;
+				}
+			} else {
+				return 0;
+			}
+		}
+		
+	}
+	
 	private static final String SERVICE_NAME = VirtualDiskServer.SERVICE_NAME;
+	
+	private final Comparator<Entry> fileEntryDirectoryComp = new FileEntryDirectoryComparator();
 	
 	private URI uri;
 	private Path diskPath;
@@ -193,16 +223,30 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createDeleteEntryTask(Entry entry) {
+	public Task<Void> createDeleteEntryTask(final Entry entry) {
 		checkIsConnected();
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				//TODO check how many files are in this directory/file delete starting from branches
-				//update task
-				throw new UnsupportedOperationException();
+				updateTitle("Delete entry");
+				
+				updateMessage("Discovering items");
+				Entry[] subEntrys = remoteDisk.getAllSubEntrys(diskId, entry);
+				
+				Arrays.sort(subEntrys, fileEntryDirectoryComp);
+				int totalEntrys = subEntrys.length + 1;
+				updateProgress(0, totalEntrys);
+				for (int i = 0; i < subEntrys.length; i++) {
+					updateMessage("Deleting entry " + (i + 1) + " of " + totalEntrys);
+					remoteDisk.deleteEntry(diskId, subEntrys[i].getPath());
+					updateProgress((i + 1), totalEntrys);
+				}
+				updateMessage("Deleting entry " + totalEntrys + " of " + totalEntrys);
+				remoteDisk.deleteEntry(diskId, entry.getPath());
+				updateProgress(totalEntrys, totalEntrys);
+				return null;
 			}
 			
 		};
@@ -239,15 +283,15 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createRenameTask(Entry source, Entry destination) {
+	public Task<Void> createRenameTask(final Entry source, final Path destination) {
 		checkIsConnected();
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				//TODO
-				throw new UnsupportedOperationException();
+				remoteDisk.renameEntry(diskId, source, destination);
+				return null;
 			}
 			
 		};
