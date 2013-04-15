@@ -23,7 +23,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 public class RemoteTaskController implements TaskController {
 	
 	/**
-	 * Sort order from biggest to smallest is: File -> Entry -> Directory
+	 * Sort order from smallest to biggest is: File -> Entry -> Directory
 	 */
 	private static final class FileEntryDirectoryComparator implements Comparator<Entry> {
 
@@ -33,13 +33,13 @@ public class RemoteTaskController implements TaskController {
 				if (entry2 instanceof File) {
 					return 0;
 				} else {
-					return 1;
+					return -1;
 				}
 			} else if (entry1 instanceof Directory) {
 				if (entry2 instanceof Directory) {
 					return 0;
 				} else {
-					return -1;
+					return 1;
 				}
 			} else {
 				return 0;
