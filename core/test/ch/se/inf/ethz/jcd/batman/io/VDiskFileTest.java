@@ -75,7 +75,6 @@ public class VDiskFileTest {
         assertFalse(testFile.delete());
         VDiskFile testFileSameName = new VDiskFile("/test", disk);
         assertFalse(testFile.exists());
-        assertFalse(testFile.createNewFile(0));
         assertTrue(testFile.createNewFile());
         assertTrue(testFile.isFile());
         assertFalse(testFile.isDirectory());

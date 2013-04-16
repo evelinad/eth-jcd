@@ -158,7 +158,7 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
      */
     @Override
     public long getVirtualDiskPosition() {
-        return blocks.get(0).getBlockPosition();
+        return blocks.isEmpty() ? 0 : blocks.get(0).getBlockPosition();
     }
 
     /**
@@ -166,9 +166,9 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
      */
     @Override
     public void changeSize(long newSize) throws IOException {
-        if (newSize < 1) {
+        if (newSize < 0) {
             throw new IllegalArgumentException(
-                    "Virtual space can't be smaller than 1");
+                    "Virtual space can't be negativ size");
         }
         long currentSize = getSize();
         if (currentSize < newSize) {

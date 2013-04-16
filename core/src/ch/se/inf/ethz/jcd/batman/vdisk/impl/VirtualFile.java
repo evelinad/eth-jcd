@@ -145,7 +145,11 @@ public final class VirtualFile extends VirtualDiskEntry implements IVirtualFile 
     protected void loadDataSpace() throws IOException {
         space.seek(DATA_LOC_POS);
         long dataLocPos = space.readLong();
-        dataSpace = VirtualDiskSpace.load(getDisk(), dataLocPos);
+        if (dataLocPos == 0) {
+        	dataSpace = VirtualDiskSpace.create(getDisk(), 0);
+        } else {
+        	dataSpace = VirtualDiskSpace.load(getDisk(), dataLocPos);
+        }
         dataSpaceLoaded = true;
     }
 

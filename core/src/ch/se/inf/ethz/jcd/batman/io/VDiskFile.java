@@ -519,7 +519,7 @@ public class VDiskFile {
      *             TODO
      */
     public boolean createNewFile() throws IOException {
-        return this.createNewFile(1);
+        return this.createNewFile(0);
     }
 
     /**
@@ -532,7 +532,7 @@ public class VDiskFile {
      *             TODO
      */
     public boolean createNewFile(long size) throws IOException {
-        if (size < 1L) {
+        if (size < 0L) {
             return false;
         }
 
