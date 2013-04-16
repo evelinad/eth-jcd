@@ -292,4 +292,32 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 	
+	@Override
+	public boolean[] entriesExist(int id, Path[] entryPaths)  throws RemoteException, VirtualDiskException {
+		try  {
+			IVirtualDisk disk = getDisk(id);
+			boolean[] exist = new boolean[entryPaths.length];
+			for (int i = 0; i < entryPaths.length; i++) {
+				exist[i] = new VDiskFile(entryPaths[i].getPath(), disk).exists();
+			}
+			return exist;
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not check if entries  " + Arrays.toString(entryPaths) + " exist.", e);
+		}
+	}
+
+	@Override
+	public Entry[] getEntries(int id, Path[] entryPaths) throws RemoteException, VirtualDiskException {
+		try  {
+			IVirtualDisk disk = getDisk(id);
+			Entry[] entries = new Entry[entryPaths.length];
+			for (int i = 0; i < entryPaths.length; i++) {
+				entries[i] = createModel(new VDiskFile(entryPaths[i].getPath(), disk));
+			}
+			return entries;
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not load entries  " + Arrays.toString(entryPaths), e);
+		}
+	}
+	
 }

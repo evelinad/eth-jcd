@@ -38,4 +38,17 @@ public class Entry implements Serializable {
 		this.timestamp = timestamp;
 	}
 	
+	@Override
+	public int hashCode() {
+		return path.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Entry) {
+			Entry entry = (Entry) obj;
+			return timestamp == entry.timestamp && path.equals(entry.path);
+		}
+		return false;
+	}
 }

@@ -53,4 +53,18 @@ public class Path implements Serializable {
 	public String toString() {
 		return getPath();
 	}
+	
+	@Override
+	public int hashCode() {
+		return path.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Path) {
+			Path entry = (Path) obj;
+			return path.equals(entry.path);
+		}
+		return false;
+	}
 }

@@ -43,4 +43,8 @@ public interface IRemoteVirtualDisk extends Remote {
 	
 	void renameEntry(int id, Entry entry, Path newPath) throws RemoteException, VirtualDiskException;
 	
+	boolean[] entriesExist(int id, Path[] entryPaths) throws RemoteException, VirtualDiskException;
+	
+	Entry[] getEntries(int id, Path[] entryPaths) throws RemoteException, VirtualDiskException;
+	
 }

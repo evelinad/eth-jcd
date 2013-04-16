@@ -7,9 +7,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javafx.concurrent.Task;
-
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
@@ -222,6 +223,8 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
+	
+	
 	@Override
 	public Task<Void> createDeleteEntriesTask(final Entry[] entries) {
 		checkIsConnected();
@@ -230,26 +233,24 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				/*TODO
-				updateTitle("Delete entry");
+				updateTitle("Deleting entries");
 				
 				updateMessage("Discovering items");
-				Entry[] subEntries = remoteDisk.getAllSubEntries(diskId, entries);
-				
-				Arrays.sort(subEntries, fileEntryDirectoryComp);
-				int totalEntries = subEntries.length + 1;
-				updateProgress(0, totalEntries);
-				for (int i = 0; i < subEntries.length; i++) {
-					updateMessage("Deleting entry " + (i + 1) + " of " + totalEntries);
-					remoteDisk.deleteEntry(diskId, subEntries[i].getPath());
-					updateProgress((i + 1), totalEntries);
+				SortedSet<Entry> subEntries = new TreeSet<Entry>(fileEntryDirectoryComp);
+				for (int i = 0; i < entries.length; i++) {
+					subEntries.addAll(Arrays.asList(remoteDisk.getAllSubEntries(diskId, entries[i])));
 				}
-				updateMessage("Deleting entry " + totalEntries + " of " + totalEntries);
-				remoteDisk.deleteEntry(diskId, entries.getPath());
-				updateProgress(totalEntries, totalEntries);
+				
+				int totalEntries = subEntries.size();
+				int currentEntryNumber = 1;
+				updateProgress(0, totalEntries);
+				for (Entry entry : subEntries) {
+					updateMessage("Deleting entry " + currentEntryNumber + " of " + totalEntries);
+					remoteDisk.deleteEntry(diskId, entry.getPath());
+					currentEntryNumber++;
+					updateProgress(currentEntryNumber, totalEntries);
+				}
 				return null;
-				*/
-				throw new UnsupportedOperationException();
 			}
 			
 		};
@@ -258,15 +259,31 @@ public class RemoteTaskController implements TaskController {
 	@Override
 	public Task<Void> createMoveTask(final Entry[] sourceEntries, final Path[] destinationPaths) {
 		checkIsConnected();
+		if (sourceEntries.length != destinationPaths.length) {
+			throw new IllegalArgumentException("Source and destination arrays have to be the same size");
+		}
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				//TODO
-				//remoteDisk.renameEntry(diskId, source, destination);
-				//return null;
-				throw new UnsupportedOperationException();
+				updateTitle("Moving entries");
+				//check if destination paths not already exist
+				int totalEntriesToMove = sourceEntries.length;
+				boolean[] entriesExist = remoteDisk.entriesExist(diskId, destinationPaths);
+				for (int i = 0; i < totalEntriesToMove; i++) {
+					if (entriesExist[i]) {
+						throw new VirtualDiskException("Destination entry " + destinationPaths[i].getPath() + " already exists");
+					}
+				}
+				//move entries
+				for (int i = 0; i < totalEntriesToMove; i++) {
+					updateProgress(i, totalEntriesToMove);
+					updateMessage("Moving entry " + sourceEntries[i].getPath() + " to " + destinationPaths[i]);
+					remoteDisk.renameEntry(diskId, sourceEntries[i], destinationPaths[i]);
+				}
+				updateProgress(totalEntriesToMove, totalEntriesToMove);
+				return null;
 			}
 			
 		};
