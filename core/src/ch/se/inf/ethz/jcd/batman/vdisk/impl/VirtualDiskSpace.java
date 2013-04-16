@@ -213,11 +213,18 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
         // Request the rest from the disk and add it to the list
         if (extendAmount > 0) {
             IDataBlock[] allocatetBlocks = disk.allocateBlock(extendAmount);
-            if (lastBlock != null) {
-                lastBlock.setNextBlock(allocatetBlocks[0].getBlockPosition());
-            }
-            for (int i = 0; i < allocatetBlocks.length; i++) {
-                blocks.add(allocatetBlocks[i]);
+            if (lastBlock != null && allocatetBlocks.length == 1 && lastBlock.getBlockPosition() + lastBlock.getDiskSize() == allocatetBlocks[0].getBlockPosition()) {
+            	IDataBlock newLastBlock = DataBlock.create(disk, lastBlock.getBlockPosition(), 
+            			lastBlock.getDiskSize() + allocatetBlocks[0].getDiskSize(), 
+            			lastBlock.getDataSize() + allocatetBlocks[0].getDataSize(), 0);
+            	blocks.set(blocks.size() - 1, newLastBlock);
+            } else {
+	            if (lastBlock != null) {
+	                lastBlock.setNextBlock(allocatetBlocks[0].getBlockPosition());
+	            }
+	            for (int i = 0; i < allocatetBlocks.length; i++) {
+	                blocks.add(allocatetBlocks[i]);
+	            }
             }
         }
     }
