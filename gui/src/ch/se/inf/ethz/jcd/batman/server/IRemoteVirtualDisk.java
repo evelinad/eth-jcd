@@ -27,9 +27,9 @@ public interface IRemoteVirtualDisk extends Remote {
 	
 	long getUsedSpace(int id) throws RemoteException, VirtualDiskException;
 	
-	File createFile(int id, Path path, long size) throws RemoteException, VirtualDiskException;
+	File createFile(int id, File file) throws RemoteException, VirtualDiskException;
 	
-	Directory createDirectory(int id, Path path) throws RemoteException, VirtualDiskException;
+	Directory createDirectory(int id, Directory directory) throws RemoteException, VirtualDiskException;
 	
 	void deleteEntry(int id, Path path) throws RemoteException, VirtualDiskException;
 	

@@ -1,21 +1,18 @@
 package ch.se.inf.ethz.jcd.batman.controller.remote;
 
-import java.beans.DesignMode;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.sun.javafx.collections.transformation.SortedList;
 
 import javafx.concurrent.Task;
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
@@ -56,42 +53,10 @@ public class RemoteTaskController implements TaskController {
 		
 	}
 	
-	/**
-	 * Sort order from smallest to biggest is: Directory -> File
-	 */
-	private static final class DirectoryBeforeFileComparator implements Comparator<java.io.File> {
-
-		@Override
-		public int compare(java.io.File file1, java.io.File file2) {
-			if (file1.isDirectory()) {
-				if (file2.isDirectory()) {
-					return 0;
-				} else {
-					return -1;
-				}
-			} else if (file1.isFile()) {
-				if (file2.isFile()) {
-					return 0;
-				} else {
-					return 1;
-				}
-			} else {
-				if (file2.isDirectory()) {
-					return 1;
-				} else if (file2.isFile()) {
-					return -1;
-				} else {
-					return 0;
-				}
-			}
-		}
-		
-	}
-	
 	private static final String SERVICE_NAME = VirtualDiskServer.SERVICE_NAME;
+	private static final int BUFFER_SIZE = 4*1024;
 	
 	private final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
-	private final Comparator<java.io.File> directoryBeforeFileComp = new DirectoryBeforeFileComparator();
 	
 	private URI uri;
 	private Path diskPath;
@@ -241,7 +206,7 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				remoteDisk.createFile(diskId, file.getPath(), file.getSize());
+				remoteDisk.createFile(diskId, file);
 				return null;
 			}
 			
@@ -256,7 +221,7 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				remoteDisk.createDirectory(diskId, directory.getPath());
+				remoteDisk.createDirectory(diskId, directory);
 				return null;
 			}
 			
@@ -356,13 +321,35 @@ public class RemoteTaskController implements TaskController {
 				return file.getPath().replaceAll("\\\\", "/");
 			}
 			
-			private void importFile (java.io.File file, String destination) throws RemoteException, VirtualDiskException {
+			private void importFile (java.io.File file, String destination) throws RemoteException, VirtualDiskException, IOException {
 				updateMessage("Importing entry " + file.toString() + " to " + destination);
 				if (file.isDirectory()) {
-					remoteDisk.createDirectory(diskId, new Path(destination));
+					remoteDisk.createDirectory(diskId, new Directory(new Path(destination), file.lastModified()));
 				} else if (file.isFile()) {
-					remoteDisk.createFile(diskId, new Path(destination), file.length());
-					//TODO import data.....
+					remoteDisk.createFile(diskId, new File(new Path(destination), file.lastModified(), file.length()));
+					//Import data
+					File diskFile = new File(new Path(destination));
+					FileInputStream inputStream = null;
+					try {
+						inputStream = new FileInputStream(file);
+						long bytesToRead = file.length();
+						long bytesRead = 0;
+						byte[] buffer = new byte[BUFFER_SIZE];
+						while (bytesToRead > 0) {
+							int currentBytesRead = inputStream.read(buffer);
+							if (currentBytesRead < buffer.length) {
+								remoteDisk.write(diskId, diskFile, bytesRead, Arrays.copyOf(buffer, currentBytesRead));
+							} else {
+								remoteDisk.write(diskId, diskFile, bytesRead, buffer);
+							}
+							bytesToRead -= currentBytesRead;
+							bytesRead += currentBytesRead;
+						}
+					} finally {
+						if (inputStream != null) {
+							inputStream.close();
+						}
+					}
 				}
 			}
 			

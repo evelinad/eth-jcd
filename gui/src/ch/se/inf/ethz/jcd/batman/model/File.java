@@ -10,6 +10,10 @@ public class File extends Entry {
 		super();
 	}
 	
+	public File(Path path) {
+		this(path, 0, 0);
+	}
+	
 	public File(Path path, long timestamp, long size) {
 		super(path, timestamp);
 		this.size = size;

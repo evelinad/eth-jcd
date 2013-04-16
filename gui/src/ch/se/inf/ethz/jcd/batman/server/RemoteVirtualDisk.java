@@ -115,28 +115,29 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public File createFile(int id, Path path, long size) throws RemoteException, VirtualDiskException {
+	public File createFile(int id, File file) throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(path.getPath(), getDisk(id));
-			if (!diskFile.createNewFile(size)) {
-				throw new VirtualDiskException("Could not create file at " + path);
+			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(), getDisk(id));
+			if (!diskFile.createNewFile(file.getSize())) {
+				throw new VirtualDiskException("Could not create file at " + file.getPath());
 			}
+			diskFile.setLastModified(file.getTimestamp());
 			return createFileModel(diskFile);
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create file at " + path, e);
+			throw new VirtualDiskException("Could not create file at " + file.getPath(), e);
 		}
 	}
 
 	@Override
-	public Directory createDirectory(int id, Path path) throws RemoteException, VirtualDiskException {
+	public Directory createDirectory(int id, Directory directory) throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(path.getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(directory.getPath().getPath(), getDisk(id));
 			if (!diskFile.mkdirs()) {
-				throw new VirtualDiskException("Could not create directory at " + path);
+				throw new VirtualDiskException("Could not create directory at " + directory.getPath());
 			}
 			return new Directory(new Path(diskFile.getPath()), diskFile.lastModified());
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create directory at " + path, e);
+			throw new VirtualDiskException("Could not create directory at " + directory.getPath(), e);
 		}
 	}
 
