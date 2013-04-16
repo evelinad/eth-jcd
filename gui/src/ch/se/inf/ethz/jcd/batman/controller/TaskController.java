@@ -8,7 +8,7 @@ import javafx.concurrent.Task;
 
 public interface TaskController {
 
-	Task<Void> createImportTask(String[] sourcePaths, Entry[] destinationEntries);
+	Task<Void> createImportTask(String[] sourcePaths, Path[] destinationPath);
 	
 	Task<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths);
 	
