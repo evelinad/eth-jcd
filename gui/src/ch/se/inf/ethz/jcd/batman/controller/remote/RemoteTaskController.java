@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
+import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
@@ -62,6 +64,7 @@ public class RemoteTaskController implements TaskController {
 	private Path diskPath;
 	private Integer diskId;
 	private IRemoteVirtualDisk remoteDisk;
+	private List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 	
 	public RemoteTaskController(URI uri) {
 		this.uri = uri;
@@ -89,6 +92,8 @@ public class RemoteTaskController implements TaskController {
 					throw new IllegalStateException("Already connected.");
 				}
 				try {
+					updateTitle("Connecting");
+					updateMessage("Connecting to virtual disk...");
 					Registry registry;
 					if (uri.getPort() == -1) {
 						registry = LocateRegistry.getRegistry(uri.getHost());
@@ -124,17 +129,6 @@ public class RemoteTaskController implements TaskController {
 			throw new IllegalStateException("Controller is not connected");
 		}
 	}
-	
-	@Override
-	public void close() {
-		if (diskId != null) {
-			try {
-				remoteDisk.unloadDisk(diskId);
-				diskId = null;
-				remoteDisk = null;
-			} catch (RemoteException | VirtualDiskException e) { }
-		}
-	}
 
 	@Override
 	protected void finalize() throws Throwable {
@@ -150,6 +144,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Entry[] call() throws Exception {
 				checkIsConnected();
+				updateTitle("Retrieve directory entries");
+				updateMessage("Retrieving directory entries...");
 				return remoteDisk.getEntries(diskId, directory);
 			}
 			
@@ -164,6 +160,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Long call() throws Exception {
 				checkIsConnected();
+				updateTitle("Calculate free space");
+				updateMessage("Calculating free space...");
 				return remoteDisk.getFreeSpace(diskId);
 			}
 			
@@ -178,6 +176,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Long call() throws Exception {
 				checkIsConnected();
+				updateTitle("Calculate occupied space");
+				updateMessage("Calculating occupied space...");
 				return remoteDisk.getOccupiedSpace(diskId);
 			}
 			
@@ -192,6 +192,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Long call() throws Exception {
 				checkIsConnected();
+				updateTitle("Calculate used space");
+				updateMessage("Calculating used space...");
 				return remoteDisk.getUsedSpace(diskId);
 			}
 			
@@ -206,6 +208,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
+				updateTitle("Create file");
+				updateMessage("Creating file...");	
 				remoteDisk.createFile(diskId, file);
 				return null;
 			}
@@ -221,6 +225,8 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
+				updateTitle("Create directory");
+				updateMessage("Creating directory...");
 				remoteDisk.createDirectory(diskId, directory);
 				return null;
 			}
@@ -345,6 +351,7 @@ public class RemoteTaskController implements TaskController {
 							bytesToRead -= currentBytesRead;
 							bytesRead += currentBytesRead;
 						}
+						entryAdded(diskFile);
 					} finally {
 						if (inputStream != null) {
 							inputStream.close();
@@ -418,4 +425,73 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
+	@Override
+	public Task<Void> createDisconnectTask() {
+		return new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				close();
+				return null;
+			}
+			
+		};
+	}
+
+	public void close() {
+		if (diskId != null) {
+			try {
+				remoteDisk.unloadDisk(diskId);
+				diskId = null;
+				remoteDisk = null;
+			} catch (RemoteException | VirtualDiskException e) { }
+		}
+	}
+	
+	public void addDiskEntryListener(DiskEntryListener listener) {
+		if (!diskEntryListener.contains(listener)) {
+			diskEntryListener.add(listener);
+		}
+	}
+	
+	public void removeDiskEntryListener(DiskEntryListener listener) {
+		diskEntryListener.remove(listener);
+	}
+	
+	private void entryAdded (final Entry entry) {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				for (DiskEntryListener listener : diskEntryListener) {
+					listener.entryAdded(entry);
+				}
+			}
+		});
+	}
+	
+	private void entryDeleted(final Entry entry) {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				for (DiskEntryListener listener : diskEntryListener) {
+					listener.entryDeleted(entry);
+				}
+			}
+		});
+	}
+	
+	private void entryChanged(final Entry oldEntry, final Entry newEntry) {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				for (DiskEntryListener listener : diskEntryListener) {
+					listener.entryChanged(oldEntry, newEntry);
+				}
+			}
+		});
+	}
+	
 }

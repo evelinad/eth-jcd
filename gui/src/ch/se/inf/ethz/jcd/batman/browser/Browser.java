@@ -10,6 +10,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 public class Browser extends BorderPane {
+	
+	private GuiState guiState;
+	
 	// top parts
 	private VBox topBox;
 	private ToolBar toolBar;
@@ -25,6 +28,7 @@ public class Browser extends BorderPane {
 	private BreadcrumbBar breadcrumbs;
 
 	public Browser() {
+		guiState = new GuiState();
 		initializeTop();
 		initializeLeft();
 		initializeCenter();
@@ -55,7 +59,7 @@ public class Browser extends BorderPane {
 		topBox = new VBox();
 
 		// create toolbar
-		toolBar = new BrowserToolbar();
+		toolBar = new BrowserToolbar(guiState);
 		topBox.getChildren().add(toolBar);
 	}
 }

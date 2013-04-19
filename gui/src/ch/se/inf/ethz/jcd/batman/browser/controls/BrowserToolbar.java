@@ -1,17 +1,11 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
-import com.sun.javafx.geom.BaseBounds;
-import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.jmx.MXNodeAlgorithm;
-import com.sun.javafx.jmx.MXNodeAlgorithmContext;
-import com.sun.javafx.sg.PGNode;
+import java.net.URI;
 
-import ch.se.inf.ethz.jcd.batman.browser.RemoteOpenDiskDialog;
-import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
-import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -19,26 +13,57 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
+import ch.se.inf.ethz.jcd.batman.browser.GuiState;
+import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
+import ch.se.inf.ethz.jcd.batman.browser.RemoteOpenDiskDialog;
+import ch.se.inf.ethz.jcd.batman.browser.State;
+import ch.se.inf.ethz.jcd.batman.browser.StateListener;
+import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
+import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
+import ch.se.inf.ethz.jcd.batman.controller.TaskController;
+import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 
-public class BrowserToolbar extends ToolBar {
-
-	public BrowserToolbar() {
+public class BrowserToolbar extends ToolBar implements StateListener {
+	
+	private GuiState guiState;
+	
+	private Button connectButton;
+	private Button disconnectButton;
+	private Button toParentDirButton;
+	private Button goBackButton;
+	private Button goForewardButton;
+	private Button deleteButton;
+	private Button importButton;
+	private Button exportButton;
+	private TextField search;
+	
+	public BrowserToolbar(final GuiState guiState) {
+		this.guiState = guiState;
+		guiState.addStateListener(this);
+		
 		// connect button
 		Image connectImage = ImageResource.getImageResource().getConnect();
-		Button connectButton = new Button("", new ImageView(connectImage));
+		connectButton = new Button("", new ImageView(connectImage));
 		super.getItems().add(connectButton);
 
 		connectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				getUserInputOnDiskLocation();
+				connect();
 			}
 		});
 
 		// disconnect button
 		Image disconnectImage = ImageResource.getImageResource()
 				.getDisconnect();
-		Button disconnectButton = new Button("", new ImageView(disconnectImage));
+		disconnectButton = new Button("", new ImageView(disconnectImage));
+		disconnectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				disconnect();
+			}
+		});
 		super.getItems().add(disconnectButton);
 
 		// separator
@@ -46,48 +71,104 @@ public class BrowserToolbar extends ToolBar {
 
 		// go to parent dir button
 		Image toParentDirImage = ImageResource.getImageResource().getArrowUp();
-		Button toParentDirButton = new Button("", new ImageView(
+		toParentDirButton = new Button("", new ImageView(
 				toParentDirImage));
 		super.getItems().add(toParentDirButton);
 
 		// go back button
 		Image goBackDirImage = ImageResource.getImageResource().getArrowLeft();
-		Button goBackButton = new Button("", new ImageView(goBackDirImage));
+		goBackButton = new Button("", new ImageView(goBackDirImage));
 		super.getItems().add(goBackButton);
 
 		// go foreward buttin
 		Image goForewardDirImage = ImageResource.getImageResource()
 				.getArrowRight();
-		Button goForewardButton = new Button("", new ImageView(
+		goForewardButton = new Button("", new ImageView(
 				goForewardDirImage));
 		super.getItems().add(goForewardButton);
 
 		// delete element button
 		Image deleteImage = ImageResource.getImageResource().getDelete();
-		Button deleteButton = new Button("", new ImageView(deleteImage));
+		deleteButton = new Button("", new ImageView(deleteImage));
 		super.getItems().add(deleteButton);
 
 		// import button
-		Button importButton = new Button("import");
+		importButton = new Button("import");
 		super.getItems().add(importButton);
 
 		// export button
-		Button exportButton = new Button("export");
+		exportButton = new Button("export");
 		super.getItems().add(exportButton);
 
 		// search field
-		TextField search = new TextField();
+		search = new TextField();
 		search.setPromptText("Search");
 		super.getItems().add(search);
-
+		stateChanged(null, guiState.getState());
 	}
 
-	protected void getUserInputOnDiskLocation() {
+	protected void connect () {
+		String uri = getUserInputOnDiskLocation();
+		if (uri != null) {
+			try {
+				final TaskController controller = TaskControllerFactory.getController(new URI(uri));
+				Task<Void> connectTask = controller.createConnectTask(true);
+				new TaskDialog(guiState, connectTask) {
+					protected void succeeded(WorkerStateEvent event) {
+						guiState.setController(controller);
+						guiState.setState(State.CONNECTED);
+					}
+				};
+			} catch (Exception e) {
+				new ErrorDialog("Error", e.getMessage()).showAndWait();
+				return;
+			}
+		}
+	}
+	
+	protected void disconnect () {
+		Task<Void> disconnectTask = guiState.getController().createDisconnectTask();
+		new TaskDialog(guiState, disconnectTask) {
+			@Override
+			protected void succeeded(WorkerStateEvent event) {
+				guiState.setController(null);
+				guiState.setState(State.DISCONNECTED);
+			}
+		};
+	}
+	
+	protected String getUserInputOnDiskLocation() {
 		RemoteOpenDiskDialog dialog = new RemoteOpenDiskDialog();
 		dialog.showAndWait();
 
 		if (dialog.getCloseReason() == CloseReason.OK) {
-			System.out.println(dialog.getUserInput());
+			return dialog.getUserInput();
+		}
+		return null;
+	}
+
+	@Override
+	public void stateChanged(State oldState, State newState) {
+		if (newState == State.DISCONNECTED) {
+			connectButton.setDisable(false);
+			disconnectButton.setDisable(true);
+			toParentDirButton.setDisable(true);
+			goBackButton.setDisable(true);
+			goForewardButton.setDisable(true);
+			deleteButton.setDisable(true);
+			importButton.setDisable(true);
+			exportButton.setDisable(true);
+			search.setDisable(true);
+		} else if (newState == State.CONNECTED) {
+			connectButton.setDisable(true);
+			disconnectButton.setDisable(false);
+			toParentDirButton.setDisable(false);
+			goBackButton.setDisable(false);
+			goForewardButton.setDisable(false);
+			deleteButton.setDisable(false);
+			importButton.setDisable(false);
+			exportButton.setDisable(false);
+			search.setDisable(false);
 		}
 	}
 }
