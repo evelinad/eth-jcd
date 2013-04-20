@@ -179,22 +179,18 @@ public class VirtualDiskSpace implements IVirtualDiskSpace {
     }
 
     private void truncate(long amount) throws IOException {
-        IDataBlock freeBlock = null;
         long truncateAmount = amount;
         for (int i = blocks.size() - 1; truncateAmount > 0 && i >= 0; i--) {
             IDataBlock block = blocks.get(i);
             long dataSize = block.getDataSize();
             if (truncateAmount > dataSize) {
-                blocks.remove(i);
+                IDataBlock remove = blocks.remove(i);
+                remove.free();
                 truncateAmount -= dataSize;
-                freeBlock = block;
             } else {
                 block.setDataSize(dataSize - truncateAmount);
                 truncateAmount = 0;
             }
-        }
-        if (freeBlock != null) {
-            disk.freeBlock(freeBlock);
         }
     }
 

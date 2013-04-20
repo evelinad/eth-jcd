@@ -274,13 +274,20 @@ public final class VirtualDisk implements IVirtualDisk {
 		return new File(path).toURI();
 	}
 
+	private void setFirstBlockFreeList (int index, long position) throws IOException {
+		freeLists.set(index, position);
+		file.seek(FREE_LISTS_POSITION + index * POSITION_SIZE);
+		file.writeLong(position);
+	}
+	
 	private void removeFreeBlockFromList(IFreeBlock block) throws IOException {
 		if (block.getPreviousBlock() == 0) {
 			// First block in the list
 			int freeListIndex = getFreeListIndex(block.getDiskSize());
-			freeLists.set(freeListIndex, block.getNextBlock());
-			file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
-			file.writeLong(block.getNextBlock());
+			setFirstBlockFreeList(freeListIndex, block.getNextBlock());
+			if (block.getNextBlock() != 0) {
+				FreeBlock.load(this, block.getNextBlock()).setPreviousBlock(0);
+			}
 		} else {
 			// Middle/end block
 			IFreeBlock previousBlock = FreeBlock.load(this,
@@ -310,9 +317,7 @@ public final class VirtualDisk implements IVirtualDisk {
 				previousFirstBlock.setPreviousBlock(block.getBlockPosition());
 				block.setNextBlock(previousFirstBlock.getBlockPosition());
 			}
-			freeLists.set(freeListIndex, block.getBlockPosition());
-			file.seek(FREE_LISTS_POSITION + freeListIndex * POSITION_SIZE);
-			file.writeLong(block.getBlockPosition());
+			setFirstBlockFreeList(freeListIndex, block.getBlockPosition());
 		}
 	}
 
@@ -374,6 +379,62 @@ public final class VirtualDisk implements IVirtualDisk {
 		return dataBlock;
 	}
 
+	@SuppressWarnings("unused")
+	private void checkBlocks () throws IOException {
+		if (getRootDirectory() != null) {
+			long position = getRootDirectory().getPosition();
+			IVirtualBlock block = VirtualBlock.loadBlock(this, position);
+			while (position + block.getDiskSize() != file.length()) {
+				position += block.getDiskSize();
+				if (position > file.length()) {
+					throw new IllegalStateException("Block structure invalid!");
+				}
+				block = VirtualBlock.loadBlock(this, position);
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private void checkFreeBlocks () throws IOException {
+		for (int i = 0; i < freeLists.size(); i++) {
+			Long position = freeLists.get(i);
+			if (position != 0) {
+				for (
+					IFreeBlock freeBlock = FreeBlock.load(this, position); 
+					freeBlock.getNextBlock() != 0; 
+					freeBlock = FreeBlock.load(this, freeBlock.getNextBlock())
+				) {
+					int freeListIndex = getFreeListIndex(freeBlock.getDiskSize());
+					if (i != freeListIndex) {
+						printFreeLists();
+						throw new IllegalStateException("Free list in wrong index saved!");
+					}
+				}
+			}
+		}
+	}
+	
+	private void printFreeLists () throws IOException {
+		for (int i = 0; i < freeLists.size(); i++) {
+			Long position = freeLists.get(i);
+			if (position != 0) {
+				System.out.print("Block index: " + i  + " position: " + position);
+				for (
+					IFreeBlock freeBlock = FreeBlock.load(this, position); 
+					freeBlock.getNextBlock() != 0; 
+					freeBlock = FreeBlock.load(this, freeBlock.getNextBlock())
+				) {
+					if (freeBlock.getNextBlock() == 31) {
+						System.out.println("fuck!");
+					}
+					System.out.print("(" + freeBlock.getDiskSize() + ") " + freeBlock.getNextBlock());
+				}
+				System.out.println();
+			}
+			
+		}
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
