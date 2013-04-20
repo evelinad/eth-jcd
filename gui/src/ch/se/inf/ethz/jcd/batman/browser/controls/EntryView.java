@@ -107,6 +107,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 	@Override
 	public void directoryChanged(Directory directory) {
 		setDirectory(directory);
+		//TODO check that the new entries are sorted correctly
 	}
 	
 }

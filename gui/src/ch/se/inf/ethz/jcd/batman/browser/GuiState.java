@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.browser;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -18,8 +19,9 @@ public class GuiState {
 	private TaskController controller;
 	private State state;
 	private List<StateListener> stateListener = new LinkedList<StateListener>();
-	private Directory currentDirectory;
 	private List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
+	private int directoryIndex = -1;
+	private LinkedList<Directory> directoryHistory = new LinkedList<Directory>();
 	private ScheduledExecutorService scheduler;
 	
 	public GuiState() {
@@ -32,6 +34,8 @@ public class GuiState {
 	}
 
 	public void setController(TaskController controller) {
+		directoryHistory.clear();
+		directoryIndex = -1;
 		this.controller = controller;
 	}
 	
@@ -45,15 +49,46 @@ public class GuiState {
 		stateListener.remove(listener);
 	}
 	
+	public boolean hasPreviousDirectory () {
+		return directoryIndex > 0;
+	}
+	
+	public void backToPreviousDirectory () {
+		if (hasPreviousDirectory()) {
+			directoryIndex--;
+			callDirectoryListener(getCurrentDirectory());
+		}
+	}
+	
+	public void forwardToNextDirectoy () {
+		if (hasNextDirectory()) {
+			directoryIndex++;
+			callDirectoryListener(getCurrentDirectory());
+		}
+	}
+	
+	public boolean hasNextDirectory () {
+		return directoryIndex < directoryHistory.size()-1;
+	}
+	
 	public void setCurrentDirectory (Directory currentDirectory) {
-		this.currentDirectory = currentDirectory;
+		int removableDirectories = directoryHistory.size()-1 - directoryIndex;
+		for (int i = 0; i < removableDirectories; i++) {
+			directoryHistory.removeLast();
+		}
+		directoryHistory.add(currentDirectory);
+		directoryIndex++;
+		callDirectoryListener(currentDirectory);
+	}
+	
+	private void callDirectoryListener(Directory currentDirectory) {
 		for (DirectoryListener listener : directoryListener) {
 			listener.directoryChanged(currentDirectory);
 		}
 	}
 	
 	public Directory getCurrentDirectory () {
-		return currentDirectory;
+		return (directoryIndex < 0 ) ? null : directoryHistory.get(directoryIndex);
 	}
 	
 	public void addDirectoryListener(DirectoryListener listener) {
