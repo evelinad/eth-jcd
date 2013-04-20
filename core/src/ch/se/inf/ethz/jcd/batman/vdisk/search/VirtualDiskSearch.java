@@ -1,18 +1,21 @@
 package ch.se.inf.ethz.jcd.batman.vdisk.search;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 
 /**
- * Implements a search over file an directory names.
+ * Implements a search over file and directory names.
  * 
  */
 public class VirtualDiskSearch {
 
+	/**
+	 * Wrapper for all available settings of a search.
+	 * 
+	 */
 	public static final class Settings {
 		private boolean caseSensitive;
 		private boolean checkFolders;
@@ -60,8 +63,16 @@ public class VirtualDiskSearch {
 	}
 
 	/**
-	 * Searches for the given name in the tree that starts from the given parent
+	 * Searches the given term inside entry names.
 	 * 
+	 * @param settings
+	 *            search settings to use
+	 * @param term
+	 *            the term to search
+	 * @param parents
+	 *            list of parent directories where the search should start
+	 * @return list of found disk entries
+	 * @throws IOException
 	 */
 	public static List<VDiskFile> searchName(Settings settings, String term,
 			VDiskFile... parents) throws IOException {
