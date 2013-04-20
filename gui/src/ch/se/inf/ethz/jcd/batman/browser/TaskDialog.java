@@ -5,15 +5,17 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.MouseEvent;
 
 public class TaskDialog extends ModalDialog {
-	
+
 	public TaskDialog(GuiState guiState, final Task<?> task) {
 		titleProperty().bind(task.titleProperty());
 		
 		Label label = new Label();
+		label.setTextOverrun(OverrunStyle.LEADING_WORD_ELLIPSIS);
 		label.textProperty().bind(task.messageProperty());
 		getContainer().add(label, 0, 0);
 
@@ -63,16 +65,18 @@ public class TaskDialog extends ModalDialog {
 		});
 		guiState.submitTask(task);
 	}
-	
-	protected void succeeded (WorkerStateEvent event) {}
-	
-	protected void failed (WorkerStateEvent event) {
+
+	protected void succeeded(WorkerStateEvent event) {
+	}
+
+	protected void failed(WorkerStateEvent event) {
 		showErrorDialog(event);
 	}
-	
+
 	protected void showErrorDialog(WorkerStateEvent event) {
 		Throwable exception = event.getSource().getException();
-		new ErrorDialog("Error", exception.getClass() + ": " + exception.getMessage()).showAndWait();
+		new ErrorDialog("Error", exception.getClass() + ": "
+				+ exception.getMessage()).showAndWait();
 	}
-	
+
 }

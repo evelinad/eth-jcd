@@ -18,13 +18,14 @@ public class ModalDialog extends Stage {
 	
 	public ModalDialog() {
 		super.initModality(Modality.APPLICATION_MODAL);
-		super.setResizable(false);
-		setWidth(300);
+		super.setResizable(true);
+		setMinWidth(300);
 		container = new GridPane();
 		container.setAlignment(Pos.CENTER);
 		container.setHgap(10);
 		container.setVgap(10);
 		container.setPadding(new Insets(25, 25, 25, 25));
+		
 		super.setScene(new Scene(container));
 		
 		closeReason = CloseReason.UNDEFINED;
