@@ -146,7 +146,7 @@ public class RemoteTaskController implements TaskController {
 				checkIsConnected();
 				updateTitle("Retrieve directory entries");
 				updateMessage("Retrieving directory entries...");
-				return remoteDisk.getEntries(diskId, directory);
+				return remoteDisk.getChildren(diskId, directory);
 			}
 			
 		};
@@ -251,7 +251,7 @@ public class RemoteTaskController implements TaskController {
 				updateMessage("Discovering items");
 				SortedSet<Entry> subEntries = new TreeSet<Entry>(fileBeforeDirectoryComp);
 				for (int i = 0; i < entries.length; i++) {
-					subEntries.addAll(Arrays.asList(remoteDisk.getAllSubEntries(diskId, entries[i])));
+					subEntries.addAll(Arrays.asList(remoteDisk.getAllChildrenBelow(diskId, entries[i])));
 				}
 				
 				int totalEntries = subEntries.size();
@@ -298,7 +298,7 @@ public class RemoteTaskController implements TaskController {
 				for (int i = 0; i < totalEntriesToMove; i++) {
 					updateProgress(i, totalEntriesToMove);
 					updateMessage("Moving entry " + sourceEntries[i].getPath() + " to " + destinationPaths[i]);
-					remoteDisk.renameEntry(diskId, sourceEntries[i], destinationPaths[i]);
+					remoteDisk.moveEntry(diskId, sourceEntries[i], destinationPaths[i]);
 					entryChanged(sourceEntries[i], destinationPaths[i]);
 				}
 				updateProgress(totalEntriesToMove, totalEntriesToMove);
