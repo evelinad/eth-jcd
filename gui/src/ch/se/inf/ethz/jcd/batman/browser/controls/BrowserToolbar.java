@@ -75,18 +75,36 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		Image toParentDirImage = ImageResource.getImageResource().goToParentImage();
 		toParentDirButton = new Button("", new ImageView(
 				toParentDirImage));
+		toParentDirButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				toParentDir();
+			}
+		});
 		super.getItems().add(toParentDirButton);
 
 		// go back button
 		Image goBackDirImage = ImageResource.getImageResource().goBackImage();
 		goBackButton = new Button("", new ImageView(goBackDirImage));
+		goBackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				back();
+			}
+		});
 		super.getItems().add(goBackButton);
 
-		// go foreward buttin
+		// go foreward button
 		Image goForewardDirImage = ImageResource.getImageResource()
 				.goForwardImage();
 		goForewardButton = new Button("", new ImageView(
 				goForewardDirImage));
+		goForewardButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				forward();
+			}
+		});
 		super.getItems().add(goForewardButton);
 
 		// delete element button
@@ -109,6 +127,21 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		stateChanged(null, guiState.getState());
 	}
 
+	protected void forward () {
+		guiState.forwardToNextDirectoy();
+	}
+	
+	protected void back () {
+		guiState.backToPreviousDirectory();
+	}
+	
+	protected void toParentDir () {
+		Path parentPath = guiState.getCurrentDirectory().getPath().getParentPath();
+		if (parentPath != null) {
+			guiState.setCurrentDirectory(new Directory(parentPath));
+		}
+	}
+	
 	protected void connect () {
 		String uri = getUserInputOnDiskLocation();
 		if (uri != null) {

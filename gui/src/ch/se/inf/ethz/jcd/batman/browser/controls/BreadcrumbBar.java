@@ -2,26 +2,33 @@ package ch.se.inf.ethz.jcd.batman.browser.controls;
 
 import java.util.LinkedList;
 
+import ch.se.inf.ethz.jcd.batman.browser.DirectoryListener;
+import ch.se.inf.ethz.jcd.batman.browser.GuiState;
+import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Path;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
-public class BreadcrumbBar extends HBox {
+public class BreadcrumbBar extends HBox implements DirectoryListener {
 	
 	private class Breadcrumb {
 		public String name;
 		public Path path;
 	}
 	
+	private GuiState guiState;
 	private Path curPath;
 	
-	public BreadcrumbBar() {
+	public BreadcrumbBar(GuiState guiState) {
+		this.guiState = guiState;
 		curPath = new Path(Path.SEPERATOR);
+		guiState.addDirectoryListener(this);
 	}
 	
 	public void setPath(Path path) {
 		curPath = path;
-		
 		refreshBreadcrumbs();
 	}
 
@@ -46,9 +53,21 @@ public class BreadcrumbBar extends HBox {
 		// build buttons
 		getChildren().clear();
 		
-		for(Breadcrumb crumb : crumbs) {
+		for(final Breadcrumb crumb : crumbs) {
 			Button button = new Button(crumb.name);
+			button.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+				@Override
+				public void handle(MouseEvent event) {
+					guiState.setCurrentDirectory(new Directory(crumb.path));
+				}
+			});
 			getChildren().add(button);
 		}
+	}
+
+	@Override
+	public void directoryChanged(Directory directory) {
+		setPath(directory.getPath());
 	}
 }
