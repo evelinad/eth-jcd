@@ -7,7 +7,6 @@ import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
-import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch.Settings;
 
 /**
  * Implements a simple search command.
