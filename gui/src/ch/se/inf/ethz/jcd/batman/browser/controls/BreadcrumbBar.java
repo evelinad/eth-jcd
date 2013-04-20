@@ -25,6 +25,8 @@ public class BreadcrumbBar extends HBox implements DirectoryListener {
 		this.guiState = guiState;
 		curPath = new Path(Path.SEPERATOR);
 		guiState.addDirectoryListener(this);
+		
+		this.getStyleClass().add("breadcrumbs");
 	}
 	
 	public void setPath(Path path) {
@@ -55,6 +57,7 @@ public class BreadcrumbBar extends HBox implements DirectoryListener {
 		
 		for(final Breadcrumb crumb : crumbs) {
 			Button button = new Button(crumb.name);
+			button.getStyleClass().addAll("item");
 			button.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
 				@Override

@@ -1,0 +1,25 @@
+.root {
+	-fx-focus-color: transparent;
+}
+
+
+/*
+ * Breadcrumbs CSS styling based on:
+ * http://www.loop81.com/2011/11/javafx-2-breadcrumbs-and-styling.html
+ */
+
+.breadcrumbs {
+  -fx-padding: 0 50 0 0;
+}
+
+.breadcrumbs .item {
+  -fx-background-color: null;
+  -fx-background-radius: 0;
+  -fx-background-insets: 0;
+  -fx-border-color: null;
+  -fx-border-insets: 0;
+  -fx-border-image-source: url("images/crumb.png");
+  -fx-border-image-slice: 1 10 1 10;
+  -fx-border-image-width: 1 10 1 10;
+  -fx-border-image-repeat: stretch;
+}

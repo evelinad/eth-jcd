@@ -44,7 +44,6 @@ public class Browser extends BorderPane {
 
 	private void initializeBottom() {
 		breadcrumbs = new BreadcrumbBar(guiState);
-		breadcrumbs.setPath(new Path("/hallo/welt/spiegel"));
 	}
 
 	private void initializeCenter() {
