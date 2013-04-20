@@ -23,11 +23,11 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	private Map<Integer, IVirtualDisk> diskMap = new HashMap<Integer, IVirtualDisk>();
 	private int nextId = 1;
-	
-	private int getNextId () {
+
+	private int getNextId() {
 		return nextId++;
 	}
-	
+
 	private IVirtualDisk getDisk(int id) {
 		IVirtualDisk disk = diskMap.get(id);
 		if (disk == null) {
@@ -35,32 +35,35 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 		return disk;
 	}
-	
-	private File createFileModel (VDiskFile entry) {
-		return new File(new Path(entry.getPath()), entry.lastModified(), entry.getFileSize());
+
+	private File createFileModel(VDiskFile entry) {
+		return new File(new Path(entry.getPath()), entry.lastModified(),
+				entry.getFileSize());
 	}
-	
-	private Directory createDirectoryModel (VDiskFile entry) {
+
+	private Directory createDirectoryModel(VDiskFile entry) {
 		return new Directory(new Path(entry.getPath()), entry.lastModified());
 	}
-	
-	private Entry createModel (VDiskFile entry) {
+
+	private Entry createModel(VDiskFile entry) {
 		if (entry.isFile()) {
 			return createFileModel(entry);
 		} else {
 			return createDirectoryModel(entry);
 		}
 	}
-	
+
 	@Override
-	public int createDisk(Path path) throws RemoteException, VirtualDiskException {
+	public int createDisk(Path path) throws RemoteException,
+			VirtualDiskException {
 		try {
 			IVirtualDisk newDisk = VirtualDisk.create(path.getPath());
 			int id = getNextId();
 			diskMap.put(id, newDisk);
 			return id;
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create disk at " + path.getPath(), e);
+			throw new VirtualDiskException("Could not create disk at "
+					+ path.getPath(), e);
 		}
 	}
 
@@ -72,7 +75,8 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			diskMap.put(id, loadedDisk);
 			return id;
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not load disk at " + path.getPath(), e);
+			throw new VirtualDiskException("Could not load disk at "
+					+ path.getPath(), e);
 		}
 	}
 
@@ -88,91 +92,115 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public long getFreeSpace(int id) throws RemoteException, VirtualDiskException {
+	public long getFreeSpace(int id) throws RemoteException,
+			VirtualDiskException {
 		try {
 			return getDisk(id).getFreeSpace();
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query free disk space.", e);
+			throw new VirtualDiskException("Could not query free disk space.",
+					e);
 		}
 	}
 
 	@Override
-	public long getOccupiedSpace(int id) throws RemoteException, VirtualDiskException {
+	public long getOccupiedSpace(int id) throws RemoteException,
+			VirtualDiskException {
 		try {
 			return getDisk(id).getOccupiedSpace();
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query occupied disk space.", e);
+			throw new VirtualDiskException(
+					"Could not query occupied disk space.", e);
 		}
 	}
 
 	@Override
-	public long getUsedSpace(int id) throws RemoteException, VirtualDiskException {
+	public long getUsedSpace(int id) throws RemoteException,
+			VirtualDiskException {
 		try {
 			return getDisk(id).getSize();
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query used disk space.", e);
+			throw new VirtualDiskException("Could not query used disk space.",
+					e);
 		}
 	}
 
 	@Override
-	public File createFile(int id, File file) throws RemoteException, VirtualDiskException {
+	public void createFile(int id, File file) throws RemoteException,
+			VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(),
+					getDisk(id));
 			if (!diskFile.createNewFile(file.getSize())) {
-				throw new VirtualDiskException("Could not create file at " + file.getPath());
+				throw new VirtualDiskException("Could not create file at "
+						+ file.getPath());
 			}
+
 			diskFile.setLastModified(file.getTimestamp());
-			return createFileModel(diskFile);
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create file at " + file.getPath(), e);
+			throw new VirtualDiskException("Could not create file at "
+					+ file.getPath(), e);
 		}
 	}
 
 	@Override
-	public Directory createDirectory(int id, Directory directory) throws RemoteException, VirtualDiskException {
+	public void createDirectory(int id, Directory directory)
+			throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(directory.getPath().getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(directory.getPath().getPath(),
+					getDisk(id));
 			if (!diskFile.mkdirs()) {
-				throw new VirtualDiskException("Could not create directory at " + directory.getPath());
+				throw new VirtualDiskException("Could not create directory at "
+						+ directory.getPath());
 			}
-			return new Directory(new Path(diskFile.getPath()), diskFile.lastModified());
+			
+			diskFile.setLastModified(directory.getTimestamp());
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create directory at " + directory.getPath(), e);
+			throw new VirtualDiskException("Could not create directory at "
+					+ directory.getPath(), e);
 		}
 	}
 
 	@Override
-	public void deleteEntry(int id, Path path) throws RemoteException, VirtualDiskException {
+	public void deleteEntry(int id, Path path) throws RemoteException,
+			VirtualDiskException {
 		try {
 			VDiskFile diskFile = new VDiskFile(path.getPath(), getDisk(id));
 			if (!diskFile.delete()) {
-				throw new VirtualDiskException("Could not delete file at " + path);
+				throw new VirtualDiskException("Could not delete file at "
+						+ path);
 			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not delete file at " + path, e);
+			throw new VirtualDiskException("Could not delete file at " + path,
+					e);
 		}
 	}
 
 	@Override
-	public void write(int id, File file, long fileOffset, byte[] data) throws RemoteException, VirtualDiskException {
+	public void write(int id, File file, long fileOffset, byte[] data)
+			throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(),
+					getDisk(id));
 			if (diskFile.isFile()) {
 				IVirtualFile vFile = (IVirtualFile) diskFile.getDiskEntry();
 				vFile.seek(fileOffset);
 				vFile.write(data);
 			} else {
-				throw new IllegalArgumentException(file.getPath() + " is not a file.");
+				throw new IllegalArgumentException(file.getPath()
+						+ " is not a file.");
 			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not write to file " + file.getPath() + " at " + fileOffset, e);
+			throw new VirtualDiskException("Could not write to file "
+					+ file.getPath() + " at " + fileOffset, e);
 		}
 	}
 
 	@Override
-	public byte[] read(int id, File file, long fileOffset, int length) throws RemoteException, VirtualDiskException {
+	public byte[] read(int id, File file, long fileOffset, int length)
+			throws RemoteException, VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(),
+					getDisk(id));
 			if (diskFile.isFile()) {
 				IVirtualFile vFile = (IVirtualFile) diskFile.getDiskEntry();
 				vFile.seek(fileOffset);
@@ -184,14 +212,17 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 					return buffer;
 				}
 			} else {
-				throw new IllegalArgumentException(file.getPath() + " is not a file.");
+				throw new IllegalArgumentException(file.getPath()
+						+ " is not a file.");
 			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not write to file " + file.getPath() + " at " + fileOffset, e);
+			throw new VirtualDiskException("Could not write to file "
+					+ file.getPath() + " at " + fileOffset, e);
 		}
 	}
-	
-	private void addAllSubEntrysToList (VDiskFile directory, List<Entry> entryList) throws IOException {
+
+	private void addAllSubEntrysToList(VDiskFile directory,
+			List<Entry> entryList) throws IOException {
 		for (VDiskFile entry : directory.listFiles()) {
 			entryList.add(createModel(entry));
 			if (entry.isDirectory()) {
@@ -199,12 +230,13 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			}
 		}
 	}
-	
+
 	@Override
-	public Entry[] getEntries(int id, Entry entry)
-			throws RemoteException, VirtualDiskException {
+	public Entry[] getChildren(int id, Entry entry) throws RemoteException,
+			VirtualDiskException {
 		try {
-			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(), getDisk(id));
+			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(),
+					getDisk(id));
 			VDiskFile[] diskEntrys = directoryEntry.listFiles();
 			List<Entry> entryList = new LinkedList<Entry>();
 			for (VDiskFile diskEntry : diskEntrys) {
@@ -212,23 +244,27 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			}
 			return entryList.toArray(new Entry[entryList.size()]);
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query entrys for entry " + entry.getPath(), e);
+			throw new VirtualDiskException("Could not query entrys for entry "
+					+ entry.getPath(), e);
 		}
 	}
 
 	@Override
-	public Entry[] getAllSubEntries(int id, Entry entry)
+	public Entry[] getAllChildrenBelow(int id, Entry entry)
 			throws RemoteException, VirtualDiskException {
 		try {
 			List<Entry> subEntrys = new LinkedList<Entry>();
-			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(), getDisk(id));
+			VDiskFile directoryEntry = new VDiskFile(entry.getPath().getPath(),
+					getDisk(id));
 			addAllSubEntrysToList(directoryEntry, subEntrys);
 			return subEntrys.toArray(new Entry[subEntrys.size()]);
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not query all sub entrys for entry " + entry.getPath(), e);
+			throw new VirtualDiskException(
+					"Could not query all sub entrys for entry "
+							+ entry.getPath(), e);
 		}
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {
@@ -238,40 +274,43 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public void deleteDisk(Path path) throws RemoteException, VirtualDiskException {
-		try  {
-	        java.io.File diskFile = new java.io.File(path.getPath());
-	        if (isVirtualDisk(diskFile)) {
-	            if (!diskFile.delete()) {
-	            	throw new VirtualDiskException("Could not delete virtual disk at " + path); 
-	            }
-	        } else {
-	            throw new IllegalArgumentException(path + "  is not a virtual disk. File not deleted.");
-	        }
+	public void deleteDisk(Path path) throws RemoteException,
+			VirtualDiskException {
+		try {
+			java.io.File diskFile = new java.io.File(path.getPath());
+			if (isVirtualDisk(diskFile)) {
+				if (!diskFile.delete()) {
+					throw new VirtualDiskException(
+							"Could not delete virtual disk at " + path);
+				}
+			} else {
+				throw new IllegalArgumentException(path
+						+ "  is not a virtual disk. File not deleted.");
+			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not delete virtual disk at " + path, e);
+			throw new VirtualDiskException("Could not delete virtual disk at "
+					+ path, e);
 		}
 	}
 
-	private boolean isVirtualDisk (java.io.File diskFile)  {
+	private boolean isVirtualDisk(java.io.File diskFile) {
 		if (!diskFile.exists()) {
 			return false;
 		}
 		// buffer for magic number
 		byte[] readMagicNumber = new byte[IVirtualDisk.MAGIC_NUMBER.length];
-        FileInputStream reader;
+		FileInputStream reader;
 		try {
-			reader = new FileInputStream(
-			        diskFile.getAbsolutePath());
-	        reader.read(readMagicNumber);
-	        reader.close();
+			reader = new FileInputStream(diskFile.getAbsolutePath());
+			reader.read(readMagicNumber);
+			reader.close();
 		} catch (IOException e) {
 			return false;
 		}
 
-        return Arrays.equals(IVirtualDisk.MAGIC_NUMBER, readMagicNumber);
+		return Arrays.equals(IVirtualDisk.MAGIC_NUMBER, readMagicNumber);
 	}
-	
+
 	@Override
 	public boolean diskExists(Path path) throws RemoteException,
 			VirtualDiskException {
@@ -279,9 +318,9 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public void renameEntry(int id, Entry entry, Path newPath) throws RemoteException,
-			VirtualDiskException {
-		try  {
+	public void moveEntry(int id, Entry entry, Path newPath)
+			throws RemoteException, VirtualDiskException {
+		try {
 			IVirtualDisk disk = getDisk(id);
 			VDiskFile diskEntry = new VDiskFile(entry.getPath().getPath(), disk);
 			VDiskFile renameEntry = new VDiskFile(newPath.getPath(), disk);
@@ -289,36 +328,43 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				throw new VirtualDiskException();
 			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not rename entry " + entry.getPath() + " to " + newPath, e);
-		}
-	}
-	
-	@Override
-	public boolean[] entriesExist(int id, Path[] entryPaths)  throws RemoteException, VirtualDiskException {
-		try  {
-			IVirtualDisk disk = getDisk(id);
-			boolean[] exist = new boolean[entryPaths.length];
-			for (int i = 0; i < entryPaths.length; i++) {
-				exist[i] = new VDiskFile(entryPaths[i].getPath(), disk).exists();
-			}
-			return exist;
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not check if entries  " + Arrays.toString(entryPaths) + " exist.", e);
+			throw new VirtualDiskException("Could not rename entry "
+					+ entry.getPath() + " to " + newPath, e);
 		}
 	}
 
 	@Override
-	public Entry[] getEntries(int id, Path[] entryPaths) throws RemoteException, VirtualDiskException {
-		try  {
+	public boolean[] entriesExist(int id, Path[] entryPaths)
+			throws RemoteException, VirtualDiskException {
+		try {
+			IVirtualDisk disk = getDisk(id);
+			boolean[] exist = new boolean[entryPaths.length];
+			for (int i = 0; i < entryPaths.length; i++) {
+				exist[i] = new VDiskFile(entryPaths[i].getPath(), disk)
+						.exists();
+			}
+			return exist;
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not check if entries  "
+					+ Arrays.toString(entryPaths) + " exist.", e);
+		}
+	}
+
+	@Override
+	public Entry[] getEntries(int id, Path[] entryPaths)
+			throws RemoteException, VirtualDiskException {
+		try {
 			IVirtualDisk disk = getDisk(id);
 			Entry[] entries = new Entry[entryPaths.length];
 			for (int i = 0; i < entryPaths.length; i++) {
-				entries[i] = createModel(new VDiskFile(entryPaths[i].getPath(), disk));
+				entries[i] = createModel(new VDiskFile(entryPaths[i].getPath(),
+						disk));
 			}
 			return entries;
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not load entries  " + Arrays.toString(entryPaths), e);
+			throw new VirtualDiskException("Could not load entries  "
+					+ Arrays.toString(entryPaths), e);
 		}
 	}
-	
+
 }

@@ -128,11 +128,10 @@ public interface IRemoteVirtualDisk extends Remote {
 	 *            the ID representing a loaded virtual disk
 	 * @param file
 	 *            the file that should be created
-	 * @return TODO remove
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	File createFile(int id, File file) throws RemoteException,
+	void createFile(int id, File file) throws RemoteException,
 			VirtualDiskException;
 
 	/**
@@ -142,11 +141,10 @@ public interface IRemoteVirtualDisk extends Remote {
 	 *            the ID representing a loaded virtual disk
 	 * @param directory
 	 *            the directory to create
-	 * @return TODO remove
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	Directory createDirectory(int id, Directory directory)
+	void createDirectory(int id, Directory directory)
 			throws RemoteException, VirtualDiskException;
 
 	/**
@@ -213,7 +211,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	Entry[] getEntries(int id, Entry entry) throws RemoteException,
+	Entry[] getChildren(int id, Entry entry) throws RemoteException,
 			VirtualDiskException;
 
 	/**
@@ -228,7 +226,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	Entry[] getAllSubEntries(int id, Entry entry) throws RemoteException,
+	Entry[] getAllChildrenBelow(int id, Entry entry) throws RemoteException,
 			VirtualDiskException;
 
 	/**
@@ -245,7 +243,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void renameEntry(int id, Entry entry, Path newPath) throws RemoteException,
+	void moveEntry(int id, Entry entry, Path newPath) throws RemoteException,
 			VirtualDiskException;
 
 	/**
