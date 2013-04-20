@@ -1,6 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.browser;
 
 import ch.se.inf.ethz.jcd.batman.model.Entry;
+import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public interface DiskEntryListener {
 
@@ -8,6 +9,6 @@ public interface DiskEntryListener {
 	
 	void entryDeleted(Entry entry);
 	
-	void entryChanged(Entry oldEntry, Entry newEntry);
+	void entryChanged(Entry oldEntry, Path newPath);
 	
 }

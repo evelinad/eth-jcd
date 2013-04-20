@@ -1,5 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class Directory extends Entry {
 
 	private static final long serialVersionUID = 5544830256663532103L;

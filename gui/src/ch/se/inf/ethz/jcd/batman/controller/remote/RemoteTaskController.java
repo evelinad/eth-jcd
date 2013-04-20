@@ -211,6 +211,7 @@ public class RemoteTaskController implements TaskController {
 				updateTitle("Create file");
 				updateMessage("Creating file...");	
 				remoteDisk.createFile(diskId, file);
+				entryAdded(file);
 				return null;
 			}
 			
@@ -228,6 +229,7 @@ public class RemoteTaskController implements TaskController {
 				updateTitle("Create directory");
 				updateMessage("Creating directory...");
 				remoteDisk.createDirectory(diskId, directory);
+				entryAdded(directory);
 				return null;
 			}
 			
@@ -258,6 +260,7 @@ public class RemoteTaskController implements TaskController {
 				for (Entry entry : subEntries) {
 					updateMessage("Deleting entry " + currentEntryNumber + " of " + totalEntries);
 					remoteDisk.deleteEntry(diskId, entry.getPath());
+					entryDeleted(entry);
 					currentEntryNumber++;
 					updateProgress(currentEntryNumber, totalEntries);
 				}
@@ -296,6 +299,7 @@ public class RemoteTaskController implements TaskController {
 					updateProgress(i, totalEntriesToMove);
 					updateMessage("Moving entry " + sourceEntries[i].getPath() + " to " + destinationPaths[i]);
 					remoteDisk.renameEntry(diskId, sourceEntries[i], destinationPaths[i]);
+					entryChanged(sourceEntries[i], destinationPaths[i]);
 				}
 				updateProgress(totalEntriesToMove, totalEntriesToMove);
 				return null;
@@ -482,13 +486,13 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 	
-	private void entryChanged(final Entry oldEntry, final Entry newEntry) {
+	private void entryChanged(final Entry oldEntry, final Path newPath) {
 		Platform.runLater(new Runnable() {
 			
 			@Override
 			public void run() {
 				for (DiskEntryListener listener : diskEntryListener) {
-					listener.entryChanged(oldEntry, newEntry);
+					listener.entryChanged(oldEntry, newPath);
 				}
 			}
 		});
