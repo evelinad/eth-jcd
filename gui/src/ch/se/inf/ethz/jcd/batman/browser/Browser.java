@@ -3,7 +3,6 @@ package ch.se.inf.ethz.jcd.batman.browser;
 import ch.se.inf.ethz.jcd.batman.browser.controls.BreadcrumbBar;
 import ch.se.inf.ethz.jcd.batman.browser.controls.BrowserToolbar;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
-import ch.se.inf.ethz.jcd.batman.model.Path;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
