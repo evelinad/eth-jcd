@@ -386,7 +386,7 @@ public final class VirtualDisk implements IVirtualDisk {
 		// First search through the big blocks and try to find a continuous
 		// block
 		for (int index = getFreeListIndex(remainingDataSize + metaDataSize); index < freeLists
-				.size(); index++) {
+				.size() && remainingDataSize > 0; index++) {
 			IFreeBlock freeBlock = null;
 			for (long nextEntry = freeLists.get(index); nextEntry != 0; nextEntry = freeBlock
 					.getNextBlock()) {
@@ -394,6 +394,7 @@ public final class VirtualDisk implements IVirtualDisk {
 				if (freeBlock.getDiskSize() >= dataSize + metaDataSize) {
 					remainingDataSize -= freeBlock.getDiskSize() - metaDataSize;
 					usableFreeBlocks.add(freeBlock);
+					break;
 				}
 			}
 		}
