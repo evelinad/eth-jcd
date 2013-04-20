@@ -19,19 +19,34 @@ public class VirtualDiskSearch {
 	 *            the name to search for
 	 * @param parent
 	 *            the starting point of the search
+	 * @param caseSensitive
+	 *            true if matching is case sensitive, otherwise false
 	 * @return a list of entries that contain the name
 	 * @throws IOException
 	 */
-	public static List<VDiskFile> searchName(String name, VDiskFile parent)
-			throws IOException {
+	public static List<VDiskFile> searchName(String name, VDiskFile parent,
+			boolean caseSensitive) throws IOException {
 		List<VDiskFile> foundEntries = new LinkedList<>();
 
+		String searchedName;
+		if (caseSensitive) {
+			searchedName = name;
+		} else {
+			searchedName = name.toLowerCase();
+		}
+
 		for (VDiskFile child : parent.listFiles()) {
-			if (child.getName().contains(name)) {
-				foundEntries.add(child);
+			if (caseSensitive) {
+				if (child.getName().contains(searchedName)) {
+					foundEntries.add(child);
+				}
+			} else {
+				if (child.getName().toLowerCase().contains(searchedName)) {
+					foundEntries.add(child);
+				}
 			}
 
-			foundEntries.addAll(searchName(name, child));
+			foundEntries.addAll(searchName(searchedName, child, caseSensitive));
 		}
 
 		return foundEntries;

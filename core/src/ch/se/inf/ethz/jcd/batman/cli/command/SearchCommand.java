@@ -8,6 +8,13 @@ import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 
+/**
+ * Implements a simple search command.
+ * 
+ * This command allows to search inside file and directory names for a given
+ * string. The matching is case insensitive.
+ *
+ */
 public class SearchCommand implements Command {
 
 	private static final String[] COMMAND_STRINGS = { "search" };
@@ -22,7 +29,7 @@ public class SearchCommand implements Command {
 		if (params.length == 1) {
 			try {
 				List<VDiskFile> results = VirtualDiskSearch.searchName(
-						params[0], caller.getCurrentLocation());
+						params[0], caller.getCurrentLocation(), false);
 				
 				for(VDiskFile entry : results) {
 					caller.writeln("%s", entry.getPath());
