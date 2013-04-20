@@ -6,6 +6,7 @@ import java.util.List;
 import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
+import ch.se.inf.ethz.jcd.batman.vdisk.search.Settings;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 
 /**
@@ -19,10 +20,10 @@ public class SearchCommand implements Command {
 
 	private static final String[] COMMAND_STRINGS = { "search" };
 
-	private final VirtualDiskSearch.Settings searchSettings;
+	private final Settings searchSettings;
 
 	public SearchCommand() {
-		searchSettings = new VirtualDiskSearch.Settings();
+		searchSettings = new Settings();
 		searchSettings.setCaseSensitive(false);
 		searchSettings.setCheckFiles(true);
 		searchSettings.setCheckFolders(true);
