@@ -38,17 +38,11 @@ public class File extends Entry {
 		this.size.set(size);
 	}
 	
-	@Override
-	protected void writeObjectToStream(ObjectOutputStream oos)
-			throws IOException {
-		super.writeObjectToStream(oos);
+	private void writeObject(ObjectOutputStream oos) throws IOException {
 		oos.writeLong(getSize());
 	}
 	
-	@Override
-	protected void readObjectFromStream(ObjectInputStream ois)
-			throws ClassNotFoundException, IOException {
-		super.readObjectFromStream(ois);
+	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 		size = new SimpleLongProperty(ois.readLong());
 	}
 	

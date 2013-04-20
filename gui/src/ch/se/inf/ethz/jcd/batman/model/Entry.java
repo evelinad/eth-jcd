@@ -13,18 +13,20 @@ public class Entry implements Serializable {
 
 	private static final long serialVersionUID = -6951589227362678760L;
 	
-	private SimpleObjectProperty<Path> path = new SimpleObjectProperty<Path>(new Path());
+	private SimpleObjectProperty<Path> path;
 	private LongProperty timestamp = new SimpleLongProperty(0);
 	
-	public Entry() { }
+	public Entry() {
+		this(new Path());
+	}
 	
 	public Entry(Path path) {
-		this.path.set(path);
+		this(path, 0);
 	}
 	
 	public Entry(Path path, long timestamp) {
-		this.path.set(path);
-		this.timestamp.set(timestamp);
+		this.path = new SimpleObjectProperty<Path>(path);
+		this.timestamp = new SimpleLongProperty(timestamp);
 	}
 	
 	public SimpleObjectProperty<Path> pathProperty() {
@@ -65,21 +67,14 @@ public class Entry implements Serializable {
 		return false;
 	}
 	
-	protected void writeObjectToStream (ObjectOutputStream oos) throws IOException {
+	private void writeObject(ObjectOutputStream oos) throws IOException {
 		oos.writeObject(getPath());
 	    oos.writeLong(getTimestamp());
 	}
 	
-	private void writeObject(ObjectOutputStream oos) throws IOException {
-		writeObjectToStream(oos);
-	}
-	
-	protected void readObjectFromStream(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 		path = new SimpleObjectProperty<Path>((Path) ois.readObject());
 		timestamp = new SimpleLongProperty(ois.readLong());
 	}
-	
-	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-		readObjectFromStream(ois);
-	}
+
 }

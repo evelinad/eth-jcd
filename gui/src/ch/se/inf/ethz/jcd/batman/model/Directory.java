@@ -1,8 +1,5 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 public class Directory extends Entry {
 

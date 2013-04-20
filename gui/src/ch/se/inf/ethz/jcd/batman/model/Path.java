@@ -1,6 +1,13 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class Path implements Serializable {
 
@@ -8,25 +15,50 @@ public class Path implements Serializable {
 
 	public static final String SEPERATOR = "/";
 	
-	private String path;
+	private SimpleStringProperty path;
+	private StringBinding name;
+	
+	public Path() {
+		this(SEPERATOR);
+	}
 	
 	public Path (String path) {
-		setPath(path);
+		this.path = new SimpleStringProperty(path);
+		this.name = new StringBinding() {
+			
+			@Override
+			protected String computeValue() {
+				return extractName();
+			}
+		};
 	}
 
-	public Path() {
-		setPath(SEPERATOR);
+	private String extractName () {
+		String path = getPath();
+		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
+		String namePart = path.substring(lastSeperatorIndex + 1);
+		
+		if(namePart.isEmpty()) {
+			return SEPERATOR;
+		} else {
+			return namePart;
+		}
 	}
-
-	public String getPath() {
+	
+	public StringProperty pathProperty() {
 		return path;
+	}
+	
+	public String getPath() {
+		return path.get();
 	}
 
 	public void setPath(String path) {
-		this.path = path;
+		this.path.set(path);
 	}
 
 	public Path getParentPath () {
+		String path = getPath();
 		if(path.equals(SEPERATOR)) {
 			return null;
 		}
@@ -38,15 +70,12 @@ public class Path implements Serializable {
 		return new Path(path.substring(0, lastSeperatorIndex));
 	}
 	
+	public StringBinding nameBinding () {
+		return name;
+	}
+	
 	public String getName() {
-		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
-		String namePart = path.substring(lastSeperatorIndex + 1);
-		
-		if(namePart.isEmpty()) {
-			return SEPERATOR;
-		} else {
-			return namePart;
-		}
+		return name.get();
 	}
 	
 	@Override
@@ -66,5 +95,20 @@ public class Path implements Serializable {
 			return path.equals(entry.path);
 		}
 		return false;
+	}
+	
+	private void writeObject(ObjectOutputStream oos) throws IOException {
+		oos.writeObject(getPath());
+	}
+	
+	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+		path = new SimpleStringProperty((String) ois.readObject());
+		name = new StringBinding() {
+			
+			@Override
+			protected String computeValue() {
+				return extractName();
+			}
+		};
 	}
 }

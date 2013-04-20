@@ -1,10 +1,12 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
@@ -23,17 +25,43 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 	private Directory directory;
 	private ObservableList<Entry> entryList = FXCollections.observableArrayList();
 	
-	public EntryView(GuiState guiState) {
+	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addDirectoryListener(this);
 		
-		TableColumn<Entry, String> nameColumn = new TableColumn<Entry, String>("Name");
-		nameColumn.setMinWidth(100);
-		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("path"));
+		TableColumn<Entry, Entry> nameColumn = new TableColumn<Entry, Entry>("Name");
+		nameColumn.setPrefWidth(300);
+		nameColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Entry,Entry>, ObservableValue<Entry>>() {
+
+			@Override
+			public ObservableValue<Entry> call(CellDataFeatures<Entry, Entry> param) {
+				return new SimpleObjectProperty<>(param.getValue());
+			}
+		});
+		nameColumn.setCellFactory(new Callback<TableColumn<Entry, Entry>, TableCell<Entry, Entry>>() {
+
+			@Override
+			public TableCell<Entry, Entry> call(TableColumn<Entry, Entry> param) {
+				return new NameCell(guiState);
+			}
+		});
+				
 		getColumns().add(nameColumn);
 		
+		TableColumn<Entry, String> dateColumn = new TableColumn<>("Last changed");
+		dateColumn.setPrefWidth(100);
+		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("timestamp"));
+		dateColumn.setCellFactory(new Callback<TableColumn<Entry,String>, TableCell<Entry,String>>() {
+
+			@Override
+			public TableCell<Entry, String> call(TableColumn<Entry, String> param) {
+				return new EntryCell<Entry, String>(guiState);
+			}
+		});
+		getColumns().add(dateColumn);
+
 		TableColumn<Entry, Number> sizeColumn = new TableColumn<Entry, Number>("Size");
-		sizeColumn.setMinWidth(100);
+		sizeColumn.setPrefWidth(100);
 		sizeColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Entry,Number>, ObservableValue<Number>>() {
 
 			@Override
@@ -45,12 +73,16 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 				return null;
 			}
 		});
+		sizeColumn.setCellFactory(new Callback<TableColumn<Entry, Number>, TableCell<Entry,Number>>() {
+
+			@Override
+			public TableCell<Entry, Number> call(TableColumn<Entry, Number> param) {
+				return new EntryCell<Entry, Number>(guiState);
+			}
+		});
 		getColumns().add(sizeColumn);
 		
-		TableColumn<Entry, String> dateColumn = new TableColumn<>("Last changed");
-		dateColumn.setMinWidth(100);
-		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("timestamp"));
-		getColumns().add(dateColumn);
+		
 		setItems(entryList);
 	}
 	
