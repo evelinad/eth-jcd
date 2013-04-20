@@ -23,6 +23,8 @@ import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
+import ch.se.inf.ethz.jcd.batman.model.Directory;
+import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public class BrowserToolbar extends ToolBar implements StateListener {
 	
@@ -117,6 +119,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 					protected void succeeded(WorkerStateEvent event) {
 						guiState.setController(controller);
 						guiState.setState(State.CONNECTED);
+						guiState.setCurrentDirectory(new Directory(new Path()));
 					}
 				};
 			} catch (Exception e) {
@@ -132,6 +135,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			@Override
 			protected void succeeded(WorkerStateEvent event) {
 				guiState.setController(null);
+				guiState.setCurrentDirectory(null);
 				guiState.setState(State.DISCONNECTED);
 			}
 		};

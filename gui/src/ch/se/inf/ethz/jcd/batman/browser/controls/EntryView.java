@@ -10,13 +10,14 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import ch.se.inf.ethz.jcd.batman.browser.DirectoryListener;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
 
-public class EntryView extends TableView<Entry> {
+public class EntryView extends TableView<Entry> implements DirectoryListener {
 	
 	private GuiState guiState;
 	private Directory directory;
@@ -24,10 +25,11 @@ public class EntryView extends TableView<Entry> {
 	
 	public EntryView(GuiState guiState) {
 		this.guiState = guiState;
+		guiState.addDirectoryListener(this);
 		
 		TableColumn<Entry, String> nameColumn = new TableColumn<Entry, String>("Name");
 		nameColumn.setMinWidth(100);
-		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("name"));
+		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("path"));
 		getColumns().add(nameColumn);
 		
 		TableColumn<Entry, Number> sizeColumn = new TableColumn<Entry, Number>("Size");
@@ -47,7 +49,7 @@ public class EntryView extends TableView<Entry> {
 		
 		TableColumn<Entry, String> dateColumn = new TableColumn<>("Last changed");
 		dateColumn.setMinWidth(100);
-		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("name"));
+		nameColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>("timestamp"));
 		getColumns().add(dateColumn);
 		setItems(entryList);
 	}
@@ -55,17 +57,24 @@ public class EntryView extends TableView<Entry> {
 	public void setDirectory(Directory directory) {
 		this.directory = directory;
 		entryList.clear();
-		final Task<Entry[]> entriesTask = guiState.getController().createDirectoryEntriesTask(directory);
-		new TaskDialog(guiState, entriesTask) {
-			protected void succeeded(WorkerStateEvent event) {
-				Entry[] entries = entriesTask.getValue();
-				entryList.addAll(entries);
-			}
-		};
+		if (directory != null) {
+			final Task<Entry[]> entriesTask = guiState.getController().createDirectoryEntriesTask(directory);
+			new TaskDialog(guiState, entriesTask) {
+				protected void succeeded(WorkerStateEvent event) {
+					Entry[] entries = entriesTask.getValue();
+					entryList.addAll(entries);
+				}
+			};
+		}
 	}
 	
 	public Directory getDirectory() {
 		return directory;
+	}
+
+	@Override
+	public void directoryChanged(Directory directory) {
+		setDirectory(directory);
 	}
 	
 }

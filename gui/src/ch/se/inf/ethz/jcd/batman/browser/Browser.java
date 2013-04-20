@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.browser;
 
 import ch.se.inf.ethz.jcd.batman.browser.controls.BreadcrumbBar;
 import ch.se.inf.ethz.jcd.batman.browser.controls.BrowserToolbar;
+import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
@@ -22,7 +23,7 @@ public class Browser extends BorderPane {
 	private TreeItem<String> dirRoot;
 
 	// center parts
-	// TODO
+	private EntryView entryView;
 	
 	// bottom parts
 	private BreadcrumbBar breadcrumbs;
@@ -36,6 +37,7 @@ public class Browser extends BorderPane {
 
 		super.setTop(topBox);
 		super.setLeft(dirTree);
+		super.setCenter(entryView);
 		super.setBottom(breadcrumbs);
 	}
 
@@ -45,8 +47,7 @@ public class Browser extends BorderPane {
 	}
 
 	private void initializeCenter() {
-		// TODO Auto-generated method stub
-
+		entryView = new EntryView(guiState);
 	}
 
 	private void initializeLeft() {

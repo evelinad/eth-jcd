@@ -7,7 +7,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javafx.concurrent.Task;
 
+import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
+import ch.se.inf.ethz.jcd.batman.model.Directory;
 
 public class GuiState {
 
@@ -16,6 +18,8 @@ public class GuiState {
 	private TaskController controller;
 	private State state;
 	private List<StateListener> stateListener = new LinkedList<StateListener>();
+	private Directory currentDirectory;
+	private List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
 	private ScheduledExecutorService scheduler;
 	
 	public GuiState() {
@@ -39,6 +43,27 @@ public class GuiState {
 	
 	public void removeStateListener(StateListener listener) {
 		stateListener.remove(listener);
+	}
+	
+	public void setCurrentDirectory (Directory currentDirectory) {
+		this.currentDirectory = currentDirectory;
+		for (DirectoryListener listener : directoryListener) {
+			listener.directoryChanged(currentDirectory);
+		}
+	}
+	
+	public Directory getCurrentDirectory () {
+		return currentDirectory;
+	}
+	
+	public void addDirectoryListener(DirectoryListener listener) {
+		if (!directoryListener.contains(listener)) {
+			directoryListener.add(listener);
+		}
+	}
+	
+	public void removeDirectoryListener(DirectoryListener listener) {
+		directoryListener.remove(listener);
 	}
 	
 	public State getState () {
