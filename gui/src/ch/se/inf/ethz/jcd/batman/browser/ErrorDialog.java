@@ -23,6 +23,7 @@ public class ErrorDialog extends ModalDialog {
 			}
 		});
 		getContainer().add(okButton, 0, 1);
+		setResizable(true);
 	}
 	
 }

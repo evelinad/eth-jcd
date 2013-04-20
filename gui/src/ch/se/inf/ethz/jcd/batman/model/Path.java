@@ -25,8 +25,20 @@ public class Path implements Serializable {
 	public Path() {
 		this(SEPERATOR);
 	}
+	
+	public Path (String path) {
+		init(path);
+	}
 
-	public Path(String path) {
+	public Path(Path parent, String name) {
+		if (parent.getPath().endsWith("/")) {
+			init(parent.getPath() + name);
+		} else {
+			init(parent.getPath() + SEPERATOR + name);
+		}
+	}
+	
+	private void init (String path) {
 		this.path = new SimpleStringProperty(path);
 		this.name = new StringBinding() {
 
@@ -36,7 +48,7 @@ public class Path implements Serializable {
 			}
 		};
 	}
-
+	
 	/**
 	 * Returns the path as a string
 	 * 
@@ -136,5 +148,9 @@ public class Path implements Serializable {
 				return extractName();
 			}
 		};
+	}
+
+	public boolean pathEquals(Path path) {
+		return getPath().equals(path.getPath());
 	}
 }

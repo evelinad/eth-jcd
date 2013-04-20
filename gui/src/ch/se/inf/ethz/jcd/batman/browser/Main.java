@@ -10,7 +10,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("Batman Virtual Disk Browser");
 
-		Browser ui = new Browser();
+		Browser ui = new Browser(primaryStage);
 		Scene scene = new Scene(ui, 800, 500);
 
 		primaryStage.setScene(scene);

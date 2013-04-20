@@ -47,18 +47,18 @@ public class RemoteTaskController implements TaskController {
 		public int compare(Entry entry1, Entry entry2) {
 			if (entry1 instanceof File) {
 				if (entry2 instanceof File) {
-					return 0;
+					return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 				} else {
 					return -1;
 				}
 			} else if (entry1 instanceof Directory) {
 				if (entry2 instanceof Directory) {
-					return 0;
+					return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 				} else {
 					return 1;
 				}
 			} else {
-				return 0;
+				return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 			}
 		}
 
@@ -269,14 +269,15 @@ public class RemoteTaskController implements TaskController {
 				for (int i = 0; i < entries.length; i++) {
 					subEntries.addAll(Arrays.asList(remoteDisk
 							.getAllChildrenBelow(diskId, entries[i])));
+					subEntries.add(entries[i]);
 				}
 
 				int totalEntries = subEntries.size();
-				int currentEntryNumber = 1;
+				int currentEntryNumber = 0;
 				updateProgress(0, totalEntries);
 				for (Entry entry : subEntries) {
-					updateMessage("Deleting entry " + currentEntryNumber
-							+ " of " + totalEntries);
+					updateMessage("Deleting " + entry.getPath() + " (" + (currentEntryNumber + 1)
+							+ " of " + totalEntries +")");
 					remoteDisk.deleteEntry(diskId, entry.getPath());
 					entryDeleted(entry);
 					currentEntryNumber++;
@@ -308,11 +309,19 @@ public class RemoteTaskController implements TaskController {
 				int totalEntriesToMove = sourceEntries.length;
 				for (int i = 0; i < totalEntriesToMove; i++) {
 					updateProgress(i, totalEntriesToMove);
-					updateMessage("Moving entry " + sourceEntries[i].getPath()
-							+ " to " + destinationPaths[i]);
-					remoteDisk.moveEntry(diskId, sourceEntries[i],
-							destinationPaths[i]);
-					entryChanged(sourceEntries[i], destinationPaths[i]);
+					Entry oldEntry = sourceEntries[i];
+					Path newPath = destinationPaths[i];
+					updateMessage("Moving entry " + oldEntry.getPath() + " to " + newPath);
+					remoteDisk.moveEntry(diskId, oldEntry, newPath);
+					Entry newEntry;
+					if (sourceEntries[i] instanceof File) {
+						newEntry = new File(newPath, oldEntry.getTimestamp(), ((File) oldEntry).getSize());
+					} else if (sourceEntries[i] instanceof Directory) {
+						newEntry = new Directory(newPath, oldEntry.getTimestamp());
+					} else {
+						newEntry = new Entry(newPath, oldEntry.getTimestamp());
+					}
+					entryChanged(oldEntry, newEntry);
 				}
 				updateProgress(totalEntriesToMove, totalEntriesToMove);
 				return null;
@@ -340,8 +349,9 @@ public class RemoteTaskController implements TaskController {
 				updateMessage("Importing entry " + file.toString() + " to "
 						+ destination);
 				if (file.isDirectory()) {
-					remoteDisk.createDirectory(diskId, new Directory(new Path(
-							destination), file.lastModified()));
+					Directory newDirectory = new Directory(new Path(destination), file.lastModified());
+					remoteDisk.createDirectory(diskId, newDirectory);
+					entryAdded(newDirectory);
 				} else if (file.isFile()) {
 					remoteDisk.createFile(diskId,
 							new File(new Path(destination),
@@ -511,13 +521,13 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	private void entryChanged(final Entry oldEntry, final Path newPath) {
+	private void entryChanged(final Entry oldEntry, final Entry newEntry) {
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
 				for (DiskEntryListener listener : diskEntryListener) {
-					listener.entryChanged(oldEntry, newPath);
+					listener.entryChanged(oldEntry, newEntry);
 				}
 			}
 		});

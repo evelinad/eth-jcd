@@ -2,31 +2,40 @@ package ch.se.inf.ethz.jcd.batman.browser;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javafx.concurrent.Task;
-
+import javafx.stage.Stage;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
+import ch.se.inf.ethz.jcd.batman.model.Entry;
 
 public class GuiState {
 
 	private static final int THREAD_POOL_SIZE = 1;
 	
+	private Stage primaryStage;
 	private TaskController controller;
 	private State state;
 	private List<StateListener> stateListener = new LinkedList<StateListener>();
 	private List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
-	private int directoryIndex = -1;
+	private List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 	private LinkedList<Directory> directoryHistory = new LinkedList<Directory>();
+	private int directoryIndex = -1;
 	private ScheduledExecutorService scheduler;
+
+	private EntryView activeEntryView;
 	
-	public GuiState() {
+	public GuiState(Stage primaryStage) {
+		this.primaryStage = primaryStage;
 		state = State.DISCONNECTED;
 		scheduler = Executors.newScheduledThreadPool(THREAD_POOL_SIZE);
+	}
+	
+	public Stage getPrimaryStage () {
+		return primaryStage;
 	}
 	
 	public TaskController getController() {
@@ -34,9 +43,30 @@ public class GuiState {
 	}
 
 	public void setController(TaskController controller) {
+		if (this.controller != null) {
+			for (DiskEntryListener listener : diskEntryListener) {
+				this.controller.removeDiskEntryListener(listener);
+			}
+		}
 		directoryHistory.clear();
 		directoryIndex = -1;
 		this.controller = controller;
+		if (this.controller != null) {
+			for (DiskEntryListener listener : diskEntryListener) {
+				this.controller.addDiskEntryListener(listener);
+			}
+		}
+	}
+	
+	public void setActiveEntryView (EntryView entryView) {
+		this.activeEntryView = entryView;
+	}
+	
+	public Entry[] getSelectedEntries () {
+		if (activeEntryView != null) {
+			return activeEntryView.getSelectedEntries();
+		}
+		return null;
 	}
 	
 	public void addStateListener(StateListener listener) {
@@ -117,6 +147,23 @@ public class GuiState {
 	
 	public void submitTask (Task<?> task) {
 		scheduler.submit(task);
+	}
+	
+
+	public void addDiskEntryListener(DiskEntryListener listener) {
+		if (!diskEntryListener.contains(listener)) {
+			diskEntryListener.add(listener);
+			if (controller != null) {
+				controller.addDiskEntryListener(listener);
+			}
+		}
+	}
+
+	public void removeDiskEntryListener(DiskEntryListener listener) {
+		diskEntryListener.remove(listener);
+		if (controller != null) {
+			controller.addDiskEntryListener(listener);
+		}
 	}
 	
 	@Override

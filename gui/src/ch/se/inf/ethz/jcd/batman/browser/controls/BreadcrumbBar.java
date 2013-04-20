@@ -41,14 +41,14 @@ public class BreadcrumbBar extends HBox implements DirectoryListener {
 		
 		// build list of crumbs
 		Path current = curPath;
-		do {
+		while(current != null) {
 			Breadcrumb breadcrumb = new Breadcrumb();
 			breadcrumb.name = current.getName();
 			breadcrumb.path = current;
 			
 			crumbs.addFirst(breadcrumb);
 			current = current.getParentPath();
-		} while(current != null);
+		};
 		
 		// build buttons
 		getChildren().clear();
@@ -68,6 +68,6 @@ public class BreadcrumbBar extends HBox implements DirectoryListener {
 
 	@Override
 	public void directoryChanged(Directory directory) {
-		setPath(directory.getPath());
+		setPath((directory == null) ? null : directory.getPath());
 	}
 }
