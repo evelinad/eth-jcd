@@ -7,17 +7,28 @@ import ch.se.inf.ethz.jcd.batman.cli.Command;
 import ch.se.inf.ethz.jcd.batman.cli.CommandLine;
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
+import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch.Settings;
 
 /**
  * Implements a simple search command.
  * 
  * This command allows to search inside file and directory names for a given
  * string. The matching is case insensitive.
- *
+ * 
  */
 public class SearchCommand implements Command {
 
 	private static final String[] COMMAND_STRINGS = { "search" };
+
+	private final VirtualDiskSearch.Settings searchSettings;
+
+	public SearchCommand() {
+		searchSettings = new VirtualDiskSearch.Settings();
+		searchSettings.setCaseSensitive(false);
+		searchSettings.setCheckFiles(true);
+		searchSettings.setCheckFolders(true);
+		searchSettings.setCheckSubFolders(true);
+	}
 
 	@Override
 	public String[] getAliases() {
@@ -29,9 +40,9 @@ public class SearchCommand implements Command {
 		if (params.length == 1) {
 			try {
 				List<VDiskFile> results = VirtualDiskSearch.searchName(
-						params[0], caller.getCurrentLocation(), false);
-				
-				for(VDiskFile entry : results) {
+						searchSettings, params[0], caller.getCurrentLocation());
+
+				for (VDiskFile entry : results) {
 					caller.writeln("%s", entry.getPath());
 				}
 			} catch (IOException e) {
