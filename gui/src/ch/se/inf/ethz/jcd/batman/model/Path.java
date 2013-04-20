@@ -49,7 +49,8 @@ public class Path implements Serializable {
 	/**
 	 * Sets the path to the given string
 	 * 
-	 * @param path new path represented by the object
+	 * @param path
+	 *            new path represented by the object
 	 */
 	public void setPath(String path) {
 		this.path.set(path);
@@ -113,7 +114,7 @@ public class Path implements Serializable {
 		String path = getPath();
 		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
 		String namePart = path.substring(lastSeperatorIndex + 1);
-	
+
 		if (namePart.isEmpty()) {
 			return SEPERATOR;
 		} else {
