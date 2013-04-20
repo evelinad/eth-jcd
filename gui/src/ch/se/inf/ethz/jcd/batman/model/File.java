@@ -16,20 +16,20 @@ public class File extends Entry {
 	public File() {
 		super();
 	}
-	
+
 	public File(Path path) {
 		this(path, 0, 0);
 	}
-	
+
 	public File(Path path, long timestamp, long size) {
 		super(path, timestamp);
 		this.size.set(size);
 	}
-	
+
 	public LongProperty sizeProperty() {
 		return size;
 	}
-	
+
 	public long getSize() {
 		return size.get();
 	}
@@ -37,13 +37,14 @@ public class File extends Entry {
 	public void setSize(long size) {
 		this.size.set(size);
 	}
-	
+
 	private void writeObject(ObjectOutputStream oos) throws IOException {
 		oos.writeLong(getSize());
 	}
-	
-	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+
+	private void readObject(ObjectInputStream ois)
+			throws ClassNotFoundException, IOException {
 		size = new SimpleLongProperty(ois.readLong());
 	}
-	
+
 }
