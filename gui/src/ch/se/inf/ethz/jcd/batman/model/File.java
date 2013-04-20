@@ -7,6 +7,10 @@ import java.io.ObjectOutputStream;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 
+/**
+ * Model (as defined in MVC-Pattern) for a file on a virtual disk.
+ * 
+ */
 public class File extends Entry {
 
 	private static final long serialVersionUID = -6866287625459765024L;
@@ -26,16 +30,27 @@ public class File extends Entry {
 		this.size.set(size);
 	}
 
-	public LongProperty sizeProperty() {
-		return size;
-	}
-
+	/**
+	 * Returns the size of the file.
+	 * 
+	 * @return the size in bytes
+	 */
 	public long getSize() {
 		return size.get();
 	}
 
+	/**
+	 * Sets the size of the file.
+	 * 
+	 * @param size
+	 *            the size in bytes
+	 */
 	public void setSize(long size) {
 		this.size.set(size);
+	}
+
+	public LongProperty sizeProperty() {
+		return size;
 	}
 
 	private void writeObject(ObjectOutputStream oos) throws IOException {

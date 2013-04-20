@@ -9,6 +9,13 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+/**
+ * Model (as defined in MVC-Pattern) for a virtual disk entry.
+ * 
+ * This model can be serialized for transportation in case of a client/server
+ * architecture.
+ * 
+ */
 public class Entry implements Serializable {
 
 	private static final long serialVersionUID = -6951589227362678760L;
@@ -29,28 +36,50 @@ public class Entry implements Serializable {
 		this.timestamp = new SimpleLongProperty(timestamp);
 	}
 
-	public SimpleObjectProperty<Path> pathProperty() {
-		return path;
-	}
-
+	/**
+	 * Returns the path of the entry.
+	 * 
+	 * @return location of the entry
+	 */
 	public Path getPath() {
 		return path.get();
 	}
 
+	/**
+	 * Sets the path of the entry.
+	 * 
+	 * @param path
+	 *            new path for the entry
+	 */
 	public void setPath(Path path) {
 		this.path.set(path);
+	}
+
+	/**
+	 * Returns the timestamp of the entry
+	 * 
+	 * @return the timestamp of the entry
+	 */
+	public long getTimestamp() {
+		return timestamp.get();
+	}
+
+	/**
+	 * Sets the timestamp for the entry
+	 * 
+	 * @param timestamp
+	 *            new timestamp for the entry
+	 */
+	public void setTimestamp(long timestamp) {
+		this.timestamp.set(timestamp);
 	}
 
 	public LongProperty timestampProperty() {
 		return timestamp;
 	}
 
-	public long getTimestamp() {
-		return timestamp.get();
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp.set(timestamp);
+	public SimpleObjectProperty<Path> pathProperty() {
+		return path;
 	}
 
 	@Override

@@ -1,5 +1,11 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
+/**
+ * Model (as defined in MVC-Pattern) for a directory inside a virtual disk.
+ * 
+ * @see Entry
+ * 
+ */
 public class Directory extends Entry {
 
 	private static final long serialVersionUID = 5544830256663532103L;
