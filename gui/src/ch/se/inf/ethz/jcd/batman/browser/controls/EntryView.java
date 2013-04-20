@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -13,13 +14,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 import ch.se.inf.ethz.jcd.batman.browser.DirectoryListener;
+import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
 
-public class EntryView extends TableView<Entry> implements DirectoryListener {
+public class EntryView extends TableView<Entry> implements DirectoryListener, DiskEntryListener {
 	
 	private GuiState guiState;
 	private Directory directory;
@@ -28,6 +30,10 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addDirectoryListener(this);
+		guiState.addDiskEntryListener(this);
+		guiState.setActiveEntryView(this);
+		
+		getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
 		TableColumn<Entry, Entry> nameColumn = new TableColumn<Entry, Entry>("Name");
 		nameColumn.setPrefWidth(300);
@@ -86,15 +92,23 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 		setItems(entryList);
 	}
 	
+	protected void clear () {
+		entryList.clear();
+	}
+	
+	protected void setEntries(Entry[] entries) {
+		entryList.addAll(entries);
+		//TODO sort
+	}
+	
 	public void setDirectory(Directory directory) {
 		this.directory = directory;
-		entryList.clear();
+		clear();
 		if (directory != null) {
 			final Task<Entry[]> entriesTask = guiState.getController().createDirectoryEntriesTask(directory);
 			new TaskDialog(guiState, entriesTask) {
 				protected void succeeded(WorkerStateEvent event) {
-					Entry[] entries = entriesTask.getValue();
-					entryList.addAll(entries);
+					setEntries(entriesTask.getValue());
 				}
 			};
 		}
@@ -107,7 +121,32 @@ public class EntryView extends TableView<Entry> implements DirectoryListener {
 	@Override
 	public void directoryChanged(Directory directory) {
 		setDirectory(directory);
-		//TODO check that the new entries are sorted correctly
+	}
+
+	@Override
+	public void entryAdded(Entry entry) {
+		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
+			entryList.add(entry);
+		}
+	}
+
+	@Override
+	public void entryDeleted(Entry entry) {
+		if (entryList.contains(entry)) {
+			entryList.remove(entry);
+		}
+	}
+
+	@Override
+	public void entryChanged(Entry oldEntry, Entry newEntry) {
+		entryDeleted(oldEntry);
+		entryAdded(newEntry);
+		
+	}
+
+	public Entry[] getSelectedEntries() {
+		ObservableList<Entry> selectedItems = getSelectionModel().getSelectedItems();
+		return selectedItems.toArray(new Entry[selectedItems.size()]);
 	}
 	
 }

@@ -9,6 +9,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class Browser extends BorderPane {
 	
@@ -28,8 +29,8 @@ public class Browser extends BorderPane {
 	// bottom parts
 	private BreadcrumbBar breadcrumbs;
 
-	public Browser() {
-		guiState = new GuiState();
+	public Browser(Stage primaryStage) {
+		guiState = new GuiState(primaryStage);
 		initializeTop();
 		initializeLeft();
 		initializeCenter();

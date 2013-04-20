@@ -23,6 +23,18 @@ public class Path implements Serializable {
 	}
 	
 	public Path (String path) {
+		init(path);
+	}
+
+	public Path(Path parent, String name) {
+		if (parent.getPath().endsWith("/")) {
+			init(parent.getPath() + name);
+		} else {
+			init(parent.getPath() + SEPERATOR + name);
+		}
+	}
+	
+	private void init (String path) {
 		this.path = new SimpleStringProperty(path);
 		this.name = new StringBinding() {
 			
@@ -32,7 +44,7 @@ public class Path implements Serializable {
 			}
 		};
 	}
-
+	
 	private String extractName () {
 		String path = getPath();
 		int lastSeperatorIndex = path.lastIndexOf(SEPERATOR);
@@ -110,5 +122,9 @@ public class Path implements Serializable {
 				return extractName();
 			}
 		};
+	}
+
+	public boolean pathEquals(Path path) {
+		return getPath().equals(path.getPath());
 	}
 }

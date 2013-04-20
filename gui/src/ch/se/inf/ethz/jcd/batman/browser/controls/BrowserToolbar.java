@@ -1,6 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
+import java.io.File;
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -13,6 +16,8 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
@@ -24,6 +29,7 @@ import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
+import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public class BrowserToolbar extends ToolBar implements StateListener {
@@ -36,7 +42,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button goBackButton;
 	private Button goForewardButton;
 	private Button deleteButton;
-	private Button importButton;
+	private Button importFilesButton;
+	private Button importDirectoryButton;
 	private Button exportButton;
 	private TextField search;
 	
@@ -110,12 +117,34 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		// delete element button
 		Image deleteImage = ImageResource.getImageResource().getDelete();
 		deleteButton = new Button("", new ImageView(deleteImage));
+		deleteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				delete();
+			}
+		});
 		super.getItems().add(deleteButton);
 
-		// import button
-		importButton = new Button("import");
-		super.getItems().add(importButton);
+		// import files button
+		importFilesButton = new Button("import files");
+		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				importFiles();
+			}
+		});
+		super.getItems().add(importFilesButton);
 
+		// import files button
+		importDirectoryButton = new Button("import directory");
+		importDirectoryButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				importDirectory();
+			}
+		});
+		super.getItems().add(importDirectoryButton);
+		
 		// export button
 		exportButton = new Button("export");
 		super.getItems().add(exportButton);
@@ -127,6 +156,39 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		stateChanged(null, guiState.getState());
 	}
 
+	protected void delete() {
+		Entry[] selectedEntries = guiState.getSelectedEntries();
+		Task<Void> deleteEntriesTask = guiState.getController().createDeleteEntriesTask(selectedEntries);
+		new TaskDialog(guiState, deleteEntriesTask);
+	}
+
+	protected void importFiles () {
+		FileChooser fileChooser = new FileChooser();
+		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState.getPrimaryStage());
+		if (importFiles != null && !importFiles.isEmpty()) {
+			List<String> sourcePaths = new LinkedList<String>();
+			List<Path> destinationPath = new LinkedList<Path>();
+			for (File file : importFiles) {
+				sourcePaths.add(file.getAbsolutePath());
+				destinationPath.add(new Path(guiState.getCurrentDirectory().getPath(), file.getName()));
+			}
+			Task<Void> importTask = guiState.getController().createImportTask(sourcePaths.toArray(
+				new String[sourcePaths.size()]), destinationPath.toArray(new Path[destinationPath.size()]));
+			new TaskDialog(guiState, importTask);
+		}
+	}
+	
+	protected void importDirectory () {
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		File importFiles = directoryChooser.showDialog(guiState.getPrimaryStage());
+		if (importFiles != null) {
+			Task<Void> importTask = guiState.getController().createImportTask(
+					new String [] {importFiles.getAbsolutePath()}, new Path[] {
+							new Path(guiState.getCurrentDirectory().getPath(), importFiles.getName())});
+			new TaskDialog(guiState, importTask);
+		}
+	}
+	
 	protected void forward () {
 		guiState.forwardToNextDirectoy();
 	}
@@ -193,7 +255,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			goBackButton.setDisable(true);
 			goForewardButton.setDisable(true);
 			deleteButton.setDisable(true);
-			importButton.setDisable(true);
+			importFilesButton.setDisable(true);
+			importDirectoryButton.setDisable(true);
 			exportButton.setDisable(true);
 			search.setDisable(true);
 		} else if (newState == State.CONNECTED) {
@@ -203,7 +266,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			goBackButton.setDisable(false);
 			goForewardButton.setDisable(false);
 			deleteButton.setDisable(false);
-			importButton.setDisable(false);
+			importFilesButton.setDisable(false);
+			importDirectoryButton.setDisable(false);
 			exportButton.setDisable(false);
 			search.setDisable(false);
 		}
