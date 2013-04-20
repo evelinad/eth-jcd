@@ -12,6 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.text.Text;
 import javafx.util.Callback;
 import ch.se.inf.ethz.jcd.batman.browser.DirectoryListener;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
@@ -23,6 +24,9 @@ import ch.se.inf.ethz.jcd.batman.model.File;
 
 public class EntryView extends TableView<Entry> implements DirectoryListener, DiskEntryListener {
 	
+	private static final Text NO_DISK_LOADED_TEXT = new Text("No Disk Loaded.");
+	private static final Text NO_ENTRIES_TEXT = new Text("Is Empty.");
+	
 	private GuiState guiState;
 	private Directory directory;
 	private ObservableList<Entry> entryList = FXCollections.observableArrayList();
@@ -32,6 +36,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener, Di
 		guiState.addDirectoryListener(this);
 		guiState.addDiskEntryListener(this);
 		guiState.setActiveEntryView(this);
+		
+		this.setPlaceholder(NO_DISK_LOADED_TEXT);
 		
 		getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
@@ -111,6 +117,10 @@ public class EntryView extends TableView<Entry> implements DirectoryListener, Di
 					setEntries(entriesTask.getValue());
 				}
 			};
+		}
+		
+		if(entryList.size() <= 0) {
+			this.setPlaceholder(NO_ENTRIES_TEXT);
 		}
 	}
 	
