@@ -47,18 +47,18 @@ public class RemoteTaskController implements TaskController {
 		public int compare(Entry entry1, Entry entry2) {
 			if (entry1 instanceof File) {
 				if (entry2 instanceof File) {
-					return 0;
+					return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 				} else {
 					return -1;
 				}
 			} else if (entry1 instanceof Directory) {
 				if (entry2 instanceof Directory) {
-					return 0;
+					return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 				} else {
 					return 1;
 				}
 			} else {
-				return 0;
+				return entry2.getPath().getPath().compareTo(entry1.getPath().getPath());
 			}
 		}
 
@@ -275,11 +275,6 @@ public class RemoteTaskController implements TaskController {
 				int totalEntries = subEntries.size();
 				int currentEntryNumber = 0;
 				updateProgress(0, totalEntries);
-				//TODO
-				System.out.println(totalEntries);
-				for (Entry entry : subEntries) {
-					System.out.println(entry.getPath());
-				}
 				for (Entry entry : subEntries) {
 					updateMessage("Deleting " + entry.getPath() + " (" + (currentEntryNumber + 1)
 							+ " of " + totalEntries +")");
