@@ -2,10 +2,17 @@ package ch.se.inf.ethz.jcd.batman.browser.images;
 
 import javafx.scene.image.Image;
 
+/**
+ * Class holding images used by the view.
+ * 
+ * This class implements the Singleton Design Pattern. This way all images
+ * are loaded only once.
+ *
+ */
 public final class ImageResource {
-	
+
 	private static ImageResource instance;
-	
+
 	public static ImageResource getImageResource() {
 		if (instance == null) {
 			instance = new ImageResource();
@@ -14,15 +21,15 @@ public final class ImageResource {
 		return instance;
 	}
 
-	private Image up;
-	private Image previous;
-	private Image next;
-	private Image cross;
-	private Image connect;
-	private Image disconnect;
-	private Image folder;
-	private Image file;
-	
+	private final Image up;
+	private final Image previous;
+	private final Image next;
+	private final Image cross;
+	private final Image connect;
+	private final Image disconnect;
+	private final Image folder;
+	private final Image file;
+
 	private ImageResource() {
 		up = new Image(getClass().getResourceAsStream("up.png"));
 		previous = new Image(getClass().getResourceAsStream("previous.png"));
@@ -34,36 +41,36 @@ public final class ImageResource {
 		file = new Image(getClass().getResourceAsStream("file.png"));
 	}
 
-	public Image getArrowUp() {
+	public Image goToParentImage() {
 		return up;
 	}
 
-	public Image getArrowLeft() {
+	public Image goBackImage() {
 		return previous;
 	}
 
-	public Image getArrowRight() {
+	public Image goForwardImage() {
 		return next;
 	}
 
-	public Image getDelete() {
+	public Image deleteImage() {
 		return cross;
 	}
 
-	public Image getConnect() {
+	public Image connectImage() {
 		return connect;
 	}
 
-	public Image getDisconnect() {
+	public Image disconnectImage() {
 		return disconnect;
 	}
 
-	public Image getFolder() {
+	public Image folderImage() {
 		return folder;
 	}
-	
-	public Image getFile() {
+
+	public Image fileImage() {
 		return file;
 	}
-	
+
 }

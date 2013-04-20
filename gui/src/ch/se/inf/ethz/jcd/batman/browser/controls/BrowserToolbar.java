@@ -45,7 +45,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		guiState.addStateListener(this);
 		
 		// connect button
-		Image connectImage = ImageResource.getImageResource().getConnect();
+		Image connectImage = ImageResource.getImageResource().connectImage();
 		connectButton = new Button("", new ImageView(connectImage));
 		super.getItems().add(connectButton);
 
@@ -58,7 +58,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// disconnect button
 		Image disconnectImage = ImageResource.getImageResource()
-				.getDisconnect();
+				.disconnectImage();
 		disconnectButton = new Button("", new ImageView(disconnectImage));
 		disconnectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
@@ -72,25 +72,25 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(new Separator(Orientation.VERTICAL));
 
 		// go to parent dir button
-		Image toParentDirImage = ImageResource.getImageResource().getArrowUp();
+		Image toParentDirImage = ImageResource.getImageResource().goToParentImage();
 		toParentDirButton = new Button("", new ImageView(
 				toParentDirImage));
 		super.getItems().add(toParentDirButton);
 
 		// go back button
-		Image goBackDirImage = ImageResource.getImageResource().getArrowLeft();
+		Image goBackDirImage = ImageResource.getImageResource().goBackImage();
 		goBackButton = new Button("", new ImageView(goBackDirImage));
 		super.getItems().add(goBackButton);
 
 		// go foreward buttin
 		Image goForewardDirImage = ImageResource.getImageResource()
-				.getArrowRight();
+				.goForwardImage();
 		goForewardButton = new Button("", new ImageView(
 				goForewardDirImage));
 		super.getItems().add(goForewardButton);
 
 		// delete element button
-		Image deleteImage = ImageResource.getImageResource().getDelete();
+		Image deleteImage = ImageResource.getImageResource().deleteImage();
 		deleteButton = new Button("", new ImageView(deleteImage));
 		super.getItems().add(deleteButton);
 

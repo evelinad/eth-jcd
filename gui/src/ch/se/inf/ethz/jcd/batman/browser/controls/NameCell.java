@@ -25,9 +25,9 @@ public class NameCell extends EntryCell<Entry, Entry> {
 			imageview.setFitHeight(16);
 			imageview.setFitWidth(16);
 			if (item instanceof Directory) {
-				imageview.setImage(ImageResource.getImageResource().getFolder());
+				imageview.setImage(ImageResource.getImageResource().folderImage());
 			} else {
-				imageview.setImage(ImageResource.getImageResource().getFile()); 
+				imageview.setImage(ImageResource.getImageResource().fileImage()); 
 			}
 
 			box.getChildren().addAll(imageview, nameLabel); 
