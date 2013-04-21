@@ -163,6 +163,12 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// export button
 		exportButton = new Button("export");
+		exportButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				export();
+			}
+		});
 		super.getItems().add(exportButton);
 
 		// search field
@@ -238,6 +244,26 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		stateChanged(null, guiState.getState());
 	}
 
+	protected void export() {
+		Entry[] selectedEntries = guiState.getSelectedEntries();
+		if (selectedEntries != null && selectedEntries.length > 0) {
+			DirectoryChooser directoryChooser = new DirectoryChooser();
+			directoryChooser.setTitle("Choose export directory");
+			File exportDirectory = directoryChooser.showDialog(guiState
+					.getPrimaryStage());
+			if (exportDirectory != null) {
+				String[] destinationPaths = new String[selectedEntries.length];
+				for (int i = 0; i < selectedEntries.length; i++) {
+					destinationPaths[i] = exportDirectory.getAbsolutePath() + java.io.File.separator + 
+							selectedEntries[i].getPath().getName();
+				}
+				Task<Void> exportTask = guiState.getController().createExportTask(selectedEntries, destinationPaths);
+				new TaskDialog(guiState, exportTask);
+			}
+			
+		}
+	}
+	
 	protected void importFiles() {
 		FileChooser fileChooser = new FileChooser();
 		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState
