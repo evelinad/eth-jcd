@@ -366,6 +366,30 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
+	public void copyEntry(int id, Entry source, Path destination)
+			throws RemoteException, VirtualDiskException {
+		IVirtualDisk disk = getDisk(id);
+		try {
+			if (source instanceof File) {
+				VDiskFile sourceFile = new VDiskFile(source.getPath().getPath(), disk);
+				if (!sourceFile.copyTo(new VDiskFile(destination.getPath(), disk))) {
+					throw new VirtualDiskException("Copy errror");
+				}
+			} else if (source instanceof Directory) {
+				VDiskFile newDirectory = new VDiskFile(destination.getPath(), disk);
+				if (!newDirectory.mkdir()) {
+					throw new VirtualDiskException("Could not create directory at " + destination);
+				}
+			} else {
+				throw new VirtualDiskException("Invalid disk entry type " + source.getClass());
+			}
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not copy entry " + source.getPath() + " to " + destination);
+		}
+		
+	}
+	
+	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {
 			disk.close();

@@ -62,4 +62,9 @@ public class File extends Entry {
 		size = new SimpleLongProperty(ois.readLong());
 	}
 
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return new File(getPath(), getTimestamp(), getSize());
+	}
+	
 }

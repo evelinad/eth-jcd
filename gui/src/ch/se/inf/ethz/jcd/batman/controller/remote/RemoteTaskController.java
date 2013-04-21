@@ -512,8 +512,6 @@ public class RemoteTaskController implements TaskController {
 				long entriesExported = 0;
 				for (int i = 0; i < sourceEntries.length; i++) {
 					Entry baseEntry = exportFiles[i].get(0);
-					System.out.println("BaseEntry: " + baseEntry);
-					System.out.println("Destination: " + destinationPaths[i]);
 					for (Entry entry : exportFiles[i]) {
 						String destination = destinationPaths[i]
 								+ entry.getPath().getRelativePath(baseEntry.getPath()).getPath();
@@ -538,11 +536,45 @@ public class RemoteTaskController implements TaskController {
 		checkIsConnected();
 		return new Task<Void>() {
 
+			private void copyEntry (Entry source, Path destination) throws RemoteException, VirtualDiskException {
+				remoteDisk.copyEntry(diskId, source, destination);
+			}
+			
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				// TODO
-				throw new UnsupportedOperationException();
+				updateMessage("Discovering items");
+				@SuppressWarnings("unchecked")
+				List<Entry>[] copyFiles = new List[sourceEntries.length];
+				long totalEntriesToCopy = 0;
+				for (int i = 0; i < sourceEntries.length; i++) {
+					copyFiles[i] = new LinkedList<Entry>();
+					copyFiles[i].add(sourceEntries[i]);
+					copyFiles[i].addAll(Arrays.asList(remoteDisk.getAllChildrenBelow(diskId, sourceEntries[i])));
+					totalEntriesToCopy += copyFiles[i].size();
+					if (isCancelled()) {
+						return null;
+					}
+				}
+				
+				long entriesExported = 0;
+				for (int i = 0; i < sourceEntries.length; i++) {
+					Entry baseEntry =copyFiles[i].get(0);
+					for (Entry entry : copyFiles[i]) {
+						Path destination = new Path(destinationPaths[i]
+								+ entry.getPath().getRelativePath(baseEntry.getPath()).getPath());
+						updateProgress(entriesExported, totalEntriesToCopy);
+						copyEntry(entry, destination);
+						Entry newEntry = (Entry) entry.clone();
+						entryAdded(newEntry);
+						entriesExported++;
+						if (isCancelled()) {
+							return null;
+						}
+					}
+				}
+				updateProgress(entriesExported, totalEntriesToCopy);
+				return null;
 			}
 
 		};
