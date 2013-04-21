@@ -274,7 +274,18 @@ public interface IRemoteVirtualDisk extends Remote {
 	 */
 	Entry[] getEntries(int id, Path[] entryPaths) throws RemoteException,
 			VirtualDiskException;
-
+	
+	/**
+	 * Copies the specified entry to the new destination.
+	 * 
+	 * @param id the ID representing a loaded virtual disk
+	 * @param source the source entry
+	 * @param destination the destination path, to which the source entry should be copied
+	 * @throws RemoteException
+	 * @throws VirtualDiskException 
+	 */
+	void copyEntry(int id, Entry source, Path destination) throws RemoteException, VirtualDiskException;
+	
 	/**
 	 * Searches for the given term inside the given parents.
 	 * 
