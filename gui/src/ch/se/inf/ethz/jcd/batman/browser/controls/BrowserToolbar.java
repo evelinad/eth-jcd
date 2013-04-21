@@ -27,6 +27,7 @@ import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
 import ch.se.inf.ethz.jcd.batman.browser.RemoteOpenDiskDialog;
+import ch.se.inf.ethz.jcd.batman.browser.SearchDialog;
 import ch.se.inf.ethz.jcd.batman.browser.State;
 import ch.se.inf.ethz.jcd.batman.browser.StateListener;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
@@ -52,6 +53,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button importDirectoryButton;
 	private Button exportButton;
 	private TextField search;
+
+	private Button advancedSearchButton;
 
 	public BrowserToolbar(final GuiState guiState) {
 		this.guiState = guiState;
@@ -171,11 +174,22 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				// start search
 				if (event.getCode() == KeyCode.ENTER) {
 					event.consume();
-					search();
+					search(search.getText(), false, true, true, false, true);
 				}
 			}
 		});
 		super.getItems().add(search);
+
+		// advanced search button
+		advancedSearchButton = new Button("Advanced Search");
+		advancedSearchButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				advancedSearch();
+			}
+		});
+		super.getItems().add(advancedSearchButton);
 
 		// add shortcuts for toolbar buttons
 		final ObservableMap<KeyCombination, Runnable> accelerators = guiState
@@ -316,16 +330,28 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		return null;
 	}
 
-	protected void search() {
-		final String searchTerm = search.getText();
+	protected void advancedSearch() {
+		final SearchDialog dialog = new SearchDialog();
+		dialog.showAndWait();
+
+		if (dialog.getCloseReason() == CloseReason.OK) {
+			search(dialog.getSearchTerm(), dialog.isRegex(),
+					dialog.checkFiles(), dialog.checkFolders(),
+					dialog.isCaseSensitive(), dialog.checkSubFolders());
+		}
+	}
+
+	protected void search(final String term, final boolean isRegex,
+			final boolean checkFiles, final boolean checkFolders,
+			final boolean isCaseSensitive, final boolean checkChildren) {
 		final Task<Entry[]> task = guiState.getController().createSearchTask(
-				searchTerm, false, true, true, false, true,
-				guiState.getCurrentDirectory());
+				term, isRegex, checkFiles, checkFolders, isCaseSensitive,
+				checkChildren, guiState.getCurrentDirectory());
 
 		new TaskDialog(guiState, task) {
 			protected void succeeded(WorkerStateEvent event) {
 				SearchDirectory searchDir = new SearchDirectory(
-						task.getValue(), searchTerm);
+						task.getValue(), term);
 				guiState.setCurrentDirectory(searchDir);
 			};
 		};
@@ -344,6 +370,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			importDirectoryButton.setDisable(true);
 			exportButton.setDisable(true);
 			search.setDisable(true);
+			advancedSearchButton.setDisable(true);
 		} else if (newState == State.CONNECTED) {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
@@ -355,6 +382,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			importDirectoryButton.setDisable(false);
 			exportButton.setDisable(false);
 			search.setDisable(false);
+			advancedSearchButton.setDisable(false);
 		}
 	}
 }

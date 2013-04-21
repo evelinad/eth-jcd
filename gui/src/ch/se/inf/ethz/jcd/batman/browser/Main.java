@@ -11,7 +11,7 @@ public class Main extends Application {
 		primaryStage.setTitle("Batman Virtual Disk Browser");
 
 		Browser ui = new Browser(primaryStage);
-		Scene scene = new Scene(ui, 800, 500);
+		Scene scene = new Scene(ui, 900, 500);
 		scene.getStylesheets().add("/ch/se/inf/ethz/jcd/batman/browser/main.css");
 
 		primaryStage.setScene(scene);

@@ -333,7 +333,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			}
 
 			Settings settings = new Settings();
-			settings.setCaseSensitive(!isCaseSensitive);
+			settings.setCaseSensitive(isCaseSensitive);
 			settings.setCheckFiles(checkFiles);
 			settings.setCheckFolders(checkFolders);
 			settings.setCheckSubFolders(checkChildren);
