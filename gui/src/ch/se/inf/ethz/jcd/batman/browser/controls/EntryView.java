@@ -142,7 +142,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					for (Entry entry : selected) {
 						if (entry instanceof File) {
 							event.consume();
-							HostUtil.openFile((File) entry);
+							HostUtil.openFile((File) entry, guiState);
 						}
 					}
 				}
