@@ -13,7 +13,7 @@ import javafx.beans.property.StringProperty;
  * Model (as defined in MVC-Pattern) for a virtual disk path.
  * 
  */
-public class Path implements Serializable {
+public class Path implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = -6366450141021999089L;
 
@@ -160,5 +160,10 @@ public class Path implements Serializable {
 
 	public Path getRelativePath(Path path) {
 		return new Path(getPath().substring(path.getPath().length()));
+	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return new Path(getPath());
 	}
 }

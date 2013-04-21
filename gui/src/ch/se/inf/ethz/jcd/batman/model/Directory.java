@@ -22,4 +22,9 @@ public class Directory extends Entry {
 		super(path, timestamp);
 	}
 
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return new Directory(getPath(), getTimestamp());
+	}
+	
 }
