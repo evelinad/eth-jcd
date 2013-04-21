@@ -1,14 +1,14 @@
 package ch.se.inf.ethz.jcd.batman.browser;
 
-import ch.se.inf.ethz.jcd.batman.browser.controls.BreadcrumbBar;
-import ch.se.inf.ethz.jcd.batman.browser.controls.BrowserToolbar;
-import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import javafx.scene.control.ToolBar;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ch.se.inf.ethz.jcd.batman.browser.controls.BreadcrumbBar;
+import ch.se.inf.ethz.jcd.batman.browser.controls.BrowserToolbar;
+import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
+import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 
 public class Browser extends BorderPane {
 	
@@ -20,7 +20,6 @@ public class Browser extends BorderPane {
 
 	// left parts
 	private TreeView<String> dirTree;
-	private TreeItem<String> dirRoot;
 
 	// center parts
 	private EntryView entryView;
@@ -50,8 +49,7 @@ public class Browser extends BorderPane {
 	}
 
 	private void initializeLeft() {
-		dirRoot = new TreeItem<String>("/");
-		dirTree = new TreeView<String>(dirRoot);
+		dirTree = new DirectoryTree(guiState);
 	}
 
 	private void initializeTop() {
