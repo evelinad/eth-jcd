@@ -1,5 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.browser;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -11,9 +15,15 @@ import javafx.scene.input.MouseEvent;
 
 public class TaskDialog extends ModalDialog {
 
+	protected static final long TIME_TO_WAIT_BEFORE_SHOW = 5L;
+	
+	private final Task<?> task;
+
 	public TaskDialog(GuiState guiState, final Task<?> task) {
+		this.task = task;
+
 		titleProperty().bind(task.titleProperty());
-		
+
 		Label label = new Label();
 		label.setTextOverrun(OverrunStyle.LEADING_WORD_ELLIPSIS);
 		label.textProperty().bind(task.messageProperty());
@@ -32,7 +42,7 @@ public class TaskDialog extends ModalDialog {
 			}
 		});
 		getContainer().add(cancelButton, 0, 2);
-		
+
 		task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
 
 			@Override
@@ -44,7 +54,23 @@ public class TaskDialog extends ModalDialog {
 
 			@Override
 			public void handle(WorkerStateEvent event) {
-				showAndWait();
+				final Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
+
+					@Override
+					public void run() {
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								if (!task.isDone()) {
+									showAndWait();
+								}
+							}
+						});
+
+						timer.cancel();
+					}
+				}, TIME_TO_WAIT_BEFORE_SHOW);
 			}
 		});
 		task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -77,6 +103,13 @@ public class TaskDialog extends ModalDialog {
 		Throwable exception = event.getSource().getException();
 		new ErrorDialog("Error", exception.getClass() + ": "
 				+ exception.getMessage()).showAndWait();
+	}
+
+	@Override
+	public void showAndWait() {
+		if (task.isRunning()) {
+			super.showAndWait();
+		}
 	}
 
 }
