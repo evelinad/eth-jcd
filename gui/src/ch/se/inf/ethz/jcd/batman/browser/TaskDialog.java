@@ -7,20 +7,26 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 
 public class TaskDialog extends ModalDialog {
 
 	protected static final long TIME_TO_WAIT_BEFORE_SHOW = 5L;
+
+	private static final double TASK_DIALOG_MAX_WIDTH = 500;
 	
 	private final Task<?> task;
 
 	public TaskDialog(GuiState guiState, final Task<?> task) {
 		this.task = task;
+		
+		super.setMaxWidth(TASK_DIALOG_MAX_WIDTH);
 
 		titleProperty().bind(task.titleProperty());
 
@@ -29,11 +35,17 @@ public class TaskDialog extends ModalDialog {
 		label.textProperty().bind(task.messageProperty());
 		getContainer().add(label, 0, 0);
 
+		HBox progressBox = new HBox();
 		ProgressBar progressBar = new ProgressBar();
 		progressBar.progressProperty().bind(task.progressProperty());
-		getContainer().add(progressBar, 0, 1);
+		progressBox.getChildren().add(progressBar);
+		getContainer().add(progressBox, 0, 1);
+		progressBar.setMinWidth(super.getMinWidth());
+		progressBox.setAlignment(Pos.CENTER);
 
-		Button cancelButton = new Button("Cancel");
+		HBox buttonBox = new HBox();
+		Button cancelButton = new Button("Stop Task");
+		cancelButton.setCancelButton(true);
 		cancelButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -41,7 +53,9 @@ public class TaskDialog extends ModalDialog {
 				setCloseReason(CloseReason.CANCEL);
 			}
 		});
-		getContainer().add(cancelButton, 0, 2);
+		buttonBox.getChildren().add(cancelButton);
+		getContainer().add(buttonBox, 0, 2);
+		buttonBox.setAlignment(Pos.CENTER);
 
 		task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
 
