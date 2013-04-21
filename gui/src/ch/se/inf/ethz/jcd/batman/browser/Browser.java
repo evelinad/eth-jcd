@@ -30,6 +30,9 @@ public class Browser extends BorderPane {
 
 	public Browser(Stage primaryStage) {
 		guiState = new GuiState(primaryStage);
+	}
+	
+	public void initialize() {
 		initializeTop();
 		initializeLeft();
 		initializeCenter();

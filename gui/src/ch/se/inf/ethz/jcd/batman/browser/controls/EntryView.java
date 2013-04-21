@@ -119,28 +119,37 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			@Override
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
-				
+
 				// go inside a directory
 				if (event.getCode() == KeyCode.ENTER
 						|| event.getCode() == KeyCode.RIGHT) {
 					if (selected.length == 1
 							&& selected[0] instanceof Directory) {
+						event.consume();
 						guiState.setCurrentDirectory((Directory) selected[0]);
 					}
 				}
-				
+
 				// go back in history
-				if(event.getCode() == KeyCode.LEFT) {
+				if (event.getCode() == KeyCode.LEFT) {
+					event.consume();
 					guiState.backToPreviousDirectory();
 				}
-				
+
 				// open a file
-				if(event.getCode() == KeyCode.ENTER) {
-					for(Entry entry : selected) {
-						if(entry instanceof File) {
+				if (event.getCode() == KeyCode.ENTER) {
+					for (Entry entry : selected) {
+						if (entry instanceof File) {
+							event.consume();
 							HostUtil.openFile((File) entry);
 						}
 					}
+				}
+
+				// delete a file
+				if (event.getCode() == KeyCode.DELETE) {
+					event.consume();
+					guiState.delete();
 				}
 			}
 		});

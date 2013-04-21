@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
+import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -15,6 +16,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -29,13 +33,12 @@ import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
-import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public class BrowserToolbar extends ToolBar implements StateListener {
-	
+
 	private GuiState guiState;
-	
+
 	private Button connectButton;
 	private Button disconnectButton;
 	private Button toParentDirButton;
@@ -46,11 +49,11 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button importDirectoryButton;
 	private Button exportButton;
 	private TextField search;
-	
+
 	public BrowserToolbar(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addStateListener(this);
-		
+
 		// connect button
 		Image connectImage = ImageResource.getImageResource().connectImage();
 		connectButton = new Button("", new ImageView(connectImage));
@@ -59,6 +62,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		connectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				connect();
 			}
 		});
@@ -70,6 +74,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		disconnectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				disconnect();
 			}
 		});
@@ -79,12 +84,13 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(new Separator(Orientation.VERTICAL));
 
 		// go to parent dir button
-		Image toParentDirImage = ImageResource.getImageResource().goToParentImage();
-		toParentDirButton = new Button("", new ImageView(
-				toParentDirImage));
+		Image toParentDirImage = ImageResource.getImageResource()
+				.goToParentImage();
+		toParentDirButton = new Button("", new ImageView(toParentDirImage));
 		toParentDirButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				toParentDir();
 			}
 		});
@@ -96,6 +102,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		goBackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				back();
 			}
 		});
@@ -104,11 +111,11 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		// go foreward button
 		Image goForewardDirImage = ImageResource.getImageResource()
 				.goForwardImage();
-		goForewardButton = new Button("", new ImageView(
-				goForewardDirImage));
+		goForewardButton = new Button("", new ImageView(goForewardDirImage));
 		goForewardButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				forward();
 			}
 		});
@@ -120,7 +127,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		deleteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				delete();
+				event.consume();
+				guiState.delete();
 			}
 		});
 		super.getItems().add(deleteButton);
@@ -130,6 +138,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				importFiles();
 			}
 		});
@@ -140,11 +149,12 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		importDirectoryButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
+				event.consume();
 				importDirectory();
 			}
 		});
 		super.getItems().add(importDirectoryButton);
-		
+
 		// export button
 		exportButton = new Button("export");
 		super.getItems().add(exportButton);
@@ -154,61 +164,106 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		search.setPromptText("Search");
 		super.getItems().add(search);
 		stateChanged(null, guiState.getState());
+
+		// add shortcuts for toolbar buttons
+		final ObservableMap<KeyCombination, Runnable> accelerators = guiState
+				.getPrimaryStage().getScene().getAccelerators();
+
+		accelerators.put(new KeyCodeCombination(KeyCode.LEFT,
+				KeyCombination.ALT_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				back();
+			}
+		});
+
+		accelerators.put(new KeyCodeCombination(KeyCode.RIGHT,
+				KeyCombination.ALT_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				forward();
+			}
+		});
+
+		accelerators.put(new KeyCodeCombination(KeyCode.UP,
+				KeyCombination.ALT_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				toParentDir();
+			}
+		});
+
+		accelerators.put(new KeyCodeCombination(KeyCode.O,
+				KeyCombination.CONTROL_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				connect();
+			}
+		});
+
+		accelerators.put(new KeyCodeCombination(KeyCode.D,
+				KeyCombination.CONTROL_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				disconnect();
+			}
+		});
 	}
 
-	protected void delete() {
-		Entry[] selectedEntries = guiState.getSelectedEntries();
-		Task<Void> deleteEntriesTask = guiState.getController().createDeleteEntriesTask(selectedEntries);
-		new TaskDialog(guiState, deleteEntriesTask);
-	}
-
-	protected void importFiles () {
+	protected void importFiles() {
 		FileChooser fileChooser = new FileChooser();
-		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState.getPrimaryStage());
+		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState
+				.getPrimaryStage());
 		if (importFiles != null && !importFiles.isEmpty()) {
 			List<String> sourcePaths = new LinkedList<String>();
 			List<Path> destinationPath = new LinkedList<Path>();
 			for (File file : importFiles) {
 				sourcePaths.add(file.getAbsolutePath());
-				destinationPath.add(new Path(guiState.getCurrentDirectory().getPath(), file.getName()));
+				destinationPath.add(new Path(guiState.getCurrentDirectory()
+						.getPath(), file.getName()));
 			}
-			Task<Void> importTask = guiState.getController().createImportTask(sourcePaths.toArray(
-				new String[sourcePaths.size()]), destinationPath.toArray(new Path[destinationPath.size()]));
+			Task<Void> importTask = guiState.getController().createImportTask(
+					sourcePaths.toArray(new String[sourcePaths.size()]),
+					destinationPath.toArray(new Path[destinationPath.size()]));
 			new TaskDialog(guiState, importTask);
 		}
 	}
-	
-	protected void importDirectory () {
+
+	protected void importDirectory() {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
-		File importFiles = directoryChooser.showDialog(guiState.getPrimaryStage());
+		File importFiles = directoryChooser.showDialog(guiState
+				.getPrimaryStage());
 		if (importFiles != null) {
 			Task<Void> importTask = guiState.getController().createImportTask(
-					new String [] {importFiles.getAbsolutePath()}, new Path[] {
-							new Path(guiState.getCurrentDirectory().getPath(), importFiles.getName())});
+					new String[] { importFiles.getAbsolutePath() },
+					new Path[] { new Path(guiState.getCurrentDirectory()
+							.getPath(), importFiles.getName()) });
 			new TaskDialog(guiState, importTask);
 		}
 	}
-	
-	protected void forward () {
+
+	protected void forward() {
 		guiState.forwardToNextDirectoy();
 	}
-	
-	protected void back () {
+
+	protected void back() {
 		guiState.backToPreviousDirectory();
 	}
-	
-	protected void toParentDir () {
-		Path parentPath = guiState.getCurrentDirectory().getPath().getParentPath();
+
+	protected void toParentDir() {
+		Path parentPath = guiState.getCurrentDirectory().getPath()
+				.getParentPath();
 		if (parentPath != null) {
 			guiState.setCurrentDirectory(new Directory(parentPath));
 		}
 	}
-	
-	protected void connect () {
+
+	protected void connect() {
 		String uri = getUserInputOnDiskLocation();
 		if (uri != null) {
 			try {
-				final TaskController controller = TaskControllerFactory.getController(new URI(uri));
+				final TaskController controller = TaskControllerFactory
+						.getController(new URI(uri));
 				Task<Void> connectTask = controller.createConnectTask(true);
 				new TaskDialog(guiState, connectTask) {
 					protected void succeeded(WorkerStateEvent event) {
@@ -223,9 +278,10 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		}
 	}
-	
-	protected void disconnect () {
-		Task<Void> disconnectTask = guiState.getController().createDisconnectTask();
+
+	protected void disconnect() {
+		Task<Void> disconnectTask = guiState.getController()
+				.createDisconnectTask();
 		new TaskDialog(guiState, disconnectTask) {
 			@Override
 			protected void succeeded(WorkerStateEvent event) {
@@ -235,7 +291,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		};
 	}
-	
+
 	protected String getUserInputOnDiskLocation() {
 		RemoteOpenDiskDialog dialog = new RemoteOpenDiskDialog();
 		dialog.showAndWait();

@@ -15,6 +15,9 @@ public class Main extends Application {
 		scene.getStylesheets().add("/ch/se/inf/ethz/jcd/batman/browser/main.css");
 
 		primaryStage.setScene(scene);
+		
+		ui.initialize();
+		
 		primaryStage.show();
 	}
 

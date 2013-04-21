@@ -166,6 +166,13 @@ public class GuiState {
 		}
 	}
 	
+	public void delete() {
+		Entry[] selectedEntries = getSelectedEntries();
+		Task<Void> deleteEntriesTask = getController()
+				.createDeleteEntriesTask(selectedEntries);
+		new TaskDialog(this, deleteEntriesTask);
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		scheduler.shutdownNow();
