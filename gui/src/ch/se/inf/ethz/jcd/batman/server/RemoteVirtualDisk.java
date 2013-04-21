@@ -4,10 +4,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
@@ -18,6 +20,8 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.search.Settings;
+import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 
 /**
  * Implementation of the IRemoteVirtualDisk. An instance of this class is used
@@ -31,11 +35,10 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	private final Map<Integer, IVirtualDisk> diskMap;
 	private int nextId = Integer.MIN_VALUE;
-	
+
 	public RemoteVirtualDisk() {
 		diskMap = new HashMap<Integer, IVirtualDisk>();
 	}
-
 
 	@Override
 	public int createDisk(Path path) throws RemoteException,
@@ -316,13 +319,59 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
+	public Entry[] search(int id, String term, boolean isRegex,
+			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
+			boolean checkChildren, Entry[] parents)
+			throws RemoteException, VirtualDiskException {
+		IVirtualDisk disk = getDisk(id);
+
+		try {
+			Collection<VDiskFile> parentFiles = new LinkedList<>();
+			for (Entry parent : parents) {
+				parentFiles
+						.add(new VDiskFile(parent.getPath().getPath(), disk));
+			}
+
+			Settings settings = new Settings();
+			settings.setCaseSensitive(!isCaseSensitive);
+			settings.setCheckFiles(checkFiles);
+			settings.setCheckFolders(checkFolders);
+			settings.setCheckSubFolders(checkChildren);
+
+			List<VDiskFile> results = null;
+			if (isRegex) {
+				results = VirtualDiskSearch.searchName(settings,
+						Pattern.compile(term),
+						parentFiles.toArray(new VDiskFile[0]));
+			} else {
+				results = VirtualDiskSearch.searchName(settings, term,
+						parentFiles.toArray(new VDiskFile[0]));
+			}
+
+			List<Entry> resultEntries = new LinkedList<>();
+			for (VDiskFile result : results) {
+				if (result.isFile()) {
+					resultEntries.add(new File(new Path(result.getPath()),
+							result.lastModified(), result.getFileSize()));
+				} else if (result.isDirectory()) {
+					resultEntries.add(new Directory(new Path(result.getPath()),
+							result.lastModified()));
+				}
+			}
+			
+			return resultEntries.toArray(new Entry[0]);
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not execute search", e);
+		}
+	}
+
+	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {
 			disk.close();
 		}
 		super.finalize();
 	}
-
 
 	private boolean isVirtualDisk(java.io.File diskFile) {
 		if (!diskFile.exists()) {
@@ -338,10 +387,9 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		} catch (IOException e) {
 			return false;
 		}
-	
+
 		return Arrays.equals(IVirtualDisk.MAGIC_NUMBER, readMagicNumber);
 	}
-
 
 	private void addAllSubEntrysToList(VDiskFile directory,
 			List<Entry> entryList) throws IOException {
@@ -353,11 +401,10 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 
-
 	private int getNextId() {
 		return nextId++;
 	}
-	
+
 	private IVirtualDisk getDisk(int id) {
 		IVirtualDisk disk = diskMap.get(id);
 		if (disk == null) {
@@ -365,16 +412,16 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 		return disk;
 	}
-	
+
 	private File createFileModel(VDiskFile entry) {
 		return new File(new Path(entry.getPath()), entry.lastModified(),
 				entry.getFileSize());
 	}
-	
+
 	private Directory createDirectoryModel(VDiskFile entry) {
 		return new Directory(new Path(entry.getPath()), entry.lastModified());
 	}
-	
+
 	private Entry createModel(VDiskFile entry) {
 		if (entry.isFile()) {
 			return createFileModel(entry);

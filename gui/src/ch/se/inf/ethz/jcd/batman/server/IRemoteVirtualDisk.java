@@ -144,8 +144,8 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void createDirectory(int id, Directory directory)
-			throws RemoteException, VirtualDiskException;
+	void createDirectory(int id, Directory directory) throws RemoteException,
+			VirtualDiskException;
 
 	/**
 	 * Deletes a virtual disk entry (file or directory).
@@ -274,5 +274,31 @@ public interface IRemoteVirtualDisk extends Remote {
 	 */
 	Entry[] getEntries(int id, Path[] entryPaths) throws RemoteException,
 			VirtualDiskException;
+
+	/**
+	 * Searches for the given term inside the given parents.
+	 * 
+	 * @param id
+	 *            the ID representing a loaded virtual disk
+	 * @param term
+	 *            the search term
+	 * @param isRegex
+	 *            true if term is a regex, otherwise false
+	 * @param checkFiles
+	 *            true if files should be checked
+	 * @param checkFolders
+	 *            true if folders should be checked
+	 * @param isCaseSensitive
+	 *            true if term is case sensitive
+	 * @param checkChildren
+	 *            true if children and subfolders should be checked
+	 * @param parents
+	 *            list of parents to search in
+	 * @return array of found entries
+	 */
+	Entry[] search(int id, String term, boolean isRegex,
+			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
+			boolean checkChildren, Entry[] parents)
+			throws RemoteException, VirtualDiskException;
 
 }

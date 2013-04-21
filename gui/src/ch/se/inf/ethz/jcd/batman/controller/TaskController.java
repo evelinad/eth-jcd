@@ -1,11 +1,11 @@
 package ch.se.inf.ethz.jcd.batman.controller;
 
+import javafx.concurrent.Task;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
 import ch.se.inf.ethz.jcd.batman.model.Path;
-import javafx.concurrent.Task;
 
 /**
  * Controller (as in MVC-Pattern) interface for a virtual disk file browser.
@@ -163,4 +163,27 @@ public interface TaskController {
 	 * @return task to execute the disconnect
 	 */
 	Task<Void> createDisconnectTask();
+
+	/**
+	 * Creates a task to search for the given term inside the given parents.
+	 * 
+	 * @param term
+	 *            the search term
+	 * @param isRegex
+	 *            true if term is a regex, otherwise false
+	 * @param checkFiles
+	 *            true if files should be checked
+	 * @param checkFolders
+	 *            true if folders should be checked
+	 * @param isCaseSensitive
+	 *            true if term is case sensitive
+	 * @param checkChildren
+	 *            true if children and subfolders should be checked
+	 * @param parents
+	 *            list of parents to search in
+	 * @return task to execute the search
+	 */
+	Task<Entry[]> createSearchTask(String term, boolean isRegex,
+			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
+			boolean checkChildren, Entry... parents);
 }

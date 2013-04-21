@@ -19,6 +19,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -33,7 +34,9 @@ import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
+import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
+import ch.se.inf.ethz.jcd.batman.model.SearchDirectory;
 
 public class BrowserToolbar extends ToolBar implements StateListener {
 
@@ -162,8 +165,17 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		// search field
 		search = new TextField();
 		search.setPromptText("Search");
+		search.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				// start search
+				if (event.getCode() == KeyCode.ENTER) {
+					event.consume();
+					search();
+				}
+			}
+		});
 		super.getItems().add(search);
-		stateChanged(null, guiState.getState());
 
 		// add shortcuts for toolbar buttons
 		final ObservableMap<KeyCombination, Runnable> accelerators = guiState
@@ -208,6 +220,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				disconnect();
 			}
 		});
+
+		stateChanged(null, guiState.getState());
 	}
 
 	protected void importFiles() {
@@ -300,6 +314,21 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			return dialog.getUserInput();
 		}
 		return null;
+	}
+
+	protected void search() {
+		final String searchTerm = search.getText();
+		final Task<Entry[]> task = guiState.getController().createSearchTask(
+				searchTerm, false, true, true, false, true,
+				guiState.getCurrentDirectory());
+
+		new TaskDialog(guiState, task) {
+			protected void succeeded(WorkerStateEvent event) {
+				SearchDirectory searchDir = new SearchDirectory(
+						task.getValue(), searchTerm);
+				guiState.setCurrentDirectory(searchDir);
+			};
+		};
 	}
 
 	@Override

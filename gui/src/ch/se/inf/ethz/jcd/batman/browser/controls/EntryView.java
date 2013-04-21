@@ -25,6 +25,7 @@ import ch.se.inf.ethz.jcd.batman.browser.util.HostUtil;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
+import ch.se.inf.ethz.jcd.batman.model.SearchDirectory;
 
 public class EntryView extends TableView<Entry> implements DirectoryListener,
 		DiskEntryListener {
@@ -170,13 +171,18 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		this.directory = directory;
 		clear();
 		if (directory != null) {
-			final Task<Entry[]> entriesTask = guiState.getController()
-					.createDirectoryEntriesTask(directory);
-			new TaskDialog(guiState, entriesTask) {
-				protected void succeeded(WorkerStateEvent event) {
-					setEntries(entriesTask.getValue());
-				}
-			};
+			if (directory instanceof SearchDirectory) {
+				SearchDirectory searchDir = (SearchDirectory) directory;
+				setEntries(searchDir.getResults());
+			} else {
+				final Task<Entry[]> entriesTask = guiState.getController()
+						.createDirectoryEntriesTask(directory);
+				new TaskDialog(guiState, entriesTask) {
+					protected void succeeded(WorkerStateEvent event) {
+						setEntries(entriesTask.getValue());
+					}
+				};
+			}
 		}
 
 		if (entryList.size() <= 0) {
