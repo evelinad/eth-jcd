@@ -9,7 +9,7 @@
  */
 
 .breadcrumbs {
-  -fx-padding: 0 50 0 0;
+  -fx-padding: 0 0 0 0;
 }
 
 .breadcrumbs .item {
@@ -19,7 +19,7 @@
   -fx-border-color: null;
   -fx-border-insets: 0;
   -fx-border-image-source: url("images/crumb.png");
-  -fx-border-image-slice: 1 10 1 10;
-  -fx-border-image-width: 1 10 1 10;
+  -fx-border-image-slice: 1 5 1 5;
+  -fx-border-image-width: 1 5 1 5;
   -fx-border-image-repeat: stretch;
 }
