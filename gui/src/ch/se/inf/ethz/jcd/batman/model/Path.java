@@ -117,7 +117,7 @@ public class Path implements Serializable {
 	public boolean equals(Object obj) {
 		if (obj instanceof Path) {
 			Path entry = (Path) obj;
-			return path.equals(entry.path);
+			return getPath().equals(entry.getPath());
 		}
 		return false;
 	}
@@ -150,6 +150,10 @@ public class Path implements Serializable {
 		};
 	}
 
+	public String[] split() {
+		return path.get().split(Path.SEPERATOR);
+	}
+	
 	public boolean pathEquals(Path path) {
 		return getPath().equals(path.getPath());
 	}
