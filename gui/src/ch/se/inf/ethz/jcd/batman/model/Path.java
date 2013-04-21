@@ -157,4 +157,8 @@ public class Path implements Serializable {
 	public boolean pathEquals(Path path) {
 		return getPath().equals(path.getPath());
 	}
+
+	public Path getRelativePath(Path path) {
+		return new Path(getPath().substring(path.getPath().length()));
+	}
 }

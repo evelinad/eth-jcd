@@ -1,6 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.controller.remote;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.rmi.NotBoundException;
@@ -68,7 +69,7 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	private static final String SERVICE_NAME = VirtualDiskServer.SERVICE_NAME;
-	private static final int BUFFER_SIZE = 4 * 1024;
+	private static final int BUFFER_SIZE = 32 * 1024;
 
 	private final Comparator<Entry> fileBeforeDirectoryComp;
 	private final List<DiskEntryListener> diskEntryListener;
@@ -273,6 +274,9 @@ public class RemoteTaskController implements TaskController {
 					subEntries.addAll(Arrays.asList(remoteDisk
 							.getAllChildrenBelow(diskId, entries[i])));
 					subEntries.add(entries[i]);
+					if (isCancelled()) {
+						return null;
+					}
 				}
 
 				int totalEntries = subEntries.size();
@@ -286,6 +290,9 @@ public class RemoteTaskController implements TaskController {
 					entryDeleted(entry);
 					currentEntryNumber++;
 					updateProgress(currentEntryNumber, totalEntries);
+					if (isCancelled()) {
+						return null;
+					}
 				}
 				return null;
 			}
@@ -308,7 +315,7 @@ public class RemoteTaskController implements TaskController {
 				checkIsConnected();
 				updateTitle("Moving entries");
 				// check if destination paths not already exist
-				checkEntriesAlreadyExist(destinationPaths);
+				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				// move entries
 				int totalEntriesToMove = sourceEntries.length;
 				for (int i = 0; i < totalEntriesToMove; i++) {
@@ -329,6 +336,9 @@ public class RemoteTaskController implements TaskController {
 						newEntry = new Entry(newPath, oldEntry.getTimestamp());
 					}
 					entryChanged(oldEntry, newEntry);
+					if (isCancelled()) {
+						return null;
+					}
 				}
 				updateProgress(totalEntriesToMove, totalEntriesToMove);
 				return null;
@@ -337,6 +347,10 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
+	private String getFilePathAsDiskPath(java.io.File file) {
+		return file.getPath().replaceAll("\\\\", "/");
+	}
+	
 	@Override
 	public Task<Void> createImportTask(final String[] sourcePaths,
 			final Path[] destinationPaths) {
@@ -346,10 +360,6 @@ public class RemoteTaskController implements TaskController {
 					"Source and destination arrays have to be the same size");
 		}
 		return new Task<Void>() {
-
-			private String getFilePath(java.io.File file) {
-				return file.getPath().replaceAll("\\\\", "/");
-			}
 
 			private void importFile(java.io.File file, String destination)
 					throws RemoteException, VirtualDiskException, IOException {
@@ -400,8 +410,9 @@ public class RemoteTaskController implements TaskController {
 				checkIsConnected();
 				updateTitle("Import entries");
 				// check if destination paths not already exist
-				checkEntriesAlreadyExist(destinationPaths);
+				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				// check how many and which files need to be imported
+				updateMessage("Discovering items");
 				@SuppressWarnings("unchecked")
 				List<java.io.File>[] importFiles = new List[sourcePaths.length];
 				long totalEntriesToImport = 0;
@@ -410,20 +421,27 @@ public class RemoteTaskController implements TaskController {
 					getAllSubEntries(new java.io.File(sourcePaths[i]),
 							importFiles[i]);
 					totalEntriesToImport += importFiles[i].size();
+					if (isCancelled()) {
+						return null;
+					}
 				}
+				
 				// import all entries
 				long entriesImported = 0;
 				for (int i = 0; i < sourcePaths.length; i++) {
 					java.io.File baseFile = importFiles[i].get(0);
-					String baseFilePath = getFilePath(baseFile);
+					String baseFilePath = getFilePathAsDiskPath(baseFile);
 					for (java.io.File file : importFiles[i]) {
-						String entryPath = getFilePath(file);
+						String entryPath = getFilePathAsDiskPath(file);
 						String destination = destinationPaths[i]
 								+ entryPath.substring(baseFilePath.length(),
 										entryPath.length());
 						updateProgress(entriesImported, totalEntriesToImport);
 						importFile(file, destination);
 						entriesImported++;
+						if (isCancelled()) {
+							return null;
+						}
 					}
 				}
 				updateProgress(entriesImported, totalEntriesToImport);
@@ -432,18 +450,83 @@ public class RemoteTaskController implements TaskController {
 
 		};
 	}
-
+	
 	@Override
 	public Task<Void> createExportTask(final Entry[] sourceEntries,
 			final String[] destinationPaths) {
 		checkIsConnected();
 		return new Task<Void>() {
-
+			
+			private void exportFile(Entry entry, String destination) throws RemoteException, IOException {
+				updateMessage("Exporting entry " + entry.getPath() + " to "
+						+ destination);
+				if (entry instanceof Directory) {
+					java.io.File directory = new java.io.File(destination);
+					directory.mkdir();
+				} else if (entry instanceof File) {
+					java.io.File hostFile = new java.io.File(destination);
+					FileOutputStream outputStream = null;
+					try {
+						hostFile.createNewFile();
+						outputStream = new FileOutputStream(hostFile);
+						File diskFile = (File) entry;
+						long bytesToRead = diskFile.getSize();
+						long bytesRead = 0;
+						while (bytesToRead > 0) {
+							byte[] buffer = remoteDisk.read(diskId, diskFile, bytesRead, (int) Math.min(bytesToRead, BUFFER_SIZE));
+							outputStream.write(buffer);
+							bytesToRead -= buffer.length;
+							bytesRead += buffer.length;
+						}
+					} finally {
+						if (outputStream != null) {
+							outputStream.close();
+						}
+					}
+			
+				}
+			}
+			
 			@Override
 			protected Void call() throws Exception {
 				checkIsConnected();
-				// TODO
-				throw new UnsupportedOperationException();
+				updateTitle("Export entries");
+				// check if destination paths not already exist
+				checkEntriesAlreadyExistOnHost(destinationPaths);
+				// check how many and which files need to be exported
+				updateMessage("Discovering items");
+				@SuppressWarnings("unchecked")
+				List<Entry>[] exportFiles = new List[sourceEntries.length];
+				long totalEntriesToImport = 0;
+				for (int i = 0; i < sourceEntries.length; i++) {
+					exportFiles[i] = new LinkedList<Entry>();
+					exportFiles[i].add(sourceEntries[i]);
+					exportFiles[i].addAll(Arrays.asList(remoteDisk.getAllChildrenBelow(diskId, sourceEntries[i])));
+					totalEntriesToImport += exportFiles[i].size();
+					if (isCancelled()) {
+						return null;
+					}
+				}
+				
+				// export all entries
+				long entriesExported = 0;
+				for (int i = 0; i < sourceEntries.length; i++) {
+					Entry baseEntry = exportFiles[i].get(0);
+					System.out.println("BaseEntry: " + baseEntry);
+					System.out.println("Destination: " + destinationPaths[i]);
+					for (Entry entry : exportFiles[i]) {
+						String destination = destinationPaths[i]
+								+ entry.getPath().getRelativePath(baseEntry.getPath()).getPath();
+						updateProgress(entriesExported, totalEntriesToImport);
+						exportFile(entry, destination);
+						entriesExported++;
+						if (isCancelled()) {
+							return null;
+						}
+					}
+				}
+				updateProgress(entriesExported, totalEntriesToImport);
+				return null;
 			}
 
 		};
@@ -567,7 +650,18 @@ public class RemoteTaskController implements TaskController {
 		}
 	}
 
-	private void checkEntriesAlreadyExist(final Path[] entries)
+	private void checkEntriesAlreadyExistOnHost(final String[] entries)
+			throws VirtualDiskException, RemoteException {
+		for (String entry : entries) {
+			java.io.File file = new java.io.File(entry);
+			if (file.exists()) {
+				throw new VirtualDiskException("File "
+						+ entry + " already exists");
+			}
+		}
+	}
+	
+	private void checkEntriesAlreadyExistOnDisk(final Path[] entries)
 			throws VirtualDiskException, RemoteException {
 		boolean[] entriesExist = remoteDisk.entriesExist(diskId, entries);
 		for (int i = 0; i < entries.length; i++) {
