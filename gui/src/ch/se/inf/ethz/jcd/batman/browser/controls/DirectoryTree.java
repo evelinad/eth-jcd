@@ -10,6 +10,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
+import ch.se.inf.ethz.jcd.batman.browser.DirectoryListener;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.State;
@@ -20,7 +21,7 @@ import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 
-public class DirectoryTree extends TreeView<String> implements DiskEntryListener, StateListener {
+public class DirectoryTree extends TreeView<String> implements DiskEntryListener, StateListener, DirectoryListener {
 
 	protected static String getPath(TreeItem<String> treeItem) {
 		if (treeItem == null) {
@@ -44,12 +45,16 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 			super(value, new ImageView(ImageResource.getImageResource().folderImage()));
 		}
 		
-        private boolean isFirstTimeChildren = true;
-         
+        private boolean hasChildrenLoaded = false;
+        
+        public boolean hasChildrenLoaded () {
+        	return hasChildrenLoaded;
+        }
+        
         @Override
         public ObservableList<TreeItem<String>> getChildren() {
-            if (isFirstTimeChildren) {
-                isFirstTimeChildren = false;
+            if (!hasChildrenLoaded) {
+                hasChildrenLoaded = true;
                 super.getChildren().setAll(buildChildren(this));
             }
             return super.getChildren();
@@ -60,7 +65,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
             return (getChildren() == null) ? true : getChildren().isEmpty();
         }
         
-        private ObservableList<TreeItem<String>> buildChildren(TreeItem<String> treeItem) {
+        private ObservableList<TreeItem<String>> buildChildren(final TreeItem<String> treeItem) {
         	Path path = new Path(getPath(treeItem));
         	final Task<Entry[]> entriesTask = guiState.getController().createDirectoryEntriesTask(new Directory(path));
         	final ObservableList<TreeItem<String>> childDirectories = FXCollections.observableArrayList();
@@ -70,7 +75,11 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
         			if (entries != null) {
         				for (Entry entry : entries) {
         					if (entry instanceof Directory) {
+        						//because the selection changes on adding new children,
+        						//the selection has to be set back after the insert
+        						//TODO TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
         						getChildren().add(new DirectoryTreeItem(entry.getPath().getName()));
+        						//getSelectionModel().select(selectedItem);
         					}
         				}
         			}
@@ -87,7 +96,8 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 		this.guiState = guiState;
 		guiState.addStateListener(this);
 		guiState.addDiskEntryListener(this);
-		
+		guiState.addDirectoryListener(this);
+
 		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<String>>() {
 
@@ -98,7 +108,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 				if (newValue != null) {
 					Directory currentDirectory = guiState.getCurrentDirectory();
 					Path itemPath = new Path(getPath(newValue));
-					if (!currentDirectory.getPath().equals(itemPath)) {
+					if (currentDirectory != null && !currentDirectory.getPath().equals(itemPath)) {
 						guiState.setCurrentDirectory(new Directory(itemPath));
 					}
 				}
@@ -106,20 +116,83 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
         });
 	}
 
+	public void addEntry (Entry entry, DirectoryTreeItem newEntry) {
+		if (!(entry instanceof Directory)) {
+			return;
+		}
+		String[] split = entry.getPath().split();
+		if (split == null || split.length < 2) {
+			return;
+		}
+		
+		TreeItem<String> currentItem = root;
+		for (int i = 1; i < split.length - 1; i++) {
+			boolean found = false;
+			if (currentItem != null && ((DirectoryTreeItem) currentItem).hasChildrenLoaded()) {
+				for (TreeItem<String> child : currentItem.getChildren()) {
+					if (child.getValue().equals(split[i])) {
+						currentItem = child;
+						found = true;
+					}
+				}
+			}
+			if (!found) {
+				currentItem = null;
+			}
+		}
+		if (currentItem != null) {
+			currentItem.getChildren().add(newEntry);
+		}
+	}
+	
 	@Override
 	public void entryAdded(Entry entry) {
-		// TODO Auto-generated method stub
+		addEntry(entry, new DirectoryTreeItem(entry.getPath().getName()));
 	}
 
+	private TreeItem<String> deleteEntry (Entry entry) {
+		if (!(entry instanceof Directory)) {
+			return null;
+		}
+		String[] split = entry.getPath().split();
+		if (split == null || split.length < 2) {
+			return null;
+		}
+		
+		TreeItem<String> currentItem = root;
+		for (int i = 1; i < split.length; i++) {
+			boolean found = false;
+			if (currentItem != null && ((DirectoryTreeItem) currentItem).hasChildrenLoaded()) {
+				for (TreeItem<String> child : currentItem.getChildren()) {
+					if (child.getValue().equals(split[i])) {
+						currentItem = child;
+						found = true;
+					}
+				}
+			}
+			if (!found) {
+				currentItem = null;
+			}
+		}
+		if (currentItem != null) {
+			currentItem.getParent().getChildren().remove(currentItem);
+		}
+		return currentItem;
+	}
+	
 	@Override
 	public void entryDeleted(Entry entry) {
-		// TODO Auto-generated method stub
-		
+		deleteEntry(entry);
 	}
 
 	@Override
 	public void entryChanged(Entry oldEntry, Entry newEntry) {
-		// TODO Auto-generated method stub
+		TreeItem<String> deletedEntry = deleteEntry(oldEntry);
+		if (deletedEntry == null) {
+			addEntry(newEntry, new DirectoryTreeItem(newEntry.getPath().getName()));
+		} else {
+			addEntry(newEntry, (DirectoryTreeItem) deletedEntry);
+		}
 	}
 
 	private DirectoryTreeItem createRoot() {
@@ -133,8 +206,40 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 			setRoot(null);
 		} else if (newState == State.CONNECTED) {
 			root = createRoot();
-			setRoot(root);
 			root.setExpanded(true);
+			setRoot(root);
+		}
+	}
+
+	public void setSelected(TreeItem<String> item) {
+		getSelectionModel().select(item);
+	}
+	
+	@Override
+	public void directoryChanged(Directory directory) {
+		if (directory != null) {
+			String[] split = directory.getPath().split();
+			if (split == null || split.length < 2) {
+				setSelected(root);
+			}
+			TreeItem<String> currentItem = root;
+			for (int i = 1; i < split.length; i++) {
+				boolean found = false;
+				for (TreeItem<String> treeItem : currentItem.getChildren()) {
+					if (split[i].equals(treeItem.getValue())) {
+						currentItem = treeItem;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					currentItem = null;
+					break;
+				}
+			}
+			if (currentItem != null) {
+				setSelected(currentItem);
+			}
 		}
 	}
 	
