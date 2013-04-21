@@ -31,7 +31,8 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		});
 		getContainer().add(inputField, 1, 0);
 
-		Button okButton = new Button("OK");
+		Button okButton = new Button("Connect");
+		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -42,6 +43,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		getContainer().add(okButton, 0, 1);
 
 		Button cancelButton = new Button("Cancel");
+		cancelButton.setCancelButton(true);
 		cancelButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -51,6 +53,8 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 			}
 		});
 		getContainer().add(cancelButton, 1, 1);
+		
+		inputField.requestFocus();
 	}
 
 	public String getUserInput() {
