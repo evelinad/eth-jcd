@@ -406,17 +406,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	protected void search(final String term, final boolean isRegex,
 			final boolean checkFiles, final boolean checkFolders,
 			final boolean isCaseSensitive, final boolean checkChildren) {
-		final Task<Entry[]> task = guiState.getController().createSearchTask(
-				term, isRegex, checkFiles, checkFolders, isCaseSensitive,
-				checkChildren, guiState.getCurrentDirectory());
-
-		new TaskDialog(guiState, task) {
-			protected void succeeded(WorkerStateEvent event) {
-				SearchDirectory searchDir = new SearchDirectory(
-						task.getValue(), term);
-				guiState.setCurrentDirectory(searchDir);
-			};
-		};
+		SearchDirectory search = new SearchDirectory(guiState.getCurrentDirectory().getPath(), term, isRegex, checkFiles, checkFolders, isCaseSensitive, checkChildren);
+		guiState.setCurrentDirectory(search);
 	}
 
 	@Override

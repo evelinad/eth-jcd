@@ -172,8 +172,15 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		clear();
 		if (directory != null) {
 			if (directory instanceof SearchDirectory) {
-				SearchDirectory searchDir = (SearchDirectory) directory;
-				setEntries(searchDir.getResults());
+				SearchDirectory search = (SearchDirectory) directory;
+				final Task<Entry[]> searchTask = guiState.getController().createSearchTask(
+						search.getTerm(), search.isRegex(), search.isCheckFiles(), search.isCheckFolders(), 
+						search.isCaseSensitive(), search.isCheckChildren(), new Directory(search.getPath()));
+				new TaskDialog(guiState, searchTask) {
+					protected void succeeded(WorkerStateEvent event) {
+						setEntries(searchTask.getValue());
+					}
+				};
 			} else {
 				final Task<Entry[]> entriesTask = guiState.getController()
 						.createDirectoryEntriesTask(directory);
