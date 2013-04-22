@@ -1,10 +1,14 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
@@ -29,32 +33,53 @@ public class NameCell extends EntryCell<Entry, Entry> {
     @Override
     public void startEdit() {
     	if (!isEmpty()) {
-            editingItem = getItem();
-    		super.startEdit();
+    		editingItem = getItem();
             createTextField();
+    		super.startEdit();
             setText(null);
             setGraphic(textField);
-            textField.selectAll();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    //textField.requestFocus();
+                    //textField.end();
+                    //textField.selectAll();
+                }
+            });
         }
     }
     
     @Override
     public void cancelEdit() {
+    	textField = null;
     	super.cancelEdit();
         createContent(getItem());
     }
 
     private void createTextField() {
-        textField = new TextField(getName(getItem()));
+    	textField = new TextField(getName(getItem()));
         textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
+        textField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ENTER && textField != null) {
+					Entry clone = (Entry) editingItem.clone();
+	                clone.getPath().changeName(textField.getText());
+	                commitEdit(clone);
+	            	event.consume();
+				} else if (event.getCode() == KeyCode.ESCAPE && textField != null) {
+                    cancelEdit();
+				}
+			}
+		});
         textField.focusedProperty().addListener(new ChangeListener<Boolean>(){
             @Override
-            public void changed(ObservableValue<? extends Boolean> arg0, 
-                Boolean arg1, Boolean arg2) {
-                if (!arg2) {
+            public void changed(ObservableValue<? extends Boolean>  observable, Boolean oldValue, Boolean newValue) {
+            	if (!newValue && textField != null) {
                 	Entry clone = (Entry) editingItem.clone();
                     clone.getPath().changeName(textField.getText());
-                	commitEdit(clone);
+                    commitEdit(clone);
                 }
             }
         });
@@ -63,12 +88,14 @@ public class NameCell extends EntryCell<Entry, Entry> {
     @Override
     public void commitEdit(Entry newValue) {
     	super.commitEdit(newValue);
+        textField = null;
     	if (!newValue.getPath().equals(editingItem.getPath())) {
 		    Entry[] sourceEntries = new Entry[] {editingItem};
 			Path[] destinationPaths = new Path[] {newValue.getPath()};
 			Task<Void> moveTask = guiState.getController().createMoveTask(sourceEntries, destinationPaths);
 			new TaskDialog(guiState, moveTask);
     	}
+    	createContent(editingItem);
     }
     
 	@Override
@@ -78,7 +105,6 @@ public class NameCell extends EntryCell<Entry, Entry> {
 			setText(null);
 			setGraphic(null);
 		} else {
-			setItem(item);
 			if (isEditing()) {
                 if (textField != null) {
                     textField.setText(getName(item));
