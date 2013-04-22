@@ -256,6 +256,24 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 										event.consume();
 										disconnect();
 									}
+
+									if (event.getCode() == KeyCode.C
+											&& !copyButton.isDisabled()) {
+										event.consume();
+										guiState.copy();
+									}
+
+									if (event.getCode() == KeyCode.X
+											&& !cutButton.isDisabled()) {
+										event.consume();
+										guiState.cut();
+									}
+
+									if (event.getCode() == KeyCode.V
+											&& !pasteButton.isDisabled()) {
+										event.consume();
+										guiState.paste();
+									}
 								}
 
 								if (event.isAltDown()) {
