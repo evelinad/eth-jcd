@@ -12,6 +12,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
@@ -73,7 +74,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		nameColumn.setComparator(new Comparator<Entry>() {
 			@Override
 			public int compare(Entry o1, Entry o2) {
-				return o1.getPath().getName().compareTo(o2.getPath().getName());
+				return o1.getPath().getName().toLowerCase().compareTo(o2.getPath().getName().toLowerCase());
 			}
 		});
 		nameColumn.setEditable(true);
@@ -171,6 +172,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				}
 			}
 		});
+		getSortOrder().add(nameColumn);
+		nameColumn.setSortType(SortType.ASCENDING);
 	}
 
 	protected void clear() {
@@ -178,7 +181,18 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	}
 
 	protected void setEntries(Entry[] entries) {
+		TableColumn<Entry, ?> sortcolumn = null;
+        SortType st = null;
+        if (getSortOrder().size()>0) {
+            sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
+            st = sortcolumn.getSortType();
+        }
 		getItems().addAll(entries);
+		if (sortcolumn!=null) {
+            getSortOrder().add(sortcolumn);
+            sortcolumn.setSortType(st);
+            sortcolumn.setSortable(true); // This performs a sort
+        }
 	}
 
 	public void setDirectory(Directory directory) {
@@ -223,7 +237,21 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 	private boolean entryAddedImpl (Entry entry) {
 		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
+			//The observable list needs to be resorted after inserting
+			//A better solution will be available in a newer version
+			//-> http://stackoverflow.com/questions/13409350/javafx-tableview-insert-in-observablelist-when-column-sorting-is-active
+			TableColumn<Entry, ?> sortcolumn = null;
+	        SortType st = null;
+	        if (getSortOrder().size()>0) {
+	            sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
+	            st = sortcolumn.getSortType();
+	        }
 			getItems().add(entry);
+			if (sortcolumn!=null) {
+	            getSortOrder().add(sortcolumn);
+	            sortcolumn.setSortType(st);
+	            sortcolumn.setSortable(true); // This performs a sort
+	        }
 			return true;
 		}
 		return false;
