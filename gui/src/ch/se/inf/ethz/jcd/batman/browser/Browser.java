@@ -1,10 +1,12 @@
 package ch.se.inf.ethz.jcd.batman.browser;
 
+import javafx.event.EventHandler;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ch.se.inf.ethz.jcd.batman.browser.controls.BreadcrumbBar;
 import ch.se.inf.ethz.jcd.batman.browser.controls.BrowserToolbar;
 import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
@@ -29,6 +31,12 @@ public class Browser extends BorderPane {
 
 	public Browser(Stage primaryStage) {
 		guiState = new GuiState(primaryStage);
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent event) {
+				guiState.destroy();
+			}
+		});
 	}
 	
 	public void initialize() {
@@ -63,4 +71,12 @@ public class Browser extends BorderPane {
 		toolBar = new BrowserToolbar(guiState);
 		topBox.getChildren().add(toolBar);
 	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		guiState.destroy();
+		super.finalize();
+	}
+	
+	
 }
