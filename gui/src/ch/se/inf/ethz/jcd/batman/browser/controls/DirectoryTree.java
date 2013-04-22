@@ -49,16 +49,16 @@ public class DirectoryTree extends TreeView<String> implements
 					.folderImage()));
 		}
 
-		private boolean hasChildrenLoaded = false;
+		private boolean childrenLoaded = false;
 
 		public boolean hasChildrenLoaded() {
-			return hasChildrenLoaded;
+			return childrenLoaded;
 		}
 
 		@Override
 		public ObservableList<TreeItem<String>> getChildren() {
-			if (!hasChildrenLoaded) {
-				hasChildrenLoaded = true;
+			if (!childrenLoaded) {
+				childrenLoaded = true;
 				super.getChildren().setAll(buildChildren(this));
 			}
 			return super.getChildren();

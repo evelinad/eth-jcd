@@ -486,7 +486,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	}
 
 	@Override
-	public void stateChanged(State oldState, State newState) {
+	public final void stateChanged(State oldState, State newState) {
 		if (newState == State.DISCONNECTED) {
 			connectButton.setDisable(false);
 			disconnectButton.setDisable(true);
