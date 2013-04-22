@@ -3,6 +3,8 @@
 
 % add more packages if necessary
 \usepackage{xspace}
+\usepackage[os=win, mackeys=symbols]{menukeys}
+\usepackage{listings}
 %\usepackage{graphicx}
 %\usepackage{xcolor}
 %\usepackage{hyperref}
@@ -223,30 +225,117 @@ A good example of such stream decorations are our compression and encryption imp
 % --------------------------------------
 
 \section{VFS Browser}
+The VFS Browser allows to use the underlying virtual disk in a convenient way. This is achieved by implementing a Graphical User Interface (GUI) based on JavaFX that provides the user with a recognisable experience. To make the technical side a bit more interesting, we implemented the VFS Browser in a client-server-model.
 
-% TODO: Remove this line
-\textbf{[This section has to be completed by April 22nd.]}
-
-%TODO: Remove this text and replace it with actual content
-\emph{Give a short (1-2 paragraphs) description of what VFS Browser is.}
-
+Our main focus was to build a basic UI that is useable and shows off all important features. JavaFX does not provide as much control as for instance Swing does. Therefore there may be some rough corners we had to build workarounds for because of JavaFX's limitations. Overall our GUI should be easy to use for users familiar with Mac OSX's Finder or Windows' Explorer.
 
 \subsection{Requirements}
+\subsubsection{Platform requirement}
+We used JavaFX as our framework to create a desktop application.
 
-% TODO: Remove this text and replace it with actual content
-\emph{Describe which requirements (and possibly bonus requirements) you have implemented in this part. Give a quick description (1-2 sentences) of each requirement. List the software elements (classes and or functions) that are mainly involved in implementing each requirement.}
+\subsubsection{Support all operations from VFS core}
+We implemented all operations required by Part 1. This is best seen inside the two interfaces \mono{.browser.server.IRemoteVirtualDisk} and \mono{.controller.TaskController}. The first one is our interface between the client and server. The second interface is the controller (as defined in the MVC Design Pattern) used by the view to execute commands initiated by the user.
 
+\subsubsection{Single and Multiple Selection}
+It is possible to execute disk operations on a single disk entry or a list of entries. This can be seen at multiple locations inside our source code. However, the central method involved in this feature is \mono{.browser.GuiState.getSelectedEntries()}.
+
+\subsubsection{Support Keyboard Navigation}
+We implemented the following shortcuts. All listed commands are also available as toolbar buttons.
+\begin{itemize}
+    \item inside the file table:
+    \begin{itemize}
+        \item \keys{$\leftarrow$} go back in history
+        \item \keys{$\rightarrow$} if a folder is selected, go inside it
+        \item \keys{$\uparrow$} go to parent folder
+        \item \keys{\enter} if a file is selected, open it with default application (tested for Mac OSX and Windows)
+        \item \keys{\ctrl + R} rename selected file
+    \end{itemize}
+    \item in general:
+    \begin{itemize}
+        \item \keys{\Alt + $\leftarrow$} go back in history
+        \item \keys{\Alt + $\rightarrow$} go forward in history
+        \item \keys{\Alt + $\uparrow$} go to parent folder
+        \item \keys{\ctrl + O} open "Open Disk" dialog
+        \item \keys{\ctrl + D} disconnect disk
+        \item \keys{\ctrl + C} copy selected disk entries
+        \item \keys{\ctrl + X} cut selected disk entries
+        \item \keys{\ctrl + V} paste copied/cut entries into current folder
+        \item \keys{\ctrl + F} opens the search dialog for the current folder
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Mouse Navigation}
+As stated above, all keyboard shortcuts can also be executed by clicking on the corresponding toolbar button.
+
+\subsubsection{File-Name Search}
+We implemented two kinds of search over disk entry (file or folder) names. The first one is working with simple strings and checks if the given search term is part of a disk entry name. The second one allows to use Regular Expressions (RegEx).
+
+Both searches provide the following settings:
+\begin{itemize}
+    \item check file names (yes/no)
+    \item check directory names (yes/no)
+    \item case sensitive / case insensitive search
+    \item search inside subfolders (yes/no)
+\end{itemize}
+
+Our GUI allows to search directly out of the toolbar. This search sets the settings to a useful default. Otherwise the user can click on ``Advanced Search" and set all the available settings to his choice.
+
+The Search itself is implemented inside \mono{.vdisk.search.VirtualDiskSearch}.
+
+\subsubsection{Bonus: Responsive UI}
+All operations are wrapped inside a \mono{javafx.concurrent.Task<V>} and can therefore be executed concurrently. We use this to keep the GUI responsive while operations are executed.
+
+For now we only execute one task at a time. Because of that we have a modal dialog that shows up with a message and a progress bar to give the user feedback about the current task. This dialog only shows up, if the task takes more than five milliseconds. Otherwise the dialog is not visible as the user won't notice the short delay.
+
+The implementation of the tasks can be viewed in our remote controller \mono{.browser.controller.remote.RemoteTaskController}.
+
+\subsubsection{Bonus: Advanced Search}
+As already described in ``File-Name Search" we support Regular Expressions and provide additional settings for file-name based search.
+
+\subsubsection{Bonus: Operation Progress Report}
+Our modal task dialogs, as described in ``Bonus: Responsive UI", shows additional information to the user. This includes the file on which the current operation is executed, the amount of files already finished and the total count of files to process. A progress bar is used to show the progress graphically as an addition to the raw numbers.
+
+\subsubsection{Bonus: Additional Platform}
+We choose JavaFX especially for this feature. JavaFX runs on all major platforms. We developed and tested successfully our VFS Browser on Microsoft Windows and Apple's Mac OSX.
+
+\subsubsection{Additional: Breadcrumbs}
+Our VFS Browser includes the breadcrumbs feature at the bottom of the GUI. This shows the current path separated into its parts. By clicking on one of the names the user will jump into the selected directory.
+
+This functionality is well known to Mac OSX and Eclipse JDT users.
+
+\subsubsection{Additional: Browse History}
+We also implemented a history for visited folders. It is possible to go back into previously visited folder and to go forward after that.
 
 \subsection{Design}
 
-% TODO: Remove this text and replace it with actual content
-\emph{Give an overview of the design of this part and describe in general terms how the implementation works. You can mention design patterns used, class diagrams, definition of custom file formats, network protocols, or anything else that helps understand the implementation.}
+\subsubsection{MVC Design Pattern}
+Our VFS Browser is heavily based on the Model-View-Controller design pattern. This is for instance reflected in our package names and how the classes inside them are implemented and used:
+\begin{itemize}
+    \item Model: \mono{.browser.model}
+    \item View: \mono{.browser.view}
+    \item Controller: \mono{.browser.controller}
+\end{itemize}
 
+\subsubsection{Client-Server-Model}
+We implemented our VFS Browser based on the client-server-model. The file browser acts as a thin-client that connects to a server to work with a virtual disk. Therefore the virtual disk is located at a location reachable by the server and doesn't have to be directly reachable by the client.
+
+To connect to the server the user of the client has to provide an URI that represents the location of the virtual disk.
+
+\subsubsection{Controller Factory}
+As we use the MVC pattern, we were able to create a view that has no knowledge of the underlying processes and how the operations are executed. Therefore the view does not know that it uses remote method calls to work on a virtual disk that is located at a remote location.
+
+To get the right controller for a virtual disk we use URI addresses that describe the location of the virtual disk that should be opened. The user provides this URI address and the view uses it to get a \mono{.browser.controller.TaskController} implementation. To get the right controller for a given URI the view uses our controller factory (\mono{.browser.controller.TaskControllerFactory}).
+
+This way it is fairly easy to implement for example a controller that works on a local virtual disk. The developer just has to implement the controller interface (\mono{.browser.controller.TaskController}) and add the creation of the controllers to the factory (\mono{.browser.controller.TaskControllerFactory}).
+
+Our RMI based controller uses for example the ``batman" scheme (\mono{batman://}). Other schemes can be used for different kinds of controller and ways to connect to a virtual disk.
 
 \subsection{Integration}
+We did not have to change any interface inside our core.
 
-% TODO: Remove this text and replace it with actual content
-\emph{If you had to change the design or API of the previous part, describe the changes and the reasons for each change here.}
+While developing for the second milestone we discovered three bugs fixed them directly.
+
+As ``search" was a new requirement in the second milestone we added the needed and generally useable code to the core, as it belongs logically in there. However, this is purely because of the new requirement.
 
 
 
@@ -313,6 +402,41 @@ Following a list of available commands with a description what they do.
     \item [import] Takes two absolute or relative paths. The first one being a source (host system) and the second one being a target (virtual disk). Will import the file or directory from the host system into the given target inside the virtual disk. Example: \mono{import /home/user/movies/awesome.avi /awesome.avi}
     \item [export] Takes two absolute or relative paths. The first one being a source (virtual disk) and the second one being a target (host system). Exports the given source file or directory into the given target. Example: \mono{export /awesome.avi /home/user/movies/}
 \end{description}
+
+\subsection{How to use the VFS Browser (second milestone)}
+As we implemented the second milestone based on the client-server-model there are some steps needed to get it running.
+
+In general the following steps are required:
+\begin{enumerate}
+    \item start RMI Registry (\mono{rmiregistry}/\mono{rmiregistry.exe})
+    \item start our server (\mono{.server.VirtualDiskServer})
+    \item start the GUI (\mono{.browser.view.Main})
+    \item connect to the server
+\end{enumerate}
+
+\subsubsection{Start rmiregistry}
+\mono{rmiregistry} needs to know where the compiled \mono{.class} files are kept and therefore it is important to set the \mono{CLASSPATH} environment variable correctly. This variable has to include the path to both bin folders (\mono{core/bin} and \mono{gui/bin}) and the file path to the JavaFX JAR file (\mono{jfxrt.jar}).
+
+On our Mac OSX machine we used the following shell script to start the \mono{rmiregistry} (paths must be modified accordingly):
+\begin{lstlisting}[language=bash,breaklines=true,frame=single]
+export CLASSPATH="/Users/groggi/Projects/eth-jcd/gui/bin:/Users/groggi/Projects/eth-jcd/core/bin:/Library/Java/JavaVirtualMachines/jdk1.7.0_17.jdk/Contents/Home/jre/lib/jfxrt.jar"
+
+
+/Library/Java/JavaVirtualMachines/jdk1.7.0_17.jdk/Contents/Home/bin/rmiregistry
+\end{lstlisting}
+
+On our Windows machine we used the following batch script to start the \mono{rmiregistry} (paths must be modified accordingly):
+\begin{lstlisting}[language=bash,breaklines=true,frame=single]
+TODO
+\end{lstlisting}
+
+\subsubsection{Server connection}
+The connection to the server is done by using a correct URI. If the server runs locally and you would like to create and save the virtual disk under \mono{/var/tmp/my.vdisk} you would use the following URI to connect (and create in the same step if not yet existent): \mono{batman://localhost?/var/tmp/my.vdisk}. If you're on a Microsoft Windows machine this would be a valid URI: \mono{batman://localhost?C:/gui.vdisk}. Therefore in general the URI is built like this: \mono{batman://[SERVER]?[FILE PATH ON SERVER SYSTEM]}.
+
+
+
+
+\subsubsection{Starting the GUI}
 
 
 
