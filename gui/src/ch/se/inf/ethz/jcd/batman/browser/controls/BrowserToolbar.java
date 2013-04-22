@@ -134,7 +134,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// rename button
 		renameButton = new Button(EMPTY_STRING, new ImageView(ImageResource
-				.getImageResource().edit()));
+				.getImageResource().editImage()));
 		renameButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -205,7 +205,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// import files button
 		importFilesButton = new Button("import file", new ImageView(
-				ImageResource.getImageResource().importFile()));
+				ImageResource.getImageResource().importFileImage()));
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -217,7 +217,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// import files button
 		importDirectoryButton = new Button("import directory", new ImageView(
-				ImageResource.getImageResource().importDirectory()));
+				ImageResource.getImageResource().importDirectoryImage()));
 		importDirectoryButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -255,7 +255,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 		// advanced search button
 		advancedSearchButton = new Button("advanced search", new ImageView(
-				ImageResource.getImageResource().magnifier()));
+				ImageResource.getImageResource().magnifierImage()));
 		advancedSearchButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
