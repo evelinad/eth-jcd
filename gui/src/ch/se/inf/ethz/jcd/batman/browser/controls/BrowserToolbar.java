@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.browser.controls;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import ch.se.inf.ethz.jcd.batman.browser.CreateDirectoryDialog;
 import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
@@ -52,6 +54,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button importFilesButton;
 	private Button importDirectoryButton;
 	private Button exportButton;
+	private Button createDirButton;
 	private TextField search;
 
 	private Button advancedSearchButton;
@@ -140,7 +143,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(deleteButton);
 
 		// copy element button
-		copyButton = new Button("copy");
+		copyButton = new Button("", new ImageView(ImageResource
+				.getImageResource().copyImage()));
 		copyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -151,7 +155,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(copyButton);
 
 		// cut element button
-		cutButton = new Button("cut");
+		cutButton = new Button("", new ImageView(ImageResource
+				.getImageResource().cutImage()));
 		cutButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -162,7 +167,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(cutButton);
 
 		// paste element button
-		pasteButton = new Button("paste");
+		pasteButton = new Button("", new ImageView(ImageResource
+				.getImageResource().pasteImage()));
 		pasteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -172,8 +178,21 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		});
 		super.getItems().add(pasteButton);
 
+		// create directory button
+		createDirButton = new Button("", new ImageView(ImageResource
+				.getImageResource().createFolderImage()));
+		createDirButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				createFolder();
+			}
+		});
+		super.getItems().add(createDirButton);
+
 		// import files button
-		importFilesButton = new Button("import files");
+		importFilesButton = new Button("import file", new ImageView(
+				ImageResource.getImageResource().importFile()));
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -184,7 +203,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(importFilesButton);
 
 		// import files button
-		importDirectoryButton = new Button("import directory");
+		importDirectoryButton = new Button("import directory", new ImageView(
+				ImageResource.getImageResource().importDirectory()));
 		importDirectoryButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -195,7 +215,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(importDirectoryButton);
 
 		// export button
-		exportButton = new Button("export");
+		exportButton = new Button("export", new ImageView(ImageResource
+				.getImageResource().exportImage()));
 		exportButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -220,7 +241,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(search);
 
 		// advanced search button
-		advancedSearchButton = new Button("Advanced Search");
+		advancedSearchButton = new Button("advanced search", new ImageView(
+				ImageResource.getImageResource().magnifier()));
 		advancedSearchButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
@@ -299,6 +321,21 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 						});
 
 		stateChanged(null, guiState.getState());
+	}
+
+	protected void createFolder() {
+		CreateDirectoryDialog dialog = new CreateDirectoryDialog();
+		dialog.showAndWait();
+
+		if (dialog.getCloseReason() == CloseReason.OK) {
+			Directory target = new Directory(new Path(guiState
+					.getCurrentDirectory().getPath(), dialog.getUserInput()));
+			target.setTimestamp(new Date().getTime());
+
+			Task<Void> task = guiState.getController().createDirectoryTask(
+					target);
+			new TaskDialog(guiState, task);
+		}
 	}
 
 	protected void export() {
@@ -452,6 +489,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			exportButton.setDisable(true);
 			search.setDisable(true);
 			advancedSearchButton.setDisable(true);
+			createDirButton.setDisable(true);
 		} else if (newState == State.CONNECTED) {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
@@ -467,6 +505,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			exportButton.setDisable(false);
 			search.setDisable(false);
 			advancedSearchButton.setDisable(false);
+			createDirButton.setDisable(false);
 		}
 	}
 }

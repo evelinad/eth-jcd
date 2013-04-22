@@ -29,6 +29,14 @@ public final class ImageResource {
 	private final Image disconnect;
 	private final Image folder;
 	private final Image file;
+	private final Image cut;
+	private final Image createFolder;
+	private final Image copy;
+	private final Image paste;
+	private final Image export;
+	private final Image importDir;
+	private final Image importFile;
+	private final Image search;
 
 	private ImageResource() {
 		up = new Image(getClass().getResourceAsStream("up.png"));
@@ -39,6 +47,14 @@ public final class ImageResource {
 		disconnect = new Image(getClass().getResourceAsStream("disconnect.png"));
 		folder = new Image(getClass().getResourceAsStream("folder.png"));
 		file = new Image(getClass().getResourceAsStream("file.png"));
+		cut = new Image(getClass().getResourceAsStream("cut.png"));
+		createFolder = new Image(getClass().getResourceAsStream("folder_add.png"));
+		copy = new Image(getClass().getResourceAsStream("page_white_copy.png"));
+		paste = new Image(getClass().getResourceAsStream("page_white_paste.png"));
+		export = new Image(getClass().getResourceAsStream("folder_go.png"));
+		importDir = new Image(getClass().getResourceAsStream("folder_page.png"));
+		importFile = new Image(getClass().getResourceAsStream("page_white_put.png"));
+		search = new Image(getClass().getResourceAsStream("magnifier.png"));
 	}
 
 	public Image goToParentImage() {
@@ -72,5 +88,36 @@ public final class ImageResource {
 	public Image fileImage() {
 		return file;
 	}
+	
+	public Image cutImage() {
+		return cut;
+	}
+	
+	public Image createFolderImage() {
+		return createFolder;
+	}
+	
+	public Image copyImage() {
+		return copy;
+	}
+	
+	public Image pasteImage() {
+		return paste;
+	}
 
+	public Image importDirectory() {
+		return importDir;
+	}
+	
+	public Image importFile() {
+		return importFile;
+	}
+	
+	public Image exportImage() {
+		return export;
+	}
+	
+	public Image magnifier() {
+		return search;
+	}
 }
