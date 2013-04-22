@@ -544,6 +544,8 @@ public class RemoteTaskController implements TaskController {
 			protected Void call() throws Exception {
 				checkIsConnected();
 				updateMessage("Discovering items");
+				// check if destination paths not already exist
+				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				@SuppressWarnings("unchecked")
 				List<Entry>[] copyFiles = new List[sourceEntries.length];
 				long totalEntriesToCopy = 0;
@@ -566,6 +568,7 @@ public class RemoteTaskController implements TaskController {
 						updateProgress(entriesExported, totalEntriesToCopy);
 						copyEntry(entry, destination);
 						Entry newEntry = (Entry) entry.clone();
+						newEntry.setPath(destination);
 						entryAdded(newEntry);
 						entriesExported++;
 						if (isCancelled()) {

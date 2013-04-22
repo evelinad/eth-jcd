@@ -11,9 +11,14 @@ import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
+import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public class GuiState {
 
+	private enum LastAction {
+		COPY, CUT
+	}
+	
 	private static final int THREAD_POOL_SIZE = 1;
 	
 	private Stage primaryStage;
@@ -25,7 +30,9 @@ public class GuiState {
 	private LinkedList<Directory> directoryHistory = new LinkedList<Directory>();
 	private int directoryIndex = -1;
 	private ScheduledExecutorService scheduler;
-
+	private Entry[] copiedCutEntries;
+	private LastAction lastAction;
+	
 	private EntryView activeEntryView;
 	
 	public GuiState(Stage primaryStage) {
@@ -177,6 +184,37 @@ public class GuiState {
 	protected void finalize() throws Throwable {
 		scheduler.shutdownNow();
 		super.finalize();
+	}
+
+	public void copy() {
+		lastAction = LastAction.COPY;
+		copiedCutEntries = getSelectedEntries();
+	}
+
+	public void cut() {
+		lastAction = LastAction.CUT;
+		copiedCutEntries = getSelectedEntries();
+	}
+
+	public void paste() {
+		if (copiedCutEntries != null && copiedCutEntries.length > 0) {
+			Path[] destinationPaths = new Path[copiedCutEntries.length];
+			Path currentDirectoryPath = getCurrentDirectory().getPath();
+			for (int i = 0; i < copiedCutEntries.length; i++) {
+				destinationPaths[i] = new Path(currentDirectoryPath, copiedCutEntries[i].getPath().getName());
+			}
+			Task<Void> task = null;
+			if (LastAction.COPY == lastAction) {
+				task = getController().createCopyTask(copiedCutEntries, destinationPaths);
+			} else if (LastAction.CUT == lastAction) {
+				task = getController().createMoveTask(copiedCutEntries, destinationPaths);
+				lastAction = null;
+				copiedCutEntries = null;
+			}
+			if (task != null) {
+				new TaskDialog(this, task);
+			}
+		}
 	}
 	
 }

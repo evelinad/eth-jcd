@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
@@ -75,11 +76,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
         			if (entries != null) {
         				for (Entry entry : entries) {
         					if (entry instanceof Directory) {
-        						//because the selection changes on adding new children,
-        						//the selection has to be set back after the insert
-        						//TODO TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
-        						getChildren().add(new DirectoryTreeItem(entry.getPath().getName()));
-        						//getSelectionModel().select(selectedItem);
+        						addChild(DirectoryTreeItem.this, new DirectoryTreeItem(entry.getPath().getName()));
         					}
         				}
         			}
@@ -87,17 +84,19 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
         	};
         	return childDirectories;
         }
+        
 	}
 	
 	private TreeItem<String> root;
 	private GuiState guiState;
+	private boolean selectionChangeListenerEnabled = true;
 	
 	public DirectoryTree(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addStateListener(this);
 		guiState.addDiskEntryListener(this);
 		guiState.addDirectoryListener(this);
-
+		
 		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<String>>() {
 
@@ -105,11 +104,13 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 			public void changed(
 					ObservableValue<? extends TreeItem<String>> observable,
 					TreeItem<String> oldValue, TreeItem<String> newValue) {
-				if (newValue != null) {
-					Directory currentDirectory = guiState.getCurrentDirectory();
-					Path itemPath = new Path(getPath(newValue));
-					if (currentDirectory != null && !currentDirectory.getPath().equals(itemPath)) {
-						guiState.setCurrentDirectory(new Directory(itemPath));
+				if (selectionChangeListenerEnabled) {
+					if (newValue != null) {
+						Directory currentDirectory = guiState.getCurrentDirectory();
+						Path itemPath = new Path(getPath(newValue));
+						if (currentDirectory != null && !currentDirectory.getPath().equals(itemPath)) {
+							guiState.setCurrentDirectory(new Directory(itemPath));
+						}
 					}
 				}
 			}
@@ -141,7 +142,32 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 			}
 		}
 		if (currentItem != null) {
-			currentItem.getChildren().add(newEntry);
+			addChild(currentItem, newEntry);
+		}
+	}
+	
+	private void addChild (TreeItem<String> parent, TreeItem<String> child) {
+		//Because the selection changes for some reason if a new child is added,
+		//the current selection has to be stored and set back after the child was added.
+		TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
+		selectionChangeListenerEnabled = false;
+		parent.getChildren().add(child);
+		getSelectionModel().select(selectedItem);
+		selectionChangeListenerEnabled = true;
+	}
+	
+	private void removeChild (TreeItem<String> parent, TreeItem<String> child) {
+		//Because the selection changes for some reason if a child is removed,
+		//the current selection has to be stored and set back after the child was removed.
+		TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
+		selectionChangeListenerEnabled = false;
+		parent.getChildren().remove(child);
+		if (selectedItem.equals(child)) {
+			selectionChangeListenerEnabled = true;
+			getSelectionModel().select(parent);
+		} else {
+			getSelectionModel().select(selectedItem);
+			selectionChangeListenerEnabled = true;
 		}
 	}
 	
@@ -175,7 +201,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 			}
 		}
 		if (currentItem != null) {
-			currentItem.getParent().getChildren().remove(currentItem);
+			removeChild(currentItem.getParent(), currentItem);
 		}
 		return currentItem;
 	}
