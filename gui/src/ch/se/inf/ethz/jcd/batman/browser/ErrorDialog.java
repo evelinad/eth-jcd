@@ -15,6 +15,7 @@ public class ErrorDialog extends ModalDialog {
 		getContainer().add(label, 0, 0);
 
 		Button okButton = new Button("OK");
+		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
