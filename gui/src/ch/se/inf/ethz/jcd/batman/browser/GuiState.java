@@ -86,6 +86,10 @@ public class GuiState {
 					}
 				});
 	}
+	
+	public EntryView getActiveEntryView() {
+		return this.activeEntryView;
+	}
 
 	public void addDirectoryTree(DirectoryTree directoryTree) {
 		this.activeTreeView = directoryTree;

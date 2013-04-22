@@ -137,7 +137,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		renameButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				// TODO
+				guiState.getActiveEntryView().editSelected();
 			}
 		});
 		super.getItems().add(renameButton);
