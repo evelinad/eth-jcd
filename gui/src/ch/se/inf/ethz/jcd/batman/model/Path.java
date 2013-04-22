@@ -171,7 +171,7 @@ public class Path implements Serializable, Cloneable {
 
 			@Override
 			protected String computeValue() {
-				return extractName();
+				return path.extractName();
 			}
 		};
 		path.name.invalidate();
