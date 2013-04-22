@@ -286,6 +286,15 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				}
 			}
 		});
+		
+		accelerators.put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), new Runnable() {
+			@Override
+			public void run() {
+				if(!advancedSearchButton.isDisabled()) {
+					advancedSearch();
+				}
+			}
+		});
 
 		stateChanged(null, guiState.getState());
 	}
