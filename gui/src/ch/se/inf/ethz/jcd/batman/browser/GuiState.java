@@ -6,9 +6,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.stage.Stage;
+import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
@@ -20,9 +25,9 @@ public class GuiState {
 	private enum LastAction {
 		COPY, CUT
 	}
-	
+
 	private static final int THREAD_POOL_SIZE = 1;
-	
+
 	private Stage primaryStage;
 	private TaskController controller;
 	private State state;
@@ -34,19 +39,22 @@ public class GuiState {
 	private ScheduledExecutorService scheduler;
 	private Entry[] copiedCutEntries;
 	private LastAction lastAction;
-	
+
 	private EntryView activeEntryView;
-	
+	private DirectoryTree activeTreeView;
+	private boolean lastFocusEntryView;
+
 	public GuiState(Stage primaryStage) {
 		this.primaryStage = primaryStage;
+		lastFocusEntryView = true;
 		state = State.DISCONNECTED;
 		scheduler = Executors.newScheduledThreadPool(THREAD_POOL_SIZE);
 	}
-	
-	public Stage getPrimaryStage () {
+
+	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
-	
+
 	public TaskController getController() {
 		return controller;
 	}
@@ -66,52 +74,80 @@ public class GuiState {
 			}
 		}
 	}
-	
-	public void setActiveEntryView (EntryView entryView) {
+
+	public void setActiveEntryView(EntryView entryView) {
 		this.activeEntryView = entryView;
+		this.activeEntryView.getFocusModel().focusedItemProperty()
+				.addListener(new ChangeListener<Entry>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Entry> observable,
+							Entry oldValue, Entry newValue) {
+						lastFocusEntryView = true;
+					}
+				});
 	}
-	
-	public Entry[] getSelectedEntries () {
-		if (activeEntryView != null) {
+
+	public void addDirectoryTree(DirectoryTree directoryTree) {
+		this.activeTreeView = directoryTree;
+		this.activeTreeView.getFocusModel().focusedItemProperty()
+				.addListener(new ChangeListener<TreeItem<String>>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends TreeItem<String>> observable,
+							TreeItem<String> oldValue, TreeItem<String> newValue) {
+						lastFocusEntryView = false;
+					}
+				});
+	}
+
+	public Entry[] getSelectedEntries() {
+		if (activeTreeView != null && !lastFocusEntryView) {
+			Path path = new Path(DirectoryTree.getPath(activeTreeView
+					.getSelectionModel().getSelectedItem()));
+			Directory dir = new Directory(path);
+			return new Entry[] { dir };
+		} else if (activeEntryView != null) {
 			return activeEntryView.getSelectedEntries();
 		}
+
 		return null;
 	}
-	
+
 	public void addStateListener(StateListener listener) {
 		if (!stateListener.contains(listener)) {
 			stateListener.add(listener);
 		}
 	}
-	
+
 	public void removeStateListener(StateListener listener) {
 		stateListener.remove(listener);
 	}
-	
-	public boolean hasPreviousDirectory () {
+
+	public boolean hasPreviousDirectory() {
 		return directoryIndex > 0;
 	}
-	
-	public void backToPreviousDirectory () {
+
+	public void backToPreviousDirectory() {
 		if (hasPreviousDirectory()) {
 			directoryIndex--;
 			callDirectoryListener(getCurrentDirectory());
 		}
 	}
-	
-	public void forwardToNextDirectoy () {
+
+	public void forwardToNextDirectoy() {
 		if (hasNextDirectory()) {
 			directoryIndex++;
 			callDirectoryListener(getCurrentDirectory());
 		}
 	}
-	
-	public boolean hasNextDirectory () {
-		return directoryIndex < directoryHistory.size()-1;
+
+	public boolean hasNextDirectory() {
+		return directoryIndex < directoryHistory.size() - 1;
 	}
-	
-	public void setCurrentDirectory (Directory currentDirectory) {
-		int removableDirectories = directoryHistory.size()-1 - directoryIndex;
+
+	public void setCurrentDirectory(Directory currentDirectory) {
+		int removableDirectories = directoryHistory.size() - 1 - directoryIndex;
 		for (int i = 0; i < removableDirectories; i++) {
 			directoryHistory.removeLast();
 		}
@@ -119,32 +155,33 @@ public class GuiState {
 		directoryIndex++;
 		callDirectoryListener(currentDirectory);
 	}
-	
+
 	private void callDirectoryListener(Directory currentDirectory) {
 		for (DirectoryListener listener : directoryListener) {
 			listener.directoryChanged(currentDirectory);
 		}
 	}
-	
-	public Directory getCurrentDirectory () {
-		return (directoryIndex < 0 ) ? null : directoryHistory.get(directoryIndex);
+
+	public Directory getCurrentDirectory() {
+		return (directoryIndex < 0) ? null : directoryHistory
+				.get(directoryIndex);
 	}
-	
+
 	public void addDirectoryListener(DirectoryListener listener) {
 		if (!directoryListener.contains(listener)) {
 			directoryListener.add(listener);
 		}
 	}
-	
+
 	public void removeDirectoryListener(DirectoryListener listener) {
 		directoryListener.remove(listener);
 	}
-	
-	public State getState () {
+
+	public State getState() {
 		return state;
 	}
-	
-	public void setState (State newState) {
+
+	public void setState(State newState) {
 		if (newState != state) {
 			State oldState = state;
 			state = newState;
@@ -153,11 +190,10 @@ public class GuiState {
 			}
 		}
 	}
-	
-	public void submitTask (Task<?> task) {
+
+	public void submitTask(Task<?> task) {
 		scheduler.submit(task);
 	}
-	
 
 	public void addDiskEntryListener(DiskEntryListener listener) {
 		if (!diskEntryListener.contains(listener)) {
@@ -174,31 +210,32 @@ public class GuiState {
 			controller.addDiskEntryListener(listener);
 		}
 	}
-	
+
 	public void delete() {
 		Entry[] selectedEntries = getSelectedEntries();
-		Task<Void> deleteEntriesTask = getController()
-				.createDeleteEntriesTask(selectedEntries);
+		Task<Void> deleteEntriesTask = getController().createDeleteEntriesTask(
+				selectedEntries);
 		new TaskDialog(this, deleteEntriesTask);
 	}
-	
+
 	public void destroy() {
 		if (controller != null) {
 			Task<Void> disconnectTask = getController().createDisconnectTask();
 			new TaskDialog(this, disconnectTask) {
-				private void shutdownScheduler () {
+				private void shutdownScheduler() {
 					Platform.runLater(new Runnable() {
-						
+
 						@Override
 						public void run() {
 							scheduler.shutdownNow();
 						}
 					});
 				}
-				
+
 				protected void succeeded(WorkerStateEvent event) {
 					shutdownScheduler();
 				}
+
 				@Override
 				protected void failed(WorkerStateEvent event) {
 					super.failed(event);
@@ -210,7 +247,7 @@ public class GuiState {
 			scheduler.shutdownNow();
 		}
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable {
 		destroy();
@@ -232,13 +269,16 @@ public class GuiState {
 			Path[] destinationPaths = new Path[copiedCutEntries.length];
 			Path currentDirectoryPath = getCurrentDirectory().getPath();
 			for (int i = 0; i < copiedCutEntries.length; i++) {
-				destinationPaths[i] = new Path(currentDirectoryPath, copiedCutEntries[i].getPath().getName());
+				destinationPaths[i] = new Path(currentDirectoryPath,
+						copiedCutEntries[i].getPath().getName());
 			}
 			Task<Void> task = null;
 			if (LastAction.COPY == lastAction) {
-				task = getController().createCopyTask(copiedCutEntries, destinationPaths);
+				task = getController().createCopyTask(copiedCutEntries,
+						destinationPaths);
 			} else if (LastAction.CUT == lastAction) {
-				task = getController().createMoveTask(copiedCutEntries, destinationPaths);
+				task = getController().createMoveTask(copiedCutEntries,
+						destinationPaths);
 				lastAction = null;
 				copiedCutEntries = null;
 			}
@@ -247,5 +287,5 @@ public class GuiState {
 			}
 		}
 	}
-	
+
 }

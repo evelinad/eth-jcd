@@ -23,11 +23,13 @@ import ch.se.inf.ethz.jcd.batman.model.Path;
 
 public class DirectoryTree extends TreeView<String> implements DiskEntryListener, StateListener, DirectoryListener {
 
-	protected static String getPath(TreeItem<String> treeItem) {
+	public static String getPath(TreeItem<String> treeItem) {
 		if (treeItem == null) {
 			return "";
 		}
+		
     	TreeItem<String> parent = treeItem.getParent();
+    	
     	if (parent == null) {
         	return treeItem.getValue();	
     	} else {
@@ -92,6 +94,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 	
 	public DirectoryTree(final GuiState guiState) {
 		this.guiState = guiState;
+		guiState.addDirectoryTree(this);
 		guiState.addStateListener(this);
 		guiState.addDiskEntryListener(this);
 		guiState.addDirectoryListener(this);
