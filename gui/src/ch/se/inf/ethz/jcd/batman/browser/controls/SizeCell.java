@@ -25,10 +25,10 @@ public class SizeCell extends EntryCell<Entry, Number> {
 
 	@Override
 	protected void updateItem(Number item, boolean empty) {
-		if (item != null) {
-			setText(humanReadableByteCount(item.longValue(), true));
-		} else {
+		if (item == null) {
 			setText(null);
+		} else {
+			setText(humanReadableByteCount(item.longValue(), true));
 		}
 	}
 }

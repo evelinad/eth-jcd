@@ -14,10 +14,10 @@ public class TimestampCell extends EntryCell<Entry, Long> {
 
 	@Override
 	protected void updateItem(Long item, boolean empty) {
-		if (item != null) {
-			setText(SimpleDateFormat.getDateInstance().format(new Date(item)));
-		} else {
+		if (item == null) {
 			setText(null);
+		} else {
+			setText(SimpleDateFormat.getDateInstance().format(new Date(item)));
 		}
 	}
 }

@@ -96,7 +96,7 @@ public class DirectoryTree extends TreeView<String> implements
 	}
 
 	private TreeItem<String> root;
-	private GuiState guiState;
+	private final GuiState guiState;
 	private boolean selectionChangeListenerEnabled = true;
 
 	public DirectoryTree(final GuiState guiState) {

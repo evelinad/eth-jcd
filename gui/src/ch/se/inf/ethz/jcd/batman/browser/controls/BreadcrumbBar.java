@@ -18,7 +18,7 @@ public class BreadcrumbBar extends ToolBar implements DirectoryListener {
 		public Path path;
 	}
 
-	private GuiState guiState;
+	private final GuiState guiState;
 	private Path curPath;
 
 	public BreadcrumbBar(GuiState guiState) {

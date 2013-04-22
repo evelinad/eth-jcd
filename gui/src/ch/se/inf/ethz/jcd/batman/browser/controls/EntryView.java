@@ -35,8 +35,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	private static final Text NO_DISK_LOADED_TEXT = new Text("No Disk Loaded.");
 	private static final Text NO_ENTRIES_TEXT = new Text("Is Empty.");
 
-	private TableColumn<Entry, Entry> nameColumn;
-	private GuiState guiState;
+	private final TableColumn<Entry, Entry> nameColumn;
+	private final GuiState guiState;
 	private Directory directory;
 	
 	public EntryView(final GuiState guiState) {
