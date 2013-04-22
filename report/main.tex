@@ -5,7 +5,7 @@
 \usepackage{xspace}
 \usepackage[os=win, mackeys=symbols]{menukeys}
 \usepackage{listings}
-%\usepackage{graphicx}
+\usepackage{graphicx}
 %\usepackage{xcolor}
 %\usepackage{hyperref}
 
@@ -229,6 +229,11 @@ The VFS Browser allows to use the underlying virtual disk in a convenient way. T
 
 Our main focus was to build a basic UI that is useable and shows off all important features. JavaFX does not provide as much control as for instance Swing does. Therefore there may be some rough corners we had to build workarounds for because of JavaFX's limitations. Overall our GUI should be easy to use for users familiar with Mac OSX's Finder or Windows' Explorer.
 
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{screen1.png}
+    \caption{VFS Browser}
+\end{figure}
+
 \subsection{Requirements}
 \subsubsection{Platform requirement}
 We used JavaFX as our framework to create a desktop application.
@@ -292,6 +297,11 @@ The implementation of the tasks can be viewed in our remote controller \mono{.co
 \subsubsection{Bonus: Advanced Search}
 As already described in ``File-Name Search" we support Regular Expressions and provide additional settings for file-name based search.
 
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{screen2.png}
+    \caption{Advanced Search Dialog}
+\end{figure}
+
 \subsubsection{Bonus: Operation Progress Report}
 Our modal task dialogs, as described in ``Bonus: Responsive UI", shows additional information to the user. This includes the file on which the current operation is executed, the amount of files already finished and the total count of files to process. A progress bar is used to show the progress graphically as an addition to the raw numbers.
 
@@ -302,6 +312,11 @@ We choose JavaFX especially for this feature. JavaFX runs on all major platforms
 Our VFS Browser includes the breadcrumbs feature at the bottom of the GUI. This shows the current path separated into its parts. By clicking on one of the names the user will jump into the selected directory.
 
 This functionality is well known to Mac OSX and Eclipse JDT users.
+
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{screen3.png}
+    \caption{Breadcrumbs}
+\end{figure}
 
 \subsubsection{Additional: Browse History}
 We also implemented a history for visited folders. It is possible to go back into previously visited folder and to go forward after that.
@@ -427,7 +442,7 @@ export CLASSPATH="/Users/groggi/Projects/eth-jcd/gui/bin:/Users/groggi/Projects/
 
 On our Windows machine we used the following batch script to start the \mono{rmiregistry} (paths must be modified accordingly):
 \begin{lstlisting}[language=bash,breaklines=true,frame=single]
-TODO
+set CLASSPATH=C:\Users\Benji\Documents\GitHub\eth-jcd\gui\bin;C:\Users\Benji\Documents\GitHub\eth-jcd\core\bin;C:\Program Files\Java\jdk1.7.0_17\jre\lib\jfxrt.jar"C:\Program Files\Java\jdk1.7.0_17\bin\rmiregistry.exe"
 \end{lstlisting}
 
 \subsubsection{Server connection}
