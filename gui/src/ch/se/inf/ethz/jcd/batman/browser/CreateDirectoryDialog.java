@@ -10,7 +10,7 @@ import javafx.scene.input.MouseEvent;
 
 public class CreateDirectoryDialog extends ModalDialog {
 
-	private TextField inputField;
+	private final TextField inputField;
 
 	public CreateDirectoryDialog() {
 		super();

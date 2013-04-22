@@ -14,7 +14,7 @@ public class ModalDialog extends Stage {
 	}
 
 	private CloseReason closeReason;
-	private GridPane container;
+	private final GridPane container;
 
 	public ModalDialog() {
 		super.initModality(Modality.APPLICATION_MODAL);

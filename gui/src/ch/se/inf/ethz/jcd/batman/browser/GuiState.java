@@ -27,15 +27,20 @@ public class GuiState {
 
 	private static final int THREAD_POOL_SIZE = 1;
 
-	private Stage primaryStage;
+	private final Stage primaryStage;
 	private TaskController controller;
 	private State state;
-	private List<StateListener> stateListener = new LinkedList<StateListener>();
-	private List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
-	private List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
-	private LinkedList<Directory> directoryHistory = new LinkedList<Directory>();
+	private final List<StateListener> stateListener = new LinkedList<StateListener>();
+	private final List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
+	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
+	/*
+	 * regarding the PMD warning: We use thr removeLast() method and therefore
+	 * it must be of type LinkedList<T> and not one of the implemented
+	 * interfaces
+	 */
+	private final LinkedList<Directory> directoryHistory = new LinkedList<Directory>();
 	private int directoryIndex = -1;
-	private ScheduledExecutorService scheduler;
+	private final ScheduledExecutorService scheduler;
 	private Entry[] copiedCutEntries;
 	private LastAction lastAction;
 
@@ -86,7 +91,7 @@ public class GuiState {
 					}
 				});
 	}
-	
+
 	public EntryView getActiveEntryView() {
 		return this.activeEntryView;
 	}
@@ -114,7 +119,7 @@ public class GuiState {
 			return activeEntryView.getSelectedEntries();
 		}
 
-		return null;
+		return new Entry[0];
 	}
 
 	public void addStateListener(StateListener listener) {
@@ -166,8 +171,7 @@ public class GuiState {
 	}
 
 	public Directory getCurrentDirectory() {
-		return (directoryIndex < 0) ? null : directoryHistory
-				.get(directoryIndex);
+		return directoryIndex < 0 ? null : directoryHistory.get(directoryIndex);
 	}
 
 	public void addDirectoryListener(DirectoryListener listener) {
@@ -222,7 +226,9 @@ public class GuiState {
 	}
 
 	public void destroy() {
-		if (controller != null) {
+		if (controller == null) {
+			scheduler.shutdownNow();
+		} else {
 			Task<Void> disconnectTask = getController().createDisconnectTask();
 			new TaskDialog(this, disconnectTask) {
 				private void shutdownScheduler() {
@@ -246,8 +252,6 @@ public class GuiState {
 				}
 			};
 			controller = null;
-		} else {
-			scheduler.shutdownNow();
 		}
 	}
 
