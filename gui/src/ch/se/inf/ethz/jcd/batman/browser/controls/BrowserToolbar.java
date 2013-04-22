@@ -152,7 +152,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(copyButton);
-		
+
 		// cut element button
 		cutButton = new Button("cut");
 		cutButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -163,7 +163,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(cutButton);
-		
+
 		// paste element button
 		pasteButton = new Button("paste");
 		pasteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -174,7 +174,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(pasteButton);
-		
+
 		// import files button
 		importFilesButton = new Button("import files");
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -241,7 +241,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				KeyCombination.ALT_DOWN), new Runnable() {
 			@Override
 			public void run() {
-				back();
+				if (!goBackButton.isDisable()) {
+					back();
+				}
 			}
 		});
 
@@ -249,7 +251,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				KeyCombination.ALT_DOWN), new Runnable() {
 			@Override
 			public void run() {
-				forward();
+				if (!goForewardButton.isDisabled()) {
+					forward();
+				}
 			}
 		});
 
@@ -257,7 +261,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				KeyCombination.ALT_DOWN), new Runnable() {
 			@Override
 			public void run() {
-				toParentDir();
+				if (!toParentDirButton.isDisabled()) {
+					toParentDir();
+				}
 			}
 		});
 
@@ -265,7 +271,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				KeyCombination.CONTROL_DOWN), new Runnable() {
 			@Override
 			public void run() {
-				connect();
+				if (!connectButton.isDisabled()) {
+					connect();
+				}
 			}
 		});
 
@@ -273,7 +281,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 				KeyCombination.CONTROL_DOWN), new Runnable() {
 			@Override
 			public void run() {
-				disconnect();
+				if (!disconnectButton.isDisabled()) {
+					disconnect();
+				}
 			}
 		});
 
@@ -290,16 +300,18 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			if (exportDirectory != null) {
 				String[] destinationPaths = new String[selectedEntries.length];
 				for (int i = 0; i < selectedEntries.length; i++) {
-					destinationPaths[i] = exportDirectory.getAbsolutePath() + java.io.File.separator + 
-							selectedEntries[i].getPath().getName();
+					destinationPaths[i] = exportDirectory.getAbsolutePath()
+							+ java.io.File.separator
+							+ selectedEntries[i].getPath().getName();
 				}
-				Task<Void> exportTask = guiState.getController().createExportTask(selectedEntries, destinationPaths);
+				Task<Void> exportTask = guiState.getController()
+						.createExportTask(selectedEntries, destinationPaths);
 				new TaskDialog(guiState, exportTask);
 			}
-			
+
 		}
 	}
-	
+
 	protected void importFiles() {
 		FileChooser fileChooser = new FileChooser();
 		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState
@@ -406,7 +418,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	protected void search(final String term, final boolean isRegex,
 			final boolean checkFiles, final boolean checkFolders,
 			final boolean isCaseSensitive, final boolean checkChildren) {
-		SearchDirectory search = new SearchDirectory(guiState.getCurrentDirectory().getPath(), term, isRegex, checkFiles, checkFolders, isCaseSensitive, checkChildren);
+		SearchDirectory search = new SearchDirectory(guiState
+				.getCurrentDirectory().getPath(), term, isRegex, checkFiles,
+				checkFolders, isCaseSensitive, checkChildren);
 		guiState.setCurrentDirectory(search);
 	}
 
