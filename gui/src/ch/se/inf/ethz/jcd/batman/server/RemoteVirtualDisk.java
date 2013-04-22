@@ -390,7 +390,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			}
 		} catch (Exception e) {
 			throw new VirtualDiskException("Could not copy entry "
-					+ source.getPath() + " to " + destination);
+					+ source.getPath() + " to " + destination, e);
 		}
 
 	}

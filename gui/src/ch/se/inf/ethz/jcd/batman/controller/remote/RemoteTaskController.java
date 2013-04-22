@@ -325,7 +325,10 @@ public class RemoteTaskController implements TaskController {
 					updateMessage("Moving entry " + oldEntry.getPath() + " to "
 							+ newPath);
 					remoteDisk.moveEntry(diskId, oldEntry, newPath);
-					Entry newEntry = (Entry) oldEntry.clone();
+					Entry newEntry = null;
+					try {
+						newEntry = (Entry) oldEntry.clone();
+					} catch (CloneNotSupportedException e) { }
 					newEntry.setPath(newPath);
 					entryChanged(oldEntry, newEntry);
 					if (isCancelled()) {
@@ -568,7 +571,10 @@ public class RemoteTaskController implements TaskController {
 										.getPath());
 						updateProgress(entriesExported, totalEntriesToCopy);
 						copyEntry(entry, destination);
-						Entry newEntry = (Entry) entry.clone();
+						Entry newEntry = null;
+						try {
+							newEntry = (Entry) entry.clone();
+						} catch (CloneNotSupportedException e) { }
 						newEntry.setPath(destination);
 						entryAdded(newEntry);
 						entriesExported++;

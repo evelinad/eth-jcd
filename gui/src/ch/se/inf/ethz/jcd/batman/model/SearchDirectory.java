@@ -4,21 +4,21 @@ public class SearchDirectory extends Directory implements Cloneable {
 	private static final long serialVersionUID = -5311729100226286904L;
 
 	private final String term;
-	private final boolean isRegex;
+	private final boolean regex;
 	private final boolean checkFiles;
 	private final boolean checkFolders;
-	private final boolean isCaseSensitive;
+	private final boolean caseSensitive;
 	private final boolean checkChildren;
 
-	public SearchDirectory(final Path path, final String term, final boolean isRegex,
-			final boolean checkFiles, final boolean checkFolders, final boolean isCaseSensitive,
+	public SearchDirectory(final Path path, final String term, final boolean regex,
+			final boolean checkFiles, final boolean checkFolders, final boolean caseSensitive,
 			final boolean checkChildren) {
 		super(path);
 		this.term = term;
-		this.isRegex = isRegex;
+		this.regex = regex;
 		this.checkFiles = checkFiles;
 		this.checkFolders = checkFolders;
-		this.isCaseSensitive = isCaseSensitive;
+		this.caseSensitive = caseSensitive;
 		this.checkChildren = checkChildren;
 	}
 
@@ -27,7 +27,7 @@ public class SearchDirectory extends Directory implements Cloneable {
 	}
 
 	public boolean isRegex() {
-		return isRegex;
+		return regex;
 	}
 
 	public boolean isCheckFiles() {
@@ -39,7 +39,7 @@ public class SearchDirectory extends Directory implements Cloneable {
 	}
 
 	public boolean isCaseSensitive() {
-		return isCaseSensitive;
+		return caseSensitive;
 	}
 
 	public boolean isCheckChildren() {
