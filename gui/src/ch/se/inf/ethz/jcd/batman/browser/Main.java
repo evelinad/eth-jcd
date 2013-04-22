@@ -7,7 +7,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public void start(Stage primaryStage) {
 		primaryStage.setTitle("Batman Virtual Disk Browser");
 
 		Browser ui = new Browser(primaryStage);

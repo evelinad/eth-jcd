@@ -1,6 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
-public class SearchDirectory extends Directory {
+public class SearchDirectory extends Directory implements Cloneable {
 	private static final long serialVersionUID = -5311729100226286904L;
 
 	private final String term;

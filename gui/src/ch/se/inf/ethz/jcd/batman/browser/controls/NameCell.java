@@ -62,7 +62,10 @@ public class NameCell extends EntryCell<Entry, Entry> {
 			@Override
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER && textField != null) {
-					Entry clone = (Entry) editingItem.clone();
+					Entry clone = null;
+					try {
+						clone = (Entry) editingItem.clone();
+					} catch (CloneNotSupportedException e) { }
 					clone.getPath().changeName(textField.getText());
 					commitEdit(clone);
 					event.consume();
@@ -77,7 +80,10 @@ public class NameCell extends EntryCell<Entry, Entry> {
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
 				if (!newValue && textField != null) {
-					Entry clone = (Entry) editingItem.clone();
+					Entry clone = null;
+					try {
+						clone = (Entry) editingItem.clone();
+					} catch (CloneNotSupportedException e) { }
 					clone.getPath().changeName(textField.getText());
 					commitEdit(clone);
 				}

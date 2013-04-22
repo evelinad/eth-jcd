@@ -13,6 +13,9 @@ public final class ImageResource {
 
 	private static ImageResource instance;
 
+	/*
+	 * regarding PMD warning: We do not use it in a multithreaded environment.
+	 */
 	public static ImageResource getImageResource() {
 		if (instance == null) {
 			instance = new ImageResource();
@@ -110,11 +113,11 @@ public final class ImageResource {
 		return paste;
 	}
 
-	public Image importDirectory() {
+	public Image importDirectoryImage() {
 		return importDir;
 	}
 
-	public Image importFile() {
+	public Image importFileImage() {
 		return importFile;
 	}
 
@@ -122,11 +125,11 @@ public final class ImageResource {
 		return export;
 	}
 
-	public Image magnifier() {
+	public Image magnifierImage() {
 		return search;
 	}
-	
-	public Image edit() {
+
+	public Image editImage() {
 		return edit;
 	}
 }

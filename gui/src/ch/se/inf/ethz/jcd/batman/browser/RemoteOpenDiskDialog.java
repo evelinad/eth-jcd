@@ -10,7 +10,7 @@ import javafx.scene.input.MouseEvent;
 
 public class RemoteOpenDiskDialog extends ModalDialog {
 
-	private TextField inputField;
+	private final TextField inputField;
 
 	public RemoteOpenDiskDialog() {
 		super();

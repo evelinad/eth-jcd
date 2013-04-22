@@ -9,14 +9,12 @@ import javafx.scene.input.MouseEvent;
 
 public class SearchDialog extends ModalDialog {
 
-	private TextField searchTermField;
-	private CheckBox regexCheckBox;
-	private CheckBox filesCheckBox;
-	private CheckBox foldersCheckBox;
-	private CheckBox caseSensitiveCheckBox;
-	private CheckBox subFoldersCheckBox;
-	private Button searchButton;
-	private Button cancelButton;
+	private final TextField searchTermField;
+	private final CheckBox regexCheckBox;
+	private final CheckBox filesCheckBox;
+	private final CheckBox foldersCheckBox;
+	private final CheckBox caseSensitiveCheckBox;
+	private final CheckBox subFoldersCheckBox;
 
 	public SearchDialog() {
 		super();
@@ -47,7 +45,7 @@ public class SearchDialog extends ModalDialog {
 		subFoldersCheckBox.setSelected(true);
 		getContainer().add(subFoldersCheckBox, 1, 5);
 
-		searchButton = new Button("Search");
+		Button searchButton = new Button("Search");
 		searchButton.setDefaultButton(true);
 		searchButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
@@ -58,7 +56,7 @@ public class SearchDialog extends ModalDialog {
 		});
 		getContainer().add(searchButton, 0, 6);
 
-		cancelButton = new Button("Cancel");
+		Button cancelButton = new Button("Cancel");
 		cancelButton.setCancelButton(true);
 		cancelButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override

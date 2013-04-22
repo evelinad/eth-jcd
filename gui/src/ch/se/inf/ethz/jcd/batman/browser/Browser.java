@@ -14,11 +14,10 @@ import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 
 public class Browser extends BorderPane {
 
-	private GuiState guiState;
+	private final GuiState guiState;
 
 	// top parts
 	private VBox topBox;
-	private ToolBar toolBar;
 
 	// left parts
 	private TreeView<String> dirTree;
@@ -68,7 +67,7 @@ public class Browser extends BorderPane {
 		topBox = new VBox();
 
 		// create toolbar
-		toolBar = new BrowserToolbar(guiState);
+		ToolBar toolBar = new BrowserToolbar(guiState);
 		topBox.getChildren().add(toolBar);
 	}
 

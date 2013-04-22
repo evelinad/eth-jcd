@@ -11,7 +11,7 @@ import javafx.beans.property.SimpleLongProperty;
  * Model (as defined in MVC-Pattern) for a file on a virtual disk.
  * 
  */
-public class File extends Entry {
+public class File extends Entry implements Cloneable {
 
 	private static final long serialVersionUID = -6866287625459765024L;
 
