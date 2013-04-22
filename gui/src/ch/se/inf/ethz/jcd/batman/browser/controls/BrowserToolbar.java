@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
-import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -17,8 +16,6 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
@@ -152,7 +149,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(copyButton);
-		
+
 		// cut element button
 		cutButton = new Button("cut");
 		cutButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -163,7 +160,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(cutButton);
-		
+
 		// paste element button
 		pasteButton = new Button("paste");
 		pasteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -174,7 +171,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(pasteButton);
-		
+
 		// import files button
 		importFilesButton = new Button("import files");
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -234,48 +231,72 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(advancedSearchButton);
 
 		// add shortcuts for toolbar buttons
-		final ObservableMap<KeyCombination, Runnable> accelerators = guiState
-				.getPrimaryStage().getScene().getAccelerators();
+		guiState.getPrimaryStage()
+				.getScene()
+				.addEventFilter(KeyEvent.KEY_RELEASED,
+						new EventHandler<KeyEvent>() {
+							@Override
+							public void handle(KeyEvent event) {
+								if (event.isControlDown()) {
+									if (event.getCode() == KeyCode.F
+											&& !advancedSearchButton
+													.isDisabled()) {
+										event.consume();
+										advancedSearch();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.LEFT,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				back();
-			}
-		});
+									if (event.getCode() == KeyCode.O
+											&& !connectButton.isDisabled()) {
+										event.consume();
+										connect();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.RIGHT,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				forward();
-			}
-		});
+									if (event.getCode() == KeyCode.D
+											&& !disconnectButton.isDisabled()) {
+										event.consume();
+										disconnect();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.UP,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				toParentDir();
-			}
-		});
+									if (event.getCode() == KeyCode.C
+											&& !copyButton.isDisabled()) {
+										event.consume();
+										guiState.copy();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.O,
-				KeyCombination.CONTROL_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				connect();
-			}
-		});
+									if (event.getCode() == KeyCode.X
+											&& !cutButton.isDisabled()) {
+										event.consume();
+										guiState.cut();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.D,
-				KeyCombination.CONTROL_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				disconnect();
-			}
-		});
+									if (event.getCode() == KeyCode.V
+											&& !pasteButton.isDisabled()) {
+										event.consume();
+										guiState.paste();
+									}
+								}
+
+								if (event.isAltDown()) {
+									if (event.getCode() == KeyCode.LEFT
+											&& !goBackButton.isDisabled()) {
+										event.consume();
+										back();
+									}
+
+									if (event.getCode() == KeyCode.RIGHT
+											&& !goForewardButton.isDisabled()) {
+										event.consume();
+										forward();
+									}
+
+									if (event.getCode() == KeyCode.UP
+											&& !toParentDirButton.isDisabled()) {
+										event.consume();
+										toParentDir();
+									}
+								}
+							}
+						});
 
 		stateChanged(null, guiState.getState());
 	}
@@ -290,16 +311,18 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			if (exportDirectory != null) {
 				String[] destinationPaths = new String[selectedEntries.length];
 				for (int i = 0; i < selectedEntries.length; i++) {
-					destinationPaths[i] = exportDirectory.getAbsolutePath() + java.io.File.separator + 
-							selectedEntries[i].getPath().getName();
+					destinationPaths[i] = exportDirectory.getAbsolutePath()
+							+ java.io.File.separator
+							+ selectedEntries[i].getPath().getName();
 				}
-				Task<Void> exportTask = guiState.getController().createExportTask(selectedEntries, destinationPaths);
+				Task<Void> exportTask = guiState.getController()
+						.createExportTask(selectedEntries, destinationPaths);
 				new TaskDialog(guiState, exportTask);
 			}
-			
+
 		}
 	}
-	
+
 	protected void importFiles() {
 		FileChooser fileChooser = new FileChooser();
 		List<File> importFiles = fileChooser.showOpenMultipleDialog(guiState
@@ -406,7 +429,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	protected void search(final String term, final boolean isRegex,
 			final boolean checkFiles, final boolean checkFolders,
 			final boolean isCaseSensitive, final boolean checkChildren) {
-		SearchDirectory search = new SearchDirectory(guiState.getCurrentDirectory().getPath(), term, isRegex, checkFiles, checkFolders, isCaseSensitive, checkChildren);
+		SearchDirectory search = new SearchDirectory(guiState
+				.getCurrentDirectory().getPath(), term, isRegex, checkFiles,
+				checkFolders, isCaseSensitive, checkChildren);
 		guiState.setCurrentDirectory(search);
 	}
 

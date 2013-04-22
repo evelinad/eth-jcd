@@ -14,6 +14,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 
 	public RemoteOpenDiskDialog() {
 		super();
+		setTitle("Open Disk");
 		
 		Label label = new Label("Disk URI:");
 		getContainer().add(label, 0, 0);
