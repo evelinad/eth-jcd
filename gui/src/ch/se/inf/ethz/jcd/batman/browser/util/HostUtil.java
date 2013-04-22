@@ -1,5 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.browser.util;
 
+import java.awt.Desktop;
 import java.io.IOException;
 
 import javafx.concurrent.Task;
@@ -47,23 +48,9 @@ public class HostUtil {
 							new ErrorDialog("Open File failed", e.getMessage())
 									.showAndWait();
 						}
-					} else if (osName.contains("windows")) {
+					} else {
 						try {
-							ProcessBuilder processBuilder = new ProcessBuilder(
-									"RUNDLL32.EXE SHELL32.DLL,OpenAs_RunDLL",
-									hostFile.getPath());
-							processBuilder.start();
-
-						} catch (IOException e) {
-							new ErrorDialog("Open File failed", e.getMessage())
-									.showAndWait();
-						}
-					} else if (osName.contains("linux")) {
-						try {
-							ProcessBuilder processBuilder = new ProcessBuilder(
-									"gnome-open", hostFile.getPath());
-							processBuilder.start();
-
+							Desktop.getDesktop().open(hostFile);
 						} catch (IOException e) {
 							new ErrorDialog("Open File failed", e.getMessage())
 									.showAndWait();

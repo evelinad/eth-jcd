@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.stage.Stage;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
@@ -180,9 +182,38 @@ public class GuiState {
 		new TaskDialog(this, deleteEntriesTask);
 	}
 	
+	public void destroy() {
+		if (controller != null) {
+			Task<Void> disconnectTask = getController().createDisconnectTask();
+			new TaskDialog(this, disconnectTask) {
+				private void shutdownScheduler () {
+					Platform.runLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							scheduler.shutdownNow();
+						}
+					});
+				}
+				
+				protected void succeeded(WorkerStateEvent event) {
+					shutdownScheduler();
+				}
+				@Override
+				protected void failed(WorkerStateEvent event) {
+					super.failed(event);
+					shutdownScheduler();
+				}
+			};
+			controller = null;
+		} else {
+			scheduler.shutdownNow();
+		}
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
-		scheduler.shutdownNow();
+		destroy();
 		super.finalize();
 	}
 
