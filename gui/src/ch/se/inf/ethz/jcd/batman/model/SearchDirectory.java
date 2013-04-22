@@ -1,14 +1,14 @@
 package ch.se.inf.ethz.jcd.batman.model;
 
-public class SearchDirectory extends Directory {
+public class SearchDirectory extends Directory implements Cloneable {
 	private static final long serialVersionUID = -5311729100226286904L;
 
-	private String term;
-	private boolean isRegex;
-	private boolean checkFiles;
-	private boolean checkFolders;
-	private boolean isCaseSensitive;
-	private boolean checkChildren;
+	private final String term;
+	private final boolean isRegex;
+	private final boolean checkFiles;
+	private final boolean checkFolders;
+	private final boolean isCaseSensitive;
+	private final boolean checkChildren;
 
 	public SearchDirectory(Path path, String term, boolean isRegex,
 			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
