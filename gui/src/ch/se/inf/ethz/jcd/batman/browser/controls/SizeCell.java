@@ -1,8 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 
@@ -19,17 +17,15 @@ public class SizeCell extends EntryCell<Entry, Number> {
 	
 	public SizeCell(GuiState guiState) {
 		super(guiState);
+		setAlignment(Pos.CENTER_RIGHT);
 	}
 	
 	@Override
 	protected void updateItem(Number item, boolean empty) {
-		if(item!=null){                            
-			HBox box= new HBox();
-			box.setSpacing(10);
-			box.setAlignment(Pos.CENTER_RIGHT);
-			Label nameLabel = new Label(humanReadableByteCount(item.longValue(), true));
-			box.getChildren().addAll(nameLabel); 
-			setGraphic(box);
+		if(item!=null){
+			setText(humanReadableByteCount(item.longValue(), true));
+		} else {
+			setText(null);
 		}
 	}
 }

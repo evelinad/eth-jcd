@@ -4,7 +4,6 @@ import java.util.Comparator;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -37,8 +36,6 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 	private GuiState guiState;
 	private Directory directory;
-	private ObservableList<Entry> entryList = FXCollections
-			.observableArrayList();
 
 	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
@@ -77,6 +74,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				return o1.getPath().getName().compareTo(o2.getPath().getName());
 			}
 		});
+		nameColumn.setEditable(true);
 		getColumns().add(nameColumn);
 
 		TableColumn<Entry, Long> dateColumn = new TableColumn<>(
@@ -127,7 +125,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			@Override
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
-
+				
 				// go inside a directory
 				if (event.getCode() == KeyCode.ENTER
 						|| event.getCode() == KeyCode.RIGHT) {
@@ -161,19 +159,22 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				}
 			}
 		});
-
-		setItems(entryList);
 	}
 
 	protected void clear() {
-		entryList.clear();
+		getItems().clear();
 	}
 
 	protected void setEntries(Entry[] entries) {
-		entryList.addAll(entries);
+		getItems().addAll(entries);
 	}
 
 	public void setDirectory(Directory directory) {
+		if (directory == null) {
+			setPlaceholder(NO_DISK_LOADED_TEXT);
+		} else {
+			setPlaceholder(NO_ENTRIES_TEXT);
+		}
 		this.directory = directory;
 		clear();
 		if (directory != null) {
@@ -197,10 +198,6 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				};
 			}
 		}
-
-		if (entryList.size() <= 0) {
-			this.setPlaceholder(NO_ENTRIES_TEXT);
-		}
 	}
 
 	public Directory getDirectory() {
@@ -215,22 +212,21 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	@Override
 	public void entryAdded(Entry entry) {
 		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
-			entryList.add(entry);
+			getItems().add(entry);
 		}
 	}
 
 	@Override
 	public void entryDeleted(Entry entry) {
-		if (entryList.contains(entry)) {
-			entryList.remove(entry);
+		if (getItems().contains(entry)) {
+			getItems().remove(entry);
 		}
 	}
 
 	@Override
-	public void entryChanged(Entry oldEntry, Entry newEntry) {
+	public void entryChanged(final Entry oldEntry, final Entry newEntry) {
 		entryDeleted(oldEntry);
 		entryAdded(newEntry);
-
 	}
 
 	public Entry[] getSelectedEntries() {

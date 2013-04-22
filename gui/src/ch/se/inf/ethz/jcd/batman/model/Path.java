@@ -66,6 +66,7 @@ public class Path implements Serializable, Cloneable {
 	 */
 	public void setPath(String path) {
 		this.path.set(path);
+		this.name.invalidate();
 	}
 
 	/**
@@ -163,7 +164,18 @@ public class Path implements Serializable, Cloneable {
 	}
 	
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	protected Object clone() {
 		return new Path(getPath());
+	}
+
+	public void changeName(String newName) {
+		String oldName = getName();
+		if (!oldName.equals(SEPERATOR)) {
+			String parentPath = getParentPath().getPath();
+			if (!parentPath.endsWith(SEPERATOR)) {
+				parentPath += SEPERATOR;
+			}
+			setPath(parentPath + newName);
+		}
 	}
 }

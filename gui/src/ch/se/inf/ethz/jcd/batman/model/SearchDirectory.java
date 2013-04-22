@@ -46,7 +46,7 @@ public class SearchDirectory extends Directory {
 	}
 	
 	@Override
-	public Object clone() throws CloneNotSupportedException {
+	public Object clone() {
 		return new SearchDirectory((Path) getPath().clone() , term, isRegex, checkFiles, checkFolders, isCaseSensitive, checkChildren);
 	}
 }

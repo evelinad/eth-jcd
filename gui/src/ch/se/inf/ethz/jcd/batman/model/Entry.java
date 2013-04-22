@@ -91,8 +91,7 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 	public boolean equals(Object obj) {
 		if (obj instanceof Entry) {
 			Entry entry = (Entry) obj;
-			return getTimestamp() == entry.getTimestamp()
-					&& getPath().equals(entry.getPath());
+			return getPath().equals(entry.getPath());
 		}
 		return false;
 	}
@@ -109,8 +108,8 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return new Entry(getPath(), getTimestamp());
+	public Object clone() {
+		return new Entry((Path) getPath().clone(), getTimestamp());
 	}
 
 	@Override

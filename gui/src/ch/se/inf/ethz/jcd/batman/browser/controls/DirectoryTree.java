@@ -7,7 +7,6 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
@@ -217,6 +216,7 @@ public class DirectoryTree extends TreeView<String> implements DiskEntryListener
 		if (deletedEntry == null) {
 			addEntry(newEntry, new DirectoryTreeItem(newEntry.getPath().getName()));
 		} else {
+			deletedEntry.setValue(newEntry.getPath().getName());
 			addEntry(newEntry, (DirectoryTreeItem) deletedEntry);
 		}
 	}
