@@ -19,7 +19,7 @@ public class Path implements Serializable, Cloneable {
 
 	public static final String SEPERATOR = "/";
 
-	private SimpleStringProperty path;
+	private SimpleStringProperty pathProp;
 	private StringBinding name;
 
 	public Path() {
@@ -39,7 +39,7 @@ public class Path implements Serializable, Cloneable {
 	}
 
 	private void init(String path) {
-		this.path = new SimpleStringProperty(path);
+		this.pathProp = new SimpleStringProperty(path);
 		this.name = new StringBinding() {
 
 			@Override
@@ -55,7 +55,7 @@ public class Path implements Serializable, Cloneable {
 	 * @return a string representing the path
 	 */
 	public String getPath() {
-		return path.get();
+		return pathProp.get();
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class Path implements Serializable, Cloneable {
 	 *            new path represented by the object
 	 */
 	public void setPath(String path) {
-		this.path.set(path);
+		this.pathProp.set(path);
 		this.name.invalidate();
 	}
 
@@ -101,7 +101,7 @@ public class Path implements Serializable, Cloneable {
 	}
 
 	public StringProperty pathProperty() {
-		return path;
+		return pathProp;
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class Path implements Serializable, Cloneable {
 
 	@Override
 	public int hashCode() {
-		return path.hashCode();
+		return pathProp.hashCode();
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class Path implements Serializable, Cloneable {
 
 	private void readObject(ObjectInputStream ois)
 			throws ClassNotFoundException, IOException {
-		path = new SimpleStringProperty((String) ois.readObject());
+		pathProp = new SimpleStringProperty((String) ois.readObject());
 		name = new StringBinding() {
 
 			@Override
@@ -152,7 +152,7 @@ public class Path implements Serializable, Cloneable {
 	}
 
 	public String[] split() {
-		return path.get().split(Path.SEPERATOR);
+		return pathProp.get().split(Path.SEPERATOR);
 	}
 
 	public boolean pathEquals(Path path) {
@@ -164,12 +164,22 @@ public class Path implements Serializable, Cloneable {
 	}
 
 	@Override
-	protected Object clone() {
-		return new Path(getPath());
+	protected Object clone() throws CloneNotSupportedException {
+		final Path path = (Path) super.clone();
+		path.pathProp = new SimpleStringProperty(getPath());
+		path.name = new StringBinding() {
+
+			@Override
+			protected String computeValue() {
+				return extractName();
+			}
+		};
+		path.name.invalidate();
+		return path;
 	}
 
 	public void changeName(String newName) {
-		String oldName = getName();
+		final String oldName = getName();
 		if (!oldName.equals(SEPERATOR)) {
 			String parentPath = getParentPath().getPath();
 			if (!parentPath.endsWith(SEPERATOR)) {

@@ -9,16 +9,18 @@ import java.rmi.server.UnicastRemoteObject;
  * Starting point for the virtual disk server.
  * 
  */
-public class VirtualDiskServer {
+public final class VirtualDiskServer {
 
 	public final static String SERVICE_NAME = "VirtualDisk";
 
-	public static void main(String[] args) {
+	private VirtualDiskServer () {}
+
+	public static void main(final String[] args) {
 		try {
-			String name = SERVICE_NAME;
-			RemoteVirtualDisk rVirtualDisk = new RemoteVirtualDisk();
-			Remote remote = UnicastRemoteObject.exportObject(rVirtualDisk, 0);
-			Registry registry = LocateRegistry.getRegistry();
+			final String name = SERVICE_NAME;
+			final RemoteVirtualDisk rVirtualDisk = new RemoteVirtualDisk();
+			final Remote remote = UnicastRemoteObject.exportObject(rVirtualDisk, 0);
+			final Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(name, remote);
 			System.out.println(SERVICE_NAME + " bound");
 		} catch (Exception e) {
