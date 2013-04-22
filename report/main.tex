@@ -234,7 +234,7 @@ Our main focus was to build a basic UI that is useable and shows off all importa
 We used JavaFX as our framework to create a desktop application.
 
 \subsubsection{Support all operations from VFS core}
-We implemented all operations required by Part 1. This is best seen inside the two interfaces \mono{.browser.server.IRemoteVirtualDisk} and \mono{.controller.TaskController}. The first one is our interface between the client and server. The second interface is the controller (as defined in the MVC Design Pattern) used by the view to execute commands initiated by the user.
+We implemented all operations required by Part 1. This is best seen inside the two interfaces \mono{.server.IRemoteVirtualDisk} and \mono{.controller.TaskController}. The first one is our interface between the client and server. The second interface is the controller (as defined in the MVC Design Pattern) used by the view to execute commands initiated by the user.
 
 \subsubsection{Single and Multiple Selection}
 It is possible to execute disk operations on a single disk entry or a list of entries. This can be seen at multiple locations inside our source code. However, the central method involved in this feature is \mono{.browser.GuiState.getSelectedEntries()}.
@@ -287,7 +287,7 @@ All operations are wrapped inside a \mono{javafx.concurrent.Task<V>} and can the
 
 For now we only execute one task at a time. Because of that we have a modal dialog that shows up with a message and a progress bar to give the user feedback about the current task. This dialog only shows up, if the task takes more than five milliseconds. Otherwise the dialog is not visible as the user won't notice the short delay.
 
-The implementation of the tasks can be viewed in our remote controller \mono{.browser.controller.remote.RemoteTaskController}.
+The implementation of the tasks can be viewed in our remote controller \mono{.controller.remote.RemoteTaskController}.
 
 \subsubsection{Bonus: Advanced Search}
 As already described in ``File-Name Search" we support Regular Expressions and provide additional settings for file-name based search.
@@ -311,9 +311,9 @@ We also implemented a history for visited folders. It is possible to go back int
 \subsubsection{MVC Design Pattern}
 Our VFS Browser is heavily based on the Model-View-Controller design pattern. This is for instance reflected in our package names and how the classes inside them are implemented and used:
 \begin{itemize}
-    \item Model: \mono{.browser.model}
-    \item View: \mono{.browser.view}
-    \item Controller: \mono{.browser.controller}
+    \item Model: \mono{.model}
+    \item View: \mono{.browser}
+    \item Controller: \mono{.controller}
 \end{itemize}
 
 \subsubsection{Client-Server-Model}
@@ -324,9 +324,9 @@ To connect to the server the user of the client has to provide an URI that repre
 \subsubsection{Controller Factory}
 As we use the MVC pattern, we were able to create a view that has no knowledge of the underlying processes and how the operations are executed. Therefore the view does not know that it uses remote method calls to work on a virtual disk that is located at a remote location.
 
-To get the right controller for a virtual disk we use URI addresses that describe the location of the virtual disk that should be opened. The user provides this URI address and the view uses it to get a \mono{.browser.controller.TaskController} implementation. To get the right controller for a given URI the view uses our controller factory (\mono{.browser.controller.TaskControllerFactory}).
+To get the right controller for a virtual disk we use URI addresses that describe the location of the virtual disk that should be opened. The user provides this URI address and the view uses it to get a \mono{controller.TaskController} implementation. To get the right controller for a given URI the view uses our controller factory (\mono{controller.TaskControllerFactory}).
 
-This way it is fairly easy to implement for example a controller that works on a local virtual disk. The developer just has to implement the controller interface (\mono{.browser.controller.TaskController}) and add the creation of the controllers to the factory (\mono{.browser.controller.TaskControllerFactory}).
+This way it is fairly easy to implement for example a controller that works on a local virtual disk. The developer just has to implement the controller interface (\mono{controller.TaskController}) and add the creation of the controllers to the factory (\mono{controller.TaskControllerFactory}).
 
 Our RMI based controller uses for example the ``batman" scheme (\mono{batman://}). Other schemes can be used for different kinds of controller and ways to connect to a virtual disk.
 
@@ -410,7 +410,7 @@ In general the following steps are required:
 \begin{enumerate}
     \item start RMI Registry (\mono{rmiregistry}/\mono{rmiregistry.exe})
     \item start our server (\mono{.server.VirtualDiskServer})
-    \item start the GUI (\mono{.browser.view.Main})
+    \item start the GUI (\mono{.browser.Main})
     \item connect to the server
 \end{enumerate}
 
