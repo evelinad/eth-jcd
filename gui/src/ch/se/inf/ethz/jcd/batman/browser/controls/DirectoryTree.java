@@ -168,7 +168,15 @@ public class DirectoryTree extends TreeView<String> implements
 		// was added.
 		TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
 		selectionChangeListenerEnabled = false;
-		parent.getChildren().add(child);
+		String childName = child.getValue().toLowerCase();
+		ObservableList<TreeItem<String>> childrenList = parent.getChildren();
+		int index;
+		for (index = 0; index < childrenList.size(); index++) {
+			if (childName.compareTo(childrenList.get(index).getValue().toLowerCase()) < 0) {
+				break;
+			}
+		}
+		parent.getChildren().add(index, child);
 		getSelectionModel().select(selectedItem);
 		selectionChangeListenerEnabled = true;
 	}
