@@ -13,9 +13,9 @@ import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 
 public class Browser extends BorderPane {
-	
+
 	private GuiState guiState;
-	
+
 	// top parts
 	private VBox topBox;
 	private ToolBar toolBar;
@@ -25,7 +25,7 @@ public class Browser extends BorderPane {
 
 	// center parts
 	private EntryView entryView;
-	
+
 	// bottom parts
 	private BreadcrumbBar breadcrumbs;
 
@@ -38,7 +38,7 @@ public class Browser extends BorderPane {
 			}
 		});
 	}
-	
+
 	public void initialize() {
 		initializeTop();
 		initializeLeft();
@@ -71,12 +71,11 @@ public class Browser extends BorderPane {
 		toolBar = new BrowserToolbar(guiState);
 		topBox.getChildren().add(toolBar);
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable {
 		guiState.destroy();
 		super.finalize();
 	}
-	
-	
+
 }

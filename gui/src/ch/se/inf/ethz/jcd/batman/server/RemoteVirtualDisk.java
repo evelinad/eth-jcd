@@ -321,8 +321,8 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	@Override
 	public Entry[] search(int id, String term, boolean isRegex,
 			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
-			boolean checkChildren, Entry[] parents)
-			throws RemoteException, VirtualDiskException {
+			boolean checkChildren, Entry[] parents) throws RemoteException,
+			VirtualDiskException {
 		IVirtualDisk disk = getDisk(id);
 
 		try {
@@ -358,7 +358,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 							result.lastModified()));
 				}
 			}
-			
+
 			return resultEntries.toArray(new Entry[0]);
 		} catch (Exception e) {
 			throw new VirtualDiskException("Could not execute search", e);
@@ -371,24 +371,30 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		IVirtualDisk disk = getDisk(id);
 		try {
 			if (source instanceof File) {
-				VDiskFile sourceFile = new VDiskFile(source.getPath().getPath(), disk);
-				if (!sourceFile.copyTo(new VDiskFile(destination.getPath(), disk))) {
+				VDiskFile sourceFile = new VDiskFile(
+						source.getPath().getPath(), disk);
+				if (!sourceFile.copyTo(new VDiskFile(destination.getPath(),
+						disk))) {
 					throw new VirtualDiskException("Copy errror");
 				}
 			} else if (source instanceof Directory) {
-				VDiskFile newDirectory = new VDiskFile(destination.getPath(), disk);
+				VDiskFile newDirectory = new VDiskFile(destination.getPath(),
+						disk);
 				if (!newDirectory.mkdir()) {
-					throw new VirtualDiskException("Could not create directory at " + destination);
+					throw new VirtualDiskException(
+							"Could not create directory at " + destination);
 				}
 			} else {
-				throw new VirtualDiskException("Invalid disk entry type " + source.getClass());
+				throw new VirtualDiskException("Invalid disk entry type "
+						+ source.getClass());
 			}
 		} catch (Exception e) {
-			throw new VirtualDiskException("Could not copy entry " + source.getPath() + " to " + destination);
+			throw new VirtualDiskException("Could not copy entry "
+					+ source.getPath() + " to " + destination);
 		}
-		
+
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {

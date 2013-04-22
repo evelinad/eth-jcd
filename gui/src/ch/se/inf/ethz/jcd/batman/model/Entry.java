@@ -100,7 +100,7 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 		oos.writeObject(getPath());
 		oos.writeLong(getTimestamp());
 	}
-	
+
 	private void readObject(ObjectInputStream ois)
 			throws ClassNotFoundException, IOException {
 		path = new SimpleObjectProperty<Path>((Path) ois.readObject());
@@ -116,5 +116,5 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 	public int compareTo(Entry o) {
 		return getPath().getPath().compareTo(o.getPath().getPath());
 	}
-	
+
 }

@@ -15,10 +15,10 @@ public class CreateDirectoryDialog extends ModalDialog {
 	public CreateDirectoryDialog() {
 		super();
 		setTitle("Create Directory");
-		
+
 		Label label = new Label("Directory Name:");
 		getContainer().add(label, 0, 0);
-		
+
 		inputField = new TextField();
 		inputField.setPromptText("URI to a virtual disk");
 		inputField.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -54,7 +54,7 @@ public class CreateDirectoryDialog extends ModalDialog {
 			}
 		});
 		getContainer().add(cancelButton, 1, 1);
-		
+
 		inputField.requestFocus();
 	}
 

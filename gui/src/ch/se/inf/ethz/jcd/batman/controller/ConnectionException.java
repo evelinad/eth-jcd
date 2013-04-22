@@ -2,7 +2,7 @@ package ch.se.inf.ethz.jcd.batman.controller;
 
 /**
  * Checked exception for connection problems to a virtual disk.
- *
+ * 
  */
 public class ConnectionException extends Exception {
 
@@ -11,7 +11,7 @@ public class ConnectionException extends Exception {
 	public ConnectionException(String message) {
 		super(message);
 	}
-	
+
 	public ConnectionException(Throwable t) {
 		super(t);
 	}

@@ -50,8 +50,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 		getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		nameColumn = new TableColumn<Entry, Entry>(
-				"Name");
+		nameColumn = new TableColumn<Entry, Entry>("Name");
 		nameColumn.setPrefWidth(300);
 		nameColumn
 				.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Entry, Entry>, ObservableValue<Entry>>() {
@@ -74,14 +73,14 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		nameColumn.setComparator(new Comparator<Entry>() {
 			@Override
 			public int compare(Entry o1, Entry o2) {
-				return o1.getPath().getName().toLowerCase().compareTo(o2.getPath().getName().toLowerCase());
+				return o1.getPath().getName().toLowerCase()
+						.compareTo(o2.getPath().getName().toLowerCase());
 			}
 		});
 		nameColumn.setEditable(true);
 		getColumns().add(nameColumn);
 
-		TableColumn<Entry, Long> dateColumn = new TableColumn<>(
-				"Last changed");
+		TableColumn<Entry, Long> dateColumn = new TableColumn<>("Last changed");
 		dateColumn.setPrefWidth(100);
 		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, Long>(
 				"timestamp"));
@@ -128,17 +127,17 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			@Override
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
-				
+
 				if (!event.getTarget().equals(EntryView.this)) {
 					return;
 				}
-				
+
 				if (event.getCode() == KeyCode.R && event.isControlDown()) {
 					if (selected.length > 0) {
-						edit(getSelectionModel().getSelectedIndex(), nameColumn);	
+						edit(getSelectionModel().getSelectedIndex(), nameColumn);
 					}
 				}
-				
+
 				// go inside a directory
 				if (event.getCode() == KeyCode.ENTER
 						|| event.getCode() == KeyCode.RIGHT) {
@@ -182,17 +181,17 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 	protected void setEntries(Entry[] entries) {
 		TableColumn<Entry, ?> sortcolumn = null;
-        SortType st = null;
-        if (getSortOrder().size()>0) {
-            sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
-            st = sortcolumn.getSortType();
-        }
+		SortType st = null;
+		if (getSortOrder().size() > 0) {
+			sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
+			st = sortcolumn.getSortType();
+		}
 		getItems().addAll(entries);
-		if (sortcolumn!=null) {
-            getSortOrder().add(sortcolumn);
-            sortcolumn.setSortType(st);
-            sortcolumn.setSortable(true); // This performs a sort
-        }
+		if (sortcolumn != null) {
+			getSortOrder().add(sortcolumn);
+			sortcolumn.setSortType(st);
+			sortcolumn.setSortable(true); // This performs a sort
+		}
 	}
 
 	public void setDirectory(Directory directory) {
@@ -206,9 +205,12 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		if (directory != null) {
 			if (directory instanceof SearchDirectory) {
 				SearchDirectory search = (SearchDirectory) directory;
-				final Task<Entry[]> searchTask = guiState.getController().createSearchTask(
-						search.getTerm(), search.isRegex(), search.isCheckFiles(), search.isCheckFolders(), 
-						search.isCaseSensitive(), search.isCheckChildren(), new Directory(search.getPath()));
+				final Task<Entry[]> searchTask = guiState.getController()
+						.createSearchTask(search.getTerm(), search.isRegex(),
+								search.isCheckFiles(), search.isCheckFolders(),
+								search.isCaseSensitive(),
+								search.isCheckChildren(),
+								new Directory(search.getPath()));
 				new TaskDialog(guiState, searchTask) {
 					protected void succeeded(WorkerStateEvent event) {
 						setEntries(searchTask.getValue());
@@ -235,23 +237,24 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		setDirectory(directory);
 	}
 
-	private boolean entryAddedImpl (Entry entry) {
+	private boolean entryAddedImpl(Entry entry) {
 		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
-			//The observable list needs to be resorted after inserting
-			//A better solution will be available in a newer version
-			//-> http://stackoverflow.com/questions/13409350/javafx-tableview-insert-in-observablelist-when-column-sorting-is-active
+			// The observable list needs to be resorted after inserting
+			// A better solution will be available in a newer version
+			// ->
+			// http://stackoverflow.com/questions/13409350/javafx-tableview-insert-in-observablelist-when-column-sorting-is-active
 			TableColumn<Entry, ?> sortcolumn = null;
-	        SortType st = null;
-	        if (getSortOrder().size()>0) {
-	            sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
-	            st = sortcolumn.getSortType();
-	        }
+			SortType st = null;
+			if (getSortOrder().size() > 0) {
+				sortcolumn = (TableColumn<Entry, ?>) getSortOrder().get(0);
+				st = sortcolumn.getSortType();
+			}
 			getItems().add(entry);
-			if (sortcolumn!=null) {
-	            getSortOrder().add(sortcolumn);
-	            sortcolumn.setSortType(st);
-	            sortcolumn.setSortable(true); // This performs a sort
-	        }
+			if (sortcolumn != null) {
+				getSortOrder().add(sortcolumn);
+				sortcolumn.setSortType(st);
+				sortcolumn.setSortable(true); // This performs a sort
+			}
 			return true;
 		}
 		return false;
@@ -269,7 +272,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void entryDeleted(Entry entry) {
 		entryDeletedImpl(entry);
@@ -278,7 +281,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	@Override
 	public void entryChanged(final Entry oldEntry, final Entry newEntry) {
 		Entry[] selectedEntries = getSelectedEntries();
-		boolean selected = getSelectionModel().getSelectedItems().contains(oldEntry);
+		boolean selected = getSelectionModel().getSelectedItems().contains(
+				oldEntry);
 		boolean deleted = entryDeletedImpl(oldEntry);
 		boolean added = entryAddedImpl(newEntry);
 		getSelectionModel().clearSelection();

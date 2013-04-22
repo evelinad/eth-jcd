@@ -66,5 +66,5 @@ public class File extends Entry {
 	public Object clone() {
 		return new File((Path) getPath().clone(), getTimestamp(), getSize());
 	}
-	
+
 }

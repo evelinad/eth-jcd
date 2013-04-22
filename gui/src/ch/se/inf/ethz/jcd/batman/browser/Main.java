@@ -12,12 +12,13 @@ public class Main extends Application {
 
 		Browser ui = new Browser(primaryStage);
 		Scene scene = new Scene(ui, 1200, 800);
-		scene.getStylesheets().add("/ch/se/inf/ethz/jcd/batman/browser/main.css");
+		scene.getStylesheets().add(
+				"/ch/se/inf/ethz/jcd/batman/browser/main.css");
 
 		primaryStage.setScene(scene);
-		
+
 		ui.initialize();
-		
+
 		primaryStage.show();
 	}
 

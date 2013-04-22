@@ -25,8 +25,8 @@ public class Path implements Serializable, Cloneable {
 	public Path() {
 		this(SEPERATOR);
 	}
-	
-	public Path (String path) {
+
+	public Path(String path) {
 		init(path);
 	}
 
@@ -37,8 +37,8 @@ public class Path implements Serializable, Cloneable {
 			init(parent.getPath() + SEPERATOR + name);
 		}
 	}
-	
-	private void init (String path) {
+
+	private void init(String path) {
 		this.path = new SimpleStringProperty(path);
 		this.name = new StringBinding() {
 
@@ -48,7 +48,7 @@ public class Path implements Serializable, Cloneable {
 			}
 		};
 	}
-	
+
 	/**
 	 * Returns the path as a string
 	 * 
@@ -154,7 +154,7 @@ public class Path implements Serializable, Cloneable {
 	public String[] split() {
 		return path.get().split(Path.SEPERATOR);
 	}
-	
+
 	public boolean pathEquals(Path path) {
 		return getPath().equals(path.getPath());
 	}
@@ -162,7 +162,7 @@ public class Path implements Serializable, Cloneable {
 	public Path getRelativePath(Path path) {
 		return new Path(getPath().substring(path.getPath().length()));
 	}
-	
+
 	@Override
 	protected Object clone() {
 		return new Path(getPath());

@@ -20,12 +20,12 @@ public class TaskDialog extends ModalDialog {
 	protected static final long TIME_TO_WAIT_BEFORE_SHOW = 5L;
 
 	private static final double TASK_DIALOG_MAX_WIDTH = 500;
-	
+
 	private final Task<?> task;
 
 	public TaskDialog(GuiState guiState, final Task<?> task) {
 		this.task = task;
-		
+
 		super.setMaxWidth(TASK_DIALOG_MAX_WIDTH);
 
 		titleProperty().bind(task.titleProperty());

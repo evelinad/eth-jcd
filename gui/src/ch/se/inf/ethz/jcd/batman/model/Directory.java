@@ -26,5 +26,5 @@ public class Directory extends Entry {
 	public Object clone() {
 		return new Directory((Path) getPath().clone(), getTimestamp());
 	}
-	
+
 }

@@ -15,7 +15,7 @@ public class ModalDialog extends Stage {
 
 	private CloseReason closeReason;
 	private GridPane container;
-	
+
 	public ModalDialog() {
 		super.initModality(Modality.APPLICATION_MODAL);
 		super.setResizable(true);
@@ -25,16 +25,16 @@ public class ModalDialog extends Stage {
 		container.setHgap(10);
 		container.setVgap(10);
 		container.setPadding(new Insets(25, 25, 25, 25));
-		
+
 		super.setScene(new Scene(container));
-		
+
 		closeReason = CloseReason.UNDEFINED;
 	}
 
 	public GridPane getContainer() {
 		return container;
 	}
-	
+
 	public CloseReason getCloseReason() {
 		return this.closeReason;
 	}

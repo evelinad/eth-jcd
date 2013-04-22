@@ -11,7 +11,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.stage.Stage;
 import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;

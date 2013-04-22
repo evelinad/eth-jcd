@@ -15,10 +15,10 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 	public RemoteOpenDiskDialog() {
 		super();
 		setTitle("Open Disk");
-		
+
 		Label label = new Label("Disk URI:");
 		getContainer().add(label, 0, 0);
-		
+
 		inputField = new TextField();
 		inputField.setPromptText("URI to a virtual disk");
 		inputField.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -54,7 +54,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 			}
 		});
 		getContainer().add(cancelButton, 1, 1);
-		
+
 		inputField.requestFocus();
 	}
 

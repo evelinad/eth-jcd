@@ -9,11 +9,11 @@ public class ErrorDialog extends ModalDialog {
 
 	public ErrorDialog(String title, String message) {
 		setTitle(title);
-		
+
 		Label label = new Label();
 		label.setText(message);
 		getContainer().add(label, 0, 0);
-		
+
 		Button okButton = new Button("OK");
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
@@ -25,5 +25,5 @@ public class ErrorDialog extends ModalDialog {
 		getContainer().add(okButton, 0, 1);
 		setResizable(true);
 	}
-	
+
 }
