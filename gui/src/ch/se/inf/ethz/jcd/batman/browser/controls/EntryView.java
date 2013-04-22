@@ -1,5 +1,7 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
+import java.util.Comparator;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -69,21 +71,26 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 						return new NameCell(guiState);
 					}
 				});
-
+		nameColumn.setComparator(new Comparator<Entry>() {
+			@Override
+			public int compare(Entry o1, Entry o2) {
+				return o1.getPath().getName().compareTo(o2.getPath().getName());
+			}
+		});
 		getColumns().add(nameColumn);
 
-		TableColumn<Entry, String> dateColumn = new TableColumn<>(
+		TableColumn<Entry, Long> dateColumn = new TableColumn<>(
 				"Last changed");
 		dateColumn.setPrefWidth(100);
-		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>(
+		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, Long>(
 				"timestamp"));
 		dateColumn
-				.setCellFactory(new Callback<TableColumn<Entry, String>, TableCell<Entry, String>>() {
+				.setCellFactory(new Callback<TableColumn<Entry, Long>, TableCell<Entry, Long>>() {
 
 					@Override
-					public TableCell<Entry, String> call(
-							TableColumn<Entry, String> param) {
-						return new EntryCell<Entry, String>(guiState);
+					public TableCell<Entry, Long> call(
+							TableColumn<Entry, Long> param) {
+						return new TimestampCell(guiState);
 					}
 				});
 		getColumns().add(dateColumn);
@@ -110,7 +117,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					@Override
 					public TableCell<Entry, Number> call(
 							TableColumn<Entry, Number> param) {
-						return new EntryCell<Entry, Number>(guiState);
+						return new SizeCell(guiState);
 					}
 				});
 		getColumns().add(sizeColumn);
@@ -164,7 +171,6 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 	protected void setEntries(Entry[] entries) {
 		entryList.addAll(entries);
-		// TODO sort
 	}
 
 	public void setDirectory(Directory directory) {
