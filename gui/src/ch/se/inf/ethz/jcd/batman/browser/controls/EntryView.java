@@ -126,6 +126,10 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
 				
+				if (!event.getTarget().equals(this)) {
+					return;
+				}
+				
 				// go inside a directory
 				if (event.getCode() == KeyCode.ENTER
 						|| event.getCode() == KeyCode.RIGHT) {
