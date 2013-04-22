@@ -30,7 +30,7 @@ public class VirtualDiskSearch {
 		List<VDiskFile> foundEntries = new LinkedList<>();
 
 		String searchTerm = term;
-		if (settings.isCaseSensitive()) {
+		if (!settings.isCaseSensitive()) {
 			searchTerm = searchTerm.toLowerCase();
 		}
 
