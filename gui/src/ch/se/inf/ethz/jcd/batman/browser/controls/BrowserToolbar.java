@@ -20,6 +20,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.Mnemonic;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -234,67 +235,54 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(advancedSearchButton);
 
 		// add shortcuts for toolbar buttons
-		final ObservableMap<KeyCombination, Runnable> accelerators = guiState
-				.getPrimaryStage().getScene().getAccelerators();
+		guiState.getPrimaryStage()
+				.getScene()
+				.addEventFilter(KeyEvent.KEY_RELEASED,
+						new EventHandler<KeyEvent>() {
+							@Override
+							public void handle(KeyEvent event) {
+								if (event.isControlDown()) {
+									if (event.getCode() == KeyCode.F
+											&& !advancedSearchButton
+													.isDisabled()) {
+										event.consume();
+										advancedSearch();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.LEFT,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if (!goBackButton.isDisable()) {
-					back();
-				}
-			}
-		});
+									if (event.getCode() == KeyCode.O
+											&& !connectButton.isDisabled()) {
+										event.consume();
+										connect();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.RIGHT,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if (!goForewardButton.isDisabled()) {
-					forward();
-				}
-			}
-		});
+									if (event.getCode() == KeyCode.D
+											&& !disconnectButton.isDisabled()) {
+										event.consume();
+										disconnect();
+									}
+								}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.UP,
-				KeyCombination.ALT_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if (!toParentDirButton.isDisabled()) {
-					toParentDir();
-				}
-			}
-		});
+								if (event.isAltDown()) {
+									if (event.getCode() == KeyCode.LEFT
+											&& !goBackButton.isDisabled()) {
+										event.consume();
+										back();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.O,
-				KeyCombination.CONTROL_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if (!connectButton.isDisabled()) {
-					connect();
-				}
-			}
-		});
+									if (event.getCode() == KeyCode.RIGHT
+											&& !goForewardButton.isDisabled()) {
+										event.consume();
+										forward();
+									}
 
-		accelerators.put(new KeyCodeCombination(KeyCode.D,
-				KeyCombination.CONTROL_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if (!disconnectButton.isDisabled()) {
-					disconnect();
-				}
-			}
-		});
-		
-		accelerators.put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), new Runnable() {
-			@Override
-			public void run() {
-				if(!advancedSearchButton.isDisabled()) {
-					advancedSearch();
-				}
-			}
-		});
+									if (event.getCode() == KeyCode.UP
+											&& !toParentDirButton.isDisabled()) {
+										event.consume();
+										toParentDir();
+									}
+								}
+							}
+						});
 
 		stateChanged(null, guiState.getState());
 	}
