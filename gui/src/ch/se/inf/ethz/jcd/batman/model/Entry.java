@@ -27,11 +27,11 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 		this(new Path());
 	}
 
-	public Entry(Path path) {
+	public Entry(final Path path) {
 		this(path, 0);
 	}
 
-	public Entry(Path path, long timestamp) {
+	public Entry(final Path path, final long timestamp) {
 		this.path = new SimpleObjectProperty<Path>(path);
 		this.timestamp = new SimpleLongProperty(timestamp);
 	}
@@ -108,8 +108,10 @@ public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 	}
 
 	@Override
-	public Object clone() {
-		return new Entry((Path) getPath().clone(), getTimestamp());
+	public Object clone() throws CloneNotSupportedException {
+		Entry entry = (Entry) super.clone();
+		entry.path = new SimpleObjectProperty<>((Path) getPath().clone());
+		return entry;
 	}
 
 	@Override

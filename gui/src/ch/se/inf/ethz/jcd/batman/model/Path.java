@@ -164,12 +164,22 @@ public class Path implements Serializable, Cloneable {
 	}
 
 	@Override
-	protected Object clone() {
-		return new Path(getPath());
+	protected Object clone() throws CloneNotSupportedException {
+		final Path path = (Path) super.clone();
+		path.path = new SimpleStringProperty(getPath());
+		path.name = new StringBinding() {
+
+			@Override
+			protected String computeValue() {
+				return extractName();
+			}
+		};
+		path.name.invalidate();
+		return path;
 	}
 
 	public void changeName(String newName) {
-		String oldName = getName();
+		final String oldName = getName();
 		if (!oldName.equals(SEPERATOR)) {
 			String parentPath = getParentPath().getPath();
 			if (!parentPath.endsWith(SEPERATOR)) {

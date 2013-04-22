@@ -3,16 +3,16 @@ package ch.se.inf.ethz.jcd.batman.model;
 public class SearchDirectory extends Directory {
 	private static final long serialVersionUID = -5311729100226286904L;
 
-	private String term;
-	private boolean isRegex;
-	private boolean checkFiles;
-	private boolean checkFolders;
-	private boolean isCaseSensitive;
-	private boolean checkChildren;
+	private final String term;
+	private final boolean isRegex;
+	private final boolean checkFiles;
+	private final boolean checkFolders;
+	private final boolean isCaseSensitive;
+	private final boolean checkChildren;
 
-	public SearchDirectory(Path path, String term, boolean isRegex,
-			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
-			boolean checkChildren) {
+	public SearchDirectory(final Path path, final String term, final boolean isRegex,
+			final boolean checkFiles, final boolean checkFolders, final boolean isCaseSensitive,
+			final boolean checkChildren) {
 		super(path);
 		this.term = term;
 		this.isRegex = isRegex;
@@ -47,8 +47,7 @@ public class SearchDirectory extends Directory {
 	}
 
 	@Override
-	public Object clone() {
-		return new SearchDirectory((Path) getPath().clone(), term, isRegex,
-				checkFiles, checkFolders, isCaseSensitive, checkChildren);
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 }
