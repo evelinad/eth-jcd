@@ -38,13 +38,12 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	private TableColumn<Entry, Entry> nameColumn;
 	private GuiState guiState;
 	private Directory directory;
-
+	
 	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addDirectoryListener(this);
 		guiState.addDiskEntryListener(this);
 		guiState.setActiveEntryView(this);
-		setEditable(true);
 
 		this.setPlaceholder(NO_DISK_LOADED_TEXT);
 
@@ -133,9 +132,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				}
 
 				if (event.getCode() == KeyCode.R && event.isControlDown()) {
-					if (selected.length > 0) {
-						edit(getSelectionModel().getSelectedIndex(), nameColumn);
-					}
+					editSelected();
 				}
 
 				// go inside a directory
@@ -174,7 +171,17 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		getSortOrder().add(nameColumn);
 		nameColumn.setSortType(SortType.ASCENDING);
 	}
+	
+	public void editSelected () {
+		Entry[] selected = getSelectedEntries();
+		if (selected.length > 0) {
+			setEditable(true);
+			edit(getSelectionModel().getSelectedIndex(), nameColumn);
+			setEditable(false);
+		}
 
+	}
+	
 	protected void clear() {
 		getItems().clear();
 	}
