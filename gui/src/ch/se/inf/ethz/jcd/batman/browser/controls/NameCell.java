@@ -9,7 +9,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
@@ -24,6 +23,7 @@ public class NameCell extends EntryCell<Entry, Entry> {
 	
 	public NameCell(GuiState guiState) {
 		super(guiState);
+		setEditable(true);
 	}
 	
 	private String getName(Entry item) {
@@ -41,9 +41,7 @@ public class NameCell extends EntryCell<Entry, Entry> {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    //textField.requestFocus();
-                    //textField.end();
-                    //textField.selectAll();
+                    textField.requestFocus();
                 }
             });
         }
@@ -131,13 +129,5 @@ public class NameCell extends EntryCell<Entry, Entry> {
 
 		setGraphic(imageview);
 
-	}
-	
-	protected void handleMouseClick (MouseEvent event) {
-		if (!event.isConsumed() && event.isControlDown() && event.getClickCount() == 2) {
-			startEdit();
-			event.consume();
-		}
-		super.handleMouseClick(event);
 	}
 }

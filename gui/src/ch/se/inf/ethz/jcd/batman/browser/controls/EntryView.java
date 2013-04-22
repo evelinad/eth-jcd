@@ -34,6 +34,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	private static final Text NO_DISK_LOADED_TEXT = new Text("No Disk Loaded.");
 	private static final Text NO_ENTRIES_TEXT = new Text("Is Empty.");
 
+	private TableColumn<Entry, Entry> nameColumn;
 	private GuiState guiState;
 	private Directory directory;
 
@@ -42,12 +43,13 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		guiState.addDirectoryListener(this);
 		guiState.addDiskEntryListener(this);
 		guiState.setActiveEntryView(this);
+		setEditable(true);
 
 		this.setPlaceholder(NO_DISK_LOADED_TEXT);
 
 		getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		TableColumn<Entry, Entry> nameColumn = new TableColumn<Entry, Entry>(
+		nameColumn = new TableColumn<Entry, Entry>(
 				"Name");
 		nameColumn.setPrefWidth(300);
 		nameColumn
@@ -126,8 +128,14 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
 				
-				if (!event.getTarget().equals(this)) {
+				if (!event.getTarget().equals(EntryView.this)) {
 					return;
+				}
+				
+				if (event.getCode() == KeyCode.R && event.isControlDown()) {
+					if (selected.length > 0) {
+						edit(getSelectionModel().getSelectedIndex(), nameColumn);	
+					}
 				}
 				
 				// go inside a directory
@@ -213,24 +221,47 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		setDirectory(directory);
 	}
 
-	@Override
-	public void entryAdded(Entry entry) {
+	private boolean entryAddedImpl (Entry entry) {
 		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
 			getItems().add(entry);
+			return true;
 		}
+		return false;
 	}
 
 	@Override
-	public void entryDeleted(Entry entry) {
+	public void entryAdded(Entry entry) {
+		entryAddedImpl(entry);
+	}
+
+	private boolean entryDeletedImpl(Entry entry) {
 		if (getItems().contains(entry)) {
 			getItems().remove(entry);
+			return true;
 		}
+		return false;
+	}
+	
+	@Override
+	public void entryDeleted(Entry entry) {
+		entryDeletedImpl(entry);
 	}
 
 	@Override
 	public void entryChanged(final Entry oldEntry, final Entry newEntry) {
-		entryDeleted(oldEntry);
-		entryAdded(newEntry);
+		Entry[] selectedEntries = getSelectedEntries();
+		boolean selected = getSelectionModel().getSelectedItems().contains(oldEntry);
+		boolean deleted = entryDeletedImpl(oldEntry);
+		boolean added = entryAddedImpl(newEntry);
+		getSelectionModel().clearSelection();
+		for (Entry entry : selectedEntries) {
+			if (!entry.equals(oldEntry)) {
+				getSelectionModel().select(entry);
+			}
+		}
+		if (selected && added && deleted) {
+			getSelectionModel().select(newEntry);
+		}
 	}
 
 	public Entry[] getSelectedEntries() {
