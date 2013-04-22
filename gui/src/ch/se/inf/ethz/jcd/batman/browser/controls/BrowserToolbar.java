@@ -49,6 +49,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button goBackButton;
 	private Button goForewardButton;
 	private Button deleteButton;
+	private Button copyButton;
+	private Button cutButton;
+	private Button pasteButton;
 	private Button importFilesButton;
 	private Button importDirectoryButton;
 	private Button exportButton;
@@ -139,6 +142,39 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		});
 		super.getItems().add(deleteButton);
 
+		// copy element button
+		copyButton = new Button("copy");
+		copyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				guiState.copy();
+			}
+		});
+		super.getItems().add(copyButton);
+		
+		// cut element button
+		cutButton = new Button("cut");
+		cutButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				guiState.cut();
+			}
+		});
+		super.getItems().add(cutButton);
+		
+		// paste element button
+		pasteButton = new Button("paste");
+		pasteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				guiState.paste();
+			}
+		});
+		super.getItems().add(pasteButton);
+		
 		// import files button
 		importFilesButton = new Button("import files");
 		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -370,17 +406,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	protected void search(final String term, final boolean isRegex,
 			final boolean checkFiles, final boolean checkFolders,
 			final boolean isCaseSensitive, final boolean checkChildren) {
-		final Task<Entry[]> task = guiState.getController().createSearchTask(
-				term, isRegex, checkFiles, checkFolders, isCaseSensitive,
-				checkChildren, guiState.getCurrentDirectory());
-
-		new TaskDialog(guiState, task) {
-			protected void succeeded(WorkerStateEvent event) {
-				SearchDirectory searchDir = new SearchDirectory(
-						task.getValue(), term);
-				guiState.setCurrentDirectory(searchDir);
-			};
-		};
+		SearchDirectory search = new SearchDirectory(guiState.getCurrentDirectory().getPath(), term, isRegex, checkFiles, checkFolders, isCaseSensitive, checkChildren);
+		guiState.setCurrentDirectory(search);
 	}
 
 	@Override
@@ -392,6 +419,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			goBackButton.setDisable(true);
 			goForewardButton.setDisable(true);
 			deleteButton.setDisable(true);
+			copyButton.setDisable(true);
+			cutButton.setDisable(true);
+			pasteButton.setDisable(true);
 			importFilesButton.setDisable(true);
 			importDirectoryButton.setDisable(true);
 			exportButton.setDisable(true);
@@ -404,6 +434,9 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			goBackButton.setDisable(false);
 			goForewardButton.setDisable(false);
 			deleteButton.setDisable(false);
+			copyButton.setDisable(false);
+			cutButton.setDisable(false);
+			pasteButton.setDisable(false);
 			importFilesButton.setDisable(false);
 			importDirectoryButton.setDisable(false);
 			exportButton.setDisable(false);

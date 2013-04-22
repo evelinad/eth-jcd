@@ -325,16 +325,8 @@ public class RemoteTaskController implements TaskController {
 					updateMessage("Moving entry " + oldEntry.getPath() + " to "
 							+ newPath);
 					remoteDisk.moveEntry(diskId, oldEntry, newPath);
-					Entry newEntry;
-					if (sourceEntries[i] instanceof File) {
-						newEntry = new File(newPath, oldEntry.getTimestamp(),
-								((File) oldEntry).getSize());
-					} else if (sourceEntries[i] instanceof Directory) {
-						newEntry = new Directory(newPath,
-								oldEntry.getTimestamp());
-					} else {
-						newEntry = new Entry(newPath, oldEntry.getTimestamp());
-					}
+					Entry newEntry = (Entry) oldEntry.clone();
+					newEntry.setPath(newPath);
 					entryChanged(oldEntry, newEntry);
 					if (isCancelled()) {
 						return null;
@@ -371,11 +363,10 @@ public class RemoteTaskController implements TaskController {
 					remoteDisk.createDirectory(diskId, newDirectory);
 					entryAdded(newDirectory);
 				} else if (file.isFile()) {
-					remoteDisk.createFile(diskId,
-							new File(new Path(destination),
-									file.lastModified(), file.length()));
+					File diskFile = new File(new Path(destination),
+							file.lastModified(), file.length());
+					remoteDisk.createFile(diskId, diskFile);
 					// Import data
-					File diskFile = new File(new Path(destination));
 					FileInputStream inputStream = null;
 					try {
 						inputStream = new FileInputStream(file);
@@ -544,6 +535,8 @@ public class RemoteTaskController implements TaskController {
 			protected Void call() throws Exception {
 				checkIsConnected();
 				updateMessage("Discovering items");
+				// check if destination paths not already exist
+				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				@SuppressWarnings("unchecked")
 				List<Entry>[] copyFiles = new List[sourceEntries.length];
 				long totalEntriesToCopy = 0;
@@ -566,6 +559,7 @@ public class RemoteTaskController implements TaskController {
 						updateProgress(entriesExported, totalEntriesToCopy);
 						copyEntry(entry, destination);
 						Entry newEntry = (Entry) entry.clone();
+						newEntry.setPath(destination);
 						entryAdded(newEntry);
 						entriesExported++;
 						if (isCancelled()) {

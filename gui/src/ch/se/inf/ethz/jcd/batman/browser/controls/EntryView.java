@@ -1,8 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.browser.controls;
 
+import java.util.Comparator;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -35,8 +36,6 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 
 	private GuiState guiState;
 	private Directory directory;
-	private ObservableList<Entry> entryList = FXCollections
-			.observableArrayList();
 
 	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
@@ -69,21 +68,27 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 						return new NameCell(guiState);
 					}
 				});
-
+		nameColumn.setComparator(new Comparator<Entry>() {
+			@Override
+			public int compare(Entry o1, Entry o2) {
+				return o1.getPath().getName().compareTo(o2.getPath().getName());
+			}
+		});
+		nameColumn.setEditable(true);
 		getColumns().add(nameColumn);
 
-		TableColumn<Entry, String> dateColumn = new TableColumn<>(
+		TableColumn<Entry, Long> dateColumn = new TableColumn<>(
 				"Last changed");
 		dateColumn.setPrefWidth(100);
-		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, String>(
+		dateColumn.setCellValueFactory(new PropertyValueFactory<Entry, Long>(
 				"timestamp"));
 		dateColumn
-				.setCellFactory(new Callback<TableColumn<Entry, String>, TableCell<Entry, String>>() {
+				.setCellFactory(new Callback<TableColumn<Entry, Long>, TableCell<Entry, Long>>() {
 
 					@Override
-					public TableCell<Entry, String> call(
-							TableColumn<Entry, String> param) {
-						return new EntryCell<Entry, String>(guiState);
+					public TableCell<Entry, Long> call(
+							TableColumn<Entry, Long> param) {
+						return new TimestampCell(guiState);
 					}
 				});
 		getColumns().add(dateColumn);
@@ -110,7 +115,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					@Override
 					public TableCell<Entry, Number> call(
 							TableColumn<Entry, Number> param) {
-						return new EntryCell<Entry, Number>(guiState);
+						return new SizeCell(guiState);
 					}
 				});
 		getColumns().add(sizeColumn);
@@ -120,7 +125,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 			@Override
 			public void handle(KeyEvent event) {
 				Entry[] selected = getSelectedEntries();
-
+				
 				// go inside a directory
 				if (event.getCode() == KeyCode.ENTER
 						|| event.getCode() == KeyCode.RIGHT) {
@@ -154,26 +159,35 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 				}
 			}
 		});
-
-		setItems(entryList);
 	}
 
 	protected void clear() {
-		entryList.clear();
+		getItems().clear();
 	}
 
 	protected void setEntries(Entry[] entries) {
-		entryList.addAll(entries);
-		// TODO sort
+		getItems().addAll(entries);
 	}
 
 	public void setDirectory(Directory directory) {
+		if (directory == null) {
+			setPlaceholder(NO_DISK_LOADED_TEXT);
+		} else {
+			setPlaceholder(NO_ENTRIES_TEXT);
+		}
 		this.directory = directory;
 		clear();
 		if (directory != null) {
 			if (directory instanceof SearchDirectory) {
-				SearchDirectory searchDir = (SearchDirectory) directory;
-				setEntries(searchDir.getResults());
+				SearchDirectory search = (SearchDirectory) directory;
+				final Task<Entry[]> searchTask = guiState.getController().createSearchTask(
+						search.getTerm(), search.isRegex(), search.isCheckFiles(), search.isCheckFolders(), 
+						search.isCaseSensitive(), search.isCheckChildren(), new Directory(search.getPath()));
+				new TaskDialog(guiState, searchTask) {
+					protected void succeeded(WorkerStateEvent event) {
+						setEntries(searchTask.getValue());
+					}
+				};
 			} else {
 				final Task<Entry[]> entriesTask = guiState.getController()
 						.createDirectoryEntriesTask(directory);
@@ -183,10 +197,6 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					}
 				};
 			}
-		}
-
-		if (entryList.size() <= 0) {
-			this.setPlaceholder(NO_ENTRIES_TEXT);
 		}
 	}
 
@@ -202,22 +212,21 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	@Override
 	public void entryAdded(Entry entry) {
 		if (entry.getPath().getParentPath().pathEquals(directory.getPath())) {
-			entryList.add(entry);
+			getItems().add(entry);
 		}
 	}
 
 	@Override
 	public void entryDeleted(Entry entry) {
-		if (entryList.contains(entry)) {
-			entryList.remove(entry);
+		if (getItems().contains(entry)) {
+			getItems().remove(entry);
 		}
 	}
 
 	@Override
-	public void entryChanged(Entry oldEntry, Entry newEntry) {
+	public void entryChanged(final Entry oldEntry, final Entry newEntry) {
 		entryDeleted(oldEntry);
 		entryAdded(newEntry);
-
 	}
 
 	public Entry[] getSelectedEntries() {

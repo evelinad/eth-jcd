@@ -16,7 +16,7 @@ import javafx.beans.property.SimpleObjectProperty;
  * architecture.
  * 
  */
-public class Entry implements Serializable, Cloneable {
+public class Entry implements Serializable, Cloneable, Comparable<Entry> {
 
 	private static final long serialVersionUID = -6951589227362678760L;
 
@@ -91,8 +91,7 @@ public class Entry implements Serializable, Cloneable {
 	public boolean equals(Object obj) {
 		if (obj instanceof Entry) {
 			Entry entry = (Entry) obj;
-			return getTimestamp() == entry.getTimestamp()
-					&& getPath().equals(entry.getPath());
+			return getPath().equals(entry.getPath());
 		}
 		return false;
 	}
@@ -109,8 +108,13 @@ public class Entry implements Serializable, Cloneable {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return new Entry(getPath(), getTimestamp());
+	public Object clone() {
+		return new Entry((Path) getPath().clone(), getTimestamp());
+	}
+
+	@Override
+	public int compareTo(Entry o) {
+		return getPath().getPath().compareTo(o.getPath().getPath());
 	}
 	
 }

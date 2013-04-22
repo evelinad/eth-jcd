@@ -23,8 +23,8 @@ public class Directory extends Entry {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return new Directory(getPath(), getTimestamp());
+	public Object clone() {
+		return new Directory((Path) getPath().clone(), getTimestamp());
 	}
 	
 }

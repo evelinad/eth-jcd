@@ -63,8 +63,8 @@ public class File extends Entry {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return new File(getPath(), getTimestamp(), getSize());
+	public Object clone() {
+		return new File((Path) getPath().clone(), getTimestamp(), getSize());
 	}
 	
 }
