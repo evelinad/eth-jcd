@@ -37,6 +37,7 @@ public final class ImageResource {
 	private final Image importDir;
 	private final Image importFile;
 	private final Image search;
+	private final Image edit;
 
 	private ImageResource() {
 		up = new Image(getClass().getResourceAsStream("up.png"));
@@ -58,6 +59,7 @@ public final class ImageResource {
 		importFile = new Image(getClass().getResourceAsStream(
 				"page_white_put.png"));
 		search = new Image(getClass().getResourceAsStream("magnifier.png"));
+		edit = new Image(getClass().getResourceAsStream("textfield_rename.png"));
 	}
 
 	public Image goToParentImage() {
@@ -122,5 +124,9 @@ public final class ImageResource {
 
 	public Image magnifier() {
 		return search;
+	}
+	
+	public Image edit() {
+		return edit;
 	}
 }

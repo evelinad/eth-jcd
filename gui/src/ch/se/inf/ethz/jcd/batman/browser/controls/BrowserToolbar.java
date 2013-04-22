@@ -55,6 +55,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private Button importDirectoryButton;
 	private Button exportButton;
 	private Button createDirButton;
+	private Button renameButton;
 	private TextField search;
 
 	private Button advancedSearchButton;
@@ -129,6 +130,17 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			}
 		});
 		super.getItems().add(goForewardButton);
+
+		// rename button
+		renameButton = new Button("", new ImageView(ImageResource
+				.getImageResource().edit()));
+		renameButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				// TODO
+			}
+		});
+		super.getItems().add(renameButton);
 
 		// delete element button
 		Image deleteImage = ImageResource.getImageResource().deleteImage();
@@ -490,6 +502,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			search.setDisable(true);
 			advancedSearchButton.setDisable(true);
 			createDirButton.setDisable(true);
+			renameButton.setDisable(true);
 		} else if (newState == State.CONNECTED) {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
@@ -506,6 +519,7 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			search.setDisable(false);
 			advancedSearchButton.setDisable(false);
 			createDirButton.setDisable(false);
+			renameButton.setDisable(false);
 		}
 	}
 }
