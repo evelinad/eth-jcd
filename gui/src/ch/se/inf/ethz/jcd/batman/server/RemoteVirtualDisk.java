@@ -22,7 +22,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.Settings;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 
-public class RemoteVirtualDisk implements IRemoteVirtualDisk {
+public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	private final Map<Integer, IVirtualDisk> diskMap;
 	private int nextId = Integer.MIN_VALUE;
@@ -37,6 +37,17 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	protected int getNextId() {
 		return nextId++;
+	}
+	
+	@Override
+	public void unloadDisk(int id) throws RemoteException, VirtualDiskException {
+		try {
+			IVirtualDisk disk = getDisk(id);
+			getDiskMap().remove(id);
+			disk.close();
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not unload disk " + id, e);
+		}
 	}
 	
 	@Override
@@ -204,18 +215,19 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 	
 	@Override
-	public void moveEntry(int id, Entry entry, Path newPath)
+	public void moveEntry(int id, Entry entry, Entry newEntry)
 			throws RemoteException, VirtualDiskException {
 		try {
 			IVirtualDisk disk = getDisk(id);
 			VDiskFile diskEntry = new VDiskFile(entry.getPath().getPath(), disk);
-			VDiskFile renameEntry = new VDiskFile(newPath.getPath(), disk);
+			VDiskFile renameEntry = new VDiskFile(newEntry.getPath().getPath(), disk);
 			if (!diskEntry.renameTo(renameEntry)) {
 				throw new VirtualDiskException();
 			}
+			diskEntry.setLastModified(newEntry.getTimestamp());
 		} catch (Exception e) {
 			throw new VirtualDiskException("Could not rename entry "
-					+ entry.getPath() + " to " + newPath, e);
+					+ entry.getPath() + " to " + newEntry.getPath(), e);
 		}
 	}
 
@@ -301,24 +313,26 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public void copyEntry(int id, Entry source, Path destination)
+	public void copyEntry(int id, Entry source, Entry destination)
 			throws RemoteException, VirtualDiskException {
 		IVirtualDisk disk = getDisk(id);
 		try {
+			VDiskFile destinationEntry = new VDiskFile(destination.getPath().getPath(), disk);
+			destinationEntry.setLastModified(destination.getTimestamp());
 			if (source instanceof File) {
 				VDiskFile sourceFile = new VDiskFile(
 						source.getPath().getPath(), disk);
-				if (!sourceFile.copyTo(new VDiskFile(destination.getPath(),
-						disk))) {
+				if (!sourceFile.copyTo(destinationEntry)) {
 					throw new VirtualDiskException("Copy errror");
 				}
+				destinationEntry.setLastModified(destination.getTimestamp());
 			} else if (source instanceof Directory) {
-				VDiskFile newDirectory = new VDiskFile(destination.getPath(),
-						disk);
-				if (!newDirectory.mkdir()) {
+				
+				if (!destinationEntry.mkdir()) {
 					throw new VirtualDiskException(
 							"Could not create directory at " + destination);
 				}
+				destinationEntry.setLastModified(destination.getTimestamp());
 			} else {
 				throw new VirtualDiskException("Invalid disk entry type "
 						+ source.getClass());

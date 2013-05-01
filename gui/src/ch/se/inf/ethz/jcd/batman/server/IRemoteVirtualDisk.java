@@ -10,6 +10,20 @@ import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public interface IRemoteVirtualDisk extends Remote {
+
+	/**
+	 * Unloads the virtual disk represented by the given ID.
+	 * 
+	 * A disk unload will also close the disk on the remote host.
+	 * 
+	 * @param id
+	 *            the ID representing the loaded virtual disk that should be
+	 *            unloaded
+	 * @throws RemoteException
+	 * @throws VirtualDiskException
+	 */
+	void unloadDisk(int id) throws RemoteException, VirtualDiskException;
+	
 	/**
 	 * Returns the amount of free space inside the virtual disk.
 	 * 
@@ -172,7 +186,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void moveEntry(int id, Entry entry, Path newPath) throws RemoteException,
+	void moveEntry(int id, Entry entry, Entry newEntry) throws RemoteException,
 			VirtualDiskException;
 
 	/**
@@ -217,7 +231,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void copyEntry(int id, Entry source, Path destination)
+	void copyEntry(int id, Entry source, Entry destination)
 			throws RemoteException, VirtualDiskException;
 
 	/**

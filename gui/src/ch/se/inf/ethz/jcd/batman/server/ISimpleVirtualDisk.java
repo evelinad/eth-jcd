@@ -65,18 +65,5 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 */
 	boolean diskExists(Path path) throws RemoteException, VirtualDiskException;
 
-	/**
-	 * Unloads the virtual disk represented by the given ID.
-	 * 
-	 * A disk unload will also close the disk on the remote host.
-	 * 
-	 * @param id
-	 *            the ID representing the loaded virtual disk that should be
-	 *            unloaded
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	void unloadDisk(int id) throws RemoteException, VirtualDiskException;
-
 	
 }

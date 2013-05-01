@@ -45,17 +45,6 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 	}
 
 	@Override
-	public void unloadDisk(int id) throws RemoteException, VirtualDiskException {
-		try {
-			IVirtualDisk disk = getDisk(id);
-			getDiskMap().remove(id);
-			disk.close();
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not unload disk " + id, e);
-		}
-	}
-
-	@Override
 	public void deleteDisk(Path path) throws RemoteException,
 			VirtualDiskException {
 		try {
