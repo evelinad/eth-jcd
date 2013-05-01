@@ -103,6 +103,10 @@ public class RemoteTaskController implements TaskController {
 		}
 	}
 	
+	protected static boolean isServerUri (URI uri) {
+		return uri.getUserInfo() != null;
+	}
+	
 	protected static RemoteConnection connect (URI uri, boolean createNewIfNecessary) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
 		Registry registry;
 		if (uri.getPort() == -1) {
@@ -111,24 +115,9 @@ public class RemoteTaskController implements TaskController {
 			registry = LocateRegistry.getRegistry(uri.getHost(),
 					uri.getPort());
 		}
-		String userInfo = uri.getUserInfo();
 		RemoteConnection connection = new RemoteConnection();
-		if (userInfo == null) {
-			Path diskPath = new Path(uri.getQuery());
-			ISimpleVirtualDisk remoteDisk = (ISimpleVirtualDisk) registry
-					.lookup(DIKS_SERVICE_NAME);
-			connection.setDisk(remoteDisk);
-			if (remoteDisk.diskExists(diskPath)) {
-				connection.setDiskId(remoteDisk.loadDisk(diskPath));
-			} else {
-				if (createNewIfNecessary) {
-					connection.setDiskId(remoteDisk.createDisk(diskPath));
-				} else {
-					throw new ConnectionException(
-							"Disk does not exist.");
-				}
-			}
-		} else {
+		if (isServerUri(uri)) {
+			String userInfo = uri.getUserInfo();
 			ISynchronizeServer synchronizeServer = (ISynchronizeServer) registry
 					.lookup(SYNCHRONIZE_SERVICE_NAME);
 			connection.setDisk(synchronizeServer);
@@ -149,6 +138,21 @@ public class RemoteTaskController implements TaskController {
 							"Disk does not exist.");
 				}
 			}
+		} else {
+			Path diskPath = new Path(uri.getQuery());
+			ISimpleVirtualDisk remoteDisk = (ISimpleVirtualDisk) registry
+					.lookup(DIKS_SERVICE_NAME);
+			connection.setDisk(remoteDisk);
+			if (remoteDisk.diskExists(diskPath)) {
+				connection.setDiskId(remoteDisk.loadDisk(diskPath));
+			} else {
+				if (createNewIfNecessary) {
+					connection.setDiskId(remoteDisk.createDisk(diskPath));
+				} else {
+					throw new ConnectionException(
+							"Disk does not exist.");
+				}
+			}
 		}
 		return connection;
 	}
@@ -157,15 +161,15 @@ public class RemoteTaskController implements TaskController {
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
 	private static final int BUFFER_SIZE = 32 * 1024;
 
-	private final Comparator<Entry> fileBeforeDirectoryComp;
-	private final List<DiskEntryListener> diskEntryListener;
+	private final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
+	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 
-	private final URI uri;
+	protected URI uri;
 	protected RemoteConnection connection;
 
+	public RemoteTaskController() { }
+	
 	public RemoteTaskController(URI uri) {
-		fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
-		diskEntryListener = new LinkedList<>();
 		this.uri = uri;
 	}
 
@@ -194,7 +198,7 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	public void close() {
-		if (connection != null) {
+		if (isConnected()) {
 			try {
 				unloadDisk();
 			} catch (RemoteException | VirtualDiskException e) {
@@ -781,7 +785,7 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	private void checkIsConnected() {
+	protected void checkIsConnected() {
 		if (!isConnected()) {
 			throw new IllegalStateException("Controller is not connected");
 		}
