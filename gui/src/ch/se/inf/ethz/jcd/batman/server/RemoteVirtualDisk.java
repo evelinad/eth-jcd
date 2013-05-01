@@ -19,18 +19,9 @@ import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
-import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.Settings;
 import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 
-/**
- * Implementation of the IRemoteVirtualDisk. An instance of this class is used
- * on the host server.
- * 
- * This class tracks all open virtual disks and assigns them IDs. This IDs are
- * later used to identify the disk on which an operation is executed.
- * 
- */
 public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	private final Map<Integer, IVirtualDisk> diskMap;
@@ -40,44 +31,14 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		diskMap = new HashMap<Integer, IVirtualDisk>();
 	}
 
-	@Override
-	public int createDisk(Path path) throws RemoteException,
-			VirtualDiskException {
-		try {
-			IVirtualDisk newDisk = VirtualDisk.create(path.getPath());
-			int id = getNextId();
-			diskMap.put(id, newDisk);
-			return id;
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not create disk at "
-					+ path.getPath(), e);
-		}
+	public Map<Integer, IVirtualDisk> getDiskMap () {
+		return diskMap;
 	}
 
-	@Override
-	public int loadDisk(Path path) throws RemoteException, VirtualDiskException {
-		try {
-			IVirtualDisk loadedDisk = VirtualDisk.load(path.getPath());
-			int id = getNextId();
-			diskMap.put(id, loadedDisk);
-			return id;
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not load disk at "
-					+ path.getPath(), e);
-		}
+	protected int getNextId() {
+		return nextId++;
 	}
-
-	@Override
-	public void unloadDisk(int id) throws RemoteException, VirtualDiskException {
-		try {
-			IVirtualDisk disk = getDisk(id);
-			diskMap.remove(id);
-			disk.close();
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not unload disk " + id, e);
-		}
-	}
-
+	
 	@Override
 	public long getFreeSpace(int id) throws RemoteException,
 			VirtualDiskException {
@@ -241,33 +202,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 							+ entry.getPath(), e);
 		}
 	}
-
-	@Override
-	public void deleteDisk(Path path) throws RemoteException,
-			VirtualDiskException {
-		try {
-			java.io.File diskFile = new java.io.File(path.getPath());
-			if (isVirtualDisk(diskFile)) {
-				if (!diskFile.delete()) {
-					throw new VirtualDiskException(
-							"Could not delete virtual disk at " + path);
-				}
-			} else {
-				throw new IllegalArgumentException(path
-						+ "  is not a virtual disk. File not deleted.");
-			}
-		} catch (Exception e) {
-			throw new VirtualDiskException("Could not delete virtual disk at "
-					+ path, e);
-		}
-	}
-
-	@Override
-	public boolean diskExists(Path path) throws RemoteException,
-			VirtualDiskException {
-		return isVirtualDisk(new java.io.File(path.getPath()));
-	}
-
+	
 	@Override
 	public void moveEntry(int id, Entry entry, Path newPath)
 			throws RemoteException, VirtualDiskException {
@@ -403,7 +338,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		super.finalize();
 	}
 
-	private boolean isVirtualDisk(java.io.File diskFile) {
+	protected boolean isVirtualDisk(java.io.File diskFile) {
 		if (!diskFile.exists()) {
 			return false;
 		}
@@ -431,11 +366,7 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 
-	private int getNextId() {
-		return nextId++;
-	}
-
-	private IVirtualDisk getDisk(int id) {
+	protected IVirtualDisk getDisk(int id) {
 		IVirtualDisk disk = diskMap.get(id);
 		if (disk == null) {
 			throw new IllegalArgumentException("Invalid id.");
@@ -459,4 +390,5 @@ public class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			return createDirectoryModel(entry);
 		}
 	}
+	
 }

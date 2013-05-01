@@ -9,78 +9,7 @@ import ch.se.inf.ethz.jcd.batman.model.File;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
-/**
- * Interface for a remote virtual disk.
- * 
- * This interface is used to communicate with a remote virtual disk by means of
- * RMI.
- * 
- * This interface is a facade (as in the Facade Design Pattern) for the
- * underlying subsystems used on the remote host.
- * 
- * Most of the methods expect an ID or return one. This ID represents a specific
- * open virtual disk on the remote host.
- * 
- */
 public interface IRemoteVirtualDisk extends Remote {
-
-	/**
-	 * Creates a virtual disk on the remote host.
-	 * 
-	 * @param path
-	 *            location where the virtual disk should be created on the
-	 *            remote host
-	 * @return ID of the virtual disk that was created and loaded
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	int createDisk(Path path) throws RemoteException, VirtualDiskException;
-
-	/**
-	 * Deletes a virtual disk on the remote host.
-	 * 
-	 * @param path
-	 *            Path to the virtual disk that should be deleted.
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	void deleteDisk(Path path) throws RemoteException, VirtualDiskException;
-
-	/**
-	 * Loads the given path as a virtual disk.
-	 * 
-	 * @param path
-	 *            location of the virtual disk to load on the host system
-	 * @return ID of the loaded virtual disk
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	int loadDisk(Path path) throws RemoteException, VirtualDiskException;
-
-	/**
-	 * Indicates if the given path represents a virtual disk.
-	 * 
-	 * @param path
-	 *            location of the virtual disk to check on the host system
-	 * @return true if the virtual disk exists, otherwise false
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	boolean diskExists(Path path) throws RemoteException, VirtualDiskException;
-
-	/**
-	 * Unloads the virtual disk represented by the given ID.
-	 * 
-	 * A disk unload will also close the disk on the remote host.
-	 * 
-	 * @param id
-	 *            the ID representing the loaded virtual disk that should be
-	 *            unloaded
-	 * @throws RemoteException
-	 * @throws VirtualDiskException
-	 */
-	void unloadDisk(int id) throws RemoteException, VirtualDiskException;
-
 	/**
 	 * Returns the amount of free space inside the virtual disk.
 	 * 

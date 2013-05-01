@@ -1,0 +1,228 @@
+package ch.se.inf.ethz.jcd.batman.server;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
+import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
+
+public class SynchronizeServer extends RemoteVirtualDisk implements
+		ISynchronizeServer {
+
+	protected static class UserData {
+		
+		private int id;
+		private String userName;
+		private byte[] hashedPassowrd;
+		
+		public UserData (int id, String userName, byte[] hashedPassword) {
+			this.id = id;
+			this.userName = userName;
+		}
+		
+		public int getId() {
+			return id;
+		}
+		
+		public void setId(int id) {
+			this.id = id;
+		}
+
+		public String getUserName() {
+			return userName;
+		}
+
+		public void setUserName(String userName) {
+			this.userName = userName;
+		}
+
+		public byte[] getHashedPassowrd() {
+			return hashedPassowrd;
+		}
+
+		public void setHashedPassowrd(byte[] hashedPassowrd) {
+			this.hashedPassowrd = hashedPassowrd;
+		}
+		
+	}
+	
+	private static final long SALT_SEED = 12312321;
+	private static final String USER_FILE = "user.data";
+	
+	private Map<String, UserData> userMap = new HashMap<String, UserData>();
+	private int nextId = 1;
+	private final byte[] salt;
+	
+	public SynchronizeServer() {
+		salt = new byte[16];
+		new Random(SALT_SEED).nextBytes(salt);
+		loadUsers();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void loadUsers() {
+		File userFile = new File(USER_FILE);
+		if (userFile.exists()) {
+			ObjectInputStream objStream = null;
+			try {
+				objStream = new ObjectInputStream (new FileInputStream(userFile));
+				nextId = objStream.readInt();
+				Object object = objStream.readObject();
+				if (object instanceof Map) {
+					userMap = (Map<String, UserData>) object;
+				}
+			} catch (IOException | ClassNotFoundException e) {
+				throw new RuntimeException("Unable to load users", e);
+			} finally {
+				if (objStream != null) {
+					try {
+						objStream.close();
+					} catch (IOException e) { }
+				}
+			}
+		}
+	}
+	
+	private void saveUsers() {
+		ObjectOutputStream objStream = null;
+		try {
+			objStream = new ObjectOutputStream (new FileOutputStream(USER_FILE));
+			objStream.writeInt(nextId);
+			objStream.writeObject(userMap);
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to save users", e);
+		} finally {
+			if (objStream != null) {
+				try {
+					objStream.close();
+				} catch (IOException e) { }
+			}
+		}
+	}
+	
+	@Override
+	public void createUser(String userName, String password) throws RemoteException, InvalidUserNameException, AuthenticationException {
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("Username can not be null or empty");
+		}
+		if (password == null || password.isEmpty()) {
+			throw new IllegalArgumentException("Password can not be null or empty");
+		}
+		if (userMap.containsKey(userName)) {
+			throw new InvalidUserNameException("User " + userName + " already exists");
+		}
+		UserData userData = new UserData(nextId++, userName, hashPassword(password));
+		userMap.put(userName, userData);
+		saveUsers();
+	}
+
+	private byte[] getHashedPassword(String userName) {
+		return userMap.get(userName).getHashedPassowrd();
+	}
+	
+	private int getUserId (String userName) {
+		return userMap.get(userName).getId();
+	}
+	
+	private byte[] hashPassword (String password) throws AuthenticationException {
+		try {
+			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
+			SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+			return  f.generateSecret(spec).getEncoded();
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			throw new AuthenticationException("Passowrd hash error.", e);
+		}
+	}
+	
+	private void checkPassword(String userName, String password) throws AuthenticationException {
+		if (!userMap.containsKey(userName)) {
+			throw new AuthenticationException("User " + userName + " does not exist.");
+		}
+		if (!Arrays.equals(getHashedPassword(userName), hashPassword(password))) {
+			throw new AuthenticationException("Invalid password.");
+		}
+	}
+	
+	private String getDiskPath(String userName, String diskName) {
+		return "" + getUserId(userName) + File.pathSeparator + diskName;
+	}
+	
+	@Override
+	public int createDisk(String userName, String password, String diskName)
+			throws RemoteException, VirtualDiskException, AuthenticationException {
+		checkPassword(userName, password);
+		try {
+			IVirtualDisk newDisk = VirtualDisk.create(getDiskPath(userName, diskName));
+			int id = getNextId();
+			getDiskMap().put(id, newDisk);
+			return id;
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not create disk at "
+					+ getDiskPath(userName, diskName), e);
+		}
+	}
+
+	@Override
+	public void deleteDisk(String userName, String password, String diskName)
+			throws RemoteException, VirtualDiskException, AuthenticationException {
+		checkPassword(userName, password);
+		String diskPath = getDiskPath(userName, diskName);
+		try {
+			java.io.File diskFile = new java.io.File(diskPath);
+			if (isVirtualDisk(diskFile)) {
+				if (!diskFile.delete()) {
+					throw new VirtualDiskException(
+							"Could not delete virtual disk at " + diskPath);
+				}
+			} else {
+				throw new IllegalArgumentException(diskPath
+						+ "  is not a virtual disk. File not deleted.");
+			}
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not delete virtual disk at "
+					+ diskPath, e);
+		}
+	}
+
+	@Override
+	public int loadDisk(String userName, String password, String diskName)
+			throws RemoteException, VirtualDiskException, AuthenticationException {
+		checkPassword(userName, password);
+		String diskPath = getDiskPath(userName, diskName);
+		try {
+			IVirtualDisk loadedDisk = VirtualDisk.load(diskPath);
+			int id = getNextId();
+			getDiskMap().put(id, loadedDisk);
+			return id;
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not load disk at "
+					+ diskPath, e);
+		}
+	}
+
+	@Override
+	public boolean diskExists(String userName, String diskName)
+			throws RemoteException, VirtualDiskException {
+		if (userMap.containsKey(userName)) {
+			return isVirtualDisk(new java.io.File(getDiskPath(userName, diskName)));
+		}
+		return false;
+	}
+
+}
