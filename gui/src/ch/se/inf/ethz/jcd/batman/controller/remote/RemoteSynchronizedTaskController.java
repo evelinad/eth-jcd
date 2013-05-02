@@ -21,12 +21,25 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class RemoteSynchronizedTaskController extends RemoteTaskController implements SynchronizedTaskController {
 
-	private SynchronizedTaskControllerState state = SynchronizedTaskControllerState.DISCONNECTED;
+	private SynchronizedTaskControllerState state = DEFAULT_STATE;
 	private URI serverUri;
 	private RemoteConnection serverConnection;
 	private final List<SynchronizedTaskControllerStateListener> stateListener = new LinkedList<SynchronizedTaskControllerStateListener>();
 	
+	public RemoteSynchronizedTaskController(URI uri) {
+		if (isServerUri(uri)) {
+			initialize(null, uri);
+		} else {
+			//TODO check if local is linked
+			initialize(uri, null);
+		}
+	}
+	
 	public RemoteSynchronizedTaskController(URI localUri, URI serverUri) {
+		initialize(localUri, serverUri);
+	}
+
+	private void initialize(URI localUri, URI serverUri) {
 		if (localUri != null && isServerUri(localUri)) {
 			throw new IllegalArgumentException("Illegal local uri: " + localUri);
 		}
@@ -36,7 +49,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		this.uri = localUri;
 		this.serverUri = serverUri;
 	}
-
+	
 	private boolean isLocalConnected () {
 		return connection != null;
 	}
@@ -65,11 +78,12 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		}
 	}
 
-	private void changeState() {
+	private void updateState() {
 		if (isLocalConnected() && isServerConnected()) {
 			setState(SynchronizedTaskControllerState.BOTH_CONNECTED);
 		} else if (isLocalConnected()) {
-			setState(SynchronizedTaskControllerState.LOCAL_CONNECTED);
+			//TODO check if linked or not
+			setState(SynchronizedTaskControllerState.LOCAL_UNLINKED_CONNECTED);
 		} else if (isServerConnected()) {
 			setState(SynchronizedTaskControllerState.SERVER_CONNECTED);
 		} else {
@@ -86,7 +100,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				serverConnection = connect(serverUri, createNewIfNecessary);
 			}
 			//TODO if connected to both, synchronize
-			changeState();
+			updateState();
 		} catch (Exception e) {
 			close();
 		}
@@ -101,7 +115,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 			} finally {
 				connection = null;
 				serverConnection = null;
-				changeState();
+				updateState();
 			}
 		}
 	}
@@ -209,7 +223,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateTitle("Disconnecting from server");
 				updateMessage("Disconnecting from server...");
 				closeServerConnection();
-				changeState();
+				updateState();
 				return null;
 			}
 
@@ -232,7 +246,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateMessage("Connecting to server...");
 				serverConnection = connect(serverUri, true);
 				//TODO synchronize disks
-				changeState();
+				updateState();
 				return null;
 			}
 
@@ -255,7 +269,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateMessage("Connecting to local disk...");
 				connection = connect(uri, true);
 				//TODO synchronize disks
-				changeState();
+				updateState();
 				return null;
 			}
 
@@ -284,5 +298,10 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				listener.stateChanged(oldState, newState);
 			}
 		}
+	}
+
+	@Override
+	public SynchronizedTaskControllerState getState() {
+		return state;
 	}
 }

@@ -33,19 +33,25 @@ import ch.se.inf.ethz.jcd.batman.browser.StateListener;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
 import ch.se.inf.ethz.jcd.batman.controller.ServerTaskController;
-import ch.se.inf.ethz.jcd.batman.controller.TaskController;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.model.SearchDirectory;
 
-public class BrowserToolbar extends ToolBar implements StateListener {
+public class BrowserToolbar extends ToolBar implements StateListener, SynchronizedTaskControllerStateListener {
 	
 	private final static String EMPTY_STRING = "";
-
+	private final static String DOWNLOAD_DISK = "Download disk";
+	private final static String GO_OFFLINE = "Go offline";
+	private final static String GO_ONLINE = "Go online";
+	private final static String LINK_DISK = "Link disk";
+	private final static String DEFAULT_ONLINE_OFFLINE_TEXT = LINK_DISK;
+	
 	private final GuiState guiState;
-
 	private final Button connectButton;
 	private final Button disconnectButton;
 	private final Button onlineOfflineButton;
@@ -65,10 +71,13 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 	private final TextField searchField;
 	private final Button advancedSearchButton;
 
+	private SynchronizedTaskControllerState synchState;
+	
 	public BrowserToolbar(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addStateListener(this);
-
+		guiState.addSynchronizedStateListener(this);
+		
 		// connect button
 		Image connectImage = ImageResource.getImageResource().connectImage();
 		connectButton = new Button(EMPTY_STRING, new ImageView(connectImage));
@@ -96,11 +105,12 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		super.getItems().add(disconnectButton);
 
 		// onlineOffline button
-		onlineOfflineButton = new Button("Online/Offline");
+		onlineOfflineButton = new Button(EMPTY_STRING);
 		onlineOfflineButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				//TODO
+				event.consume();
+				onlineOffline();
 			}
 		});
 		super.getItems().add(onlineOfflineButton);
@@ -359,8 +369,27 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 						});
 
 		stateChanged(null, guiState.getState());
+		stateChanged(null, guiState.getSynchronizedState());
 	}
-
+	
+	protected void onlineOffline() {
+		switch (synchState) {
+		case LOCAL_LINKED:
+			//TODO go online
+			break;
+		case LOCAL_UNLINKED_CONNECTED:
+			//TODO show dialog and connect to disk
+			break;
+		case BOTH_CONNECTED:
+			//TODO go offline
+			break;
+		case SERVER_CONNECTED:
+			//TODO download disk
+			break;
+		default:
+			break;
+		}
+	}
 
 	protected void createUser() {
 		CreateUserDialog dialog = new CreateUserDialog();
@@ -466,17 +495,18 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		String uri = getUserInputOnDiskLocation();
 		if (uri != null) {
 			try {
-				final TaskController controller = TaskControllerFactory
+				final SynchronizedTaskController controller = TaskControllerFactory
 						.getController(new URI(uri));
+				guiState.setController(controller);
 				Task<Void> connectTask = controller.createConnectTask(true);
 				new TaskDialog(guiState, connectTask) {
 					protected void succeeded(WorkerStateEvent event) {
-						guiState.setController(controller);
 						guiState.setState(State.CONNECTED);
 						guiState.setCurrentDirectory(new Directory(new Path()));
 					}
 				};
 			} catch (Exception e) {
+				guiState.setController(null);
 				new ErrorDialog("Error", e.getMessage()).showAndWait();
 				return;
 			}
@@ -562,6 +592,38 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 			advancedSearchButton.setDisable(false);
 			createDirButton.setDisable(false);
 			renameButton.setDisable(false);
+		}
+	}
+
+
+	@Override
+	public void stateChanged(SynchronizedTaskControllerState oldState, SynchronizedTaskControllerState newState) {
+		synchState = newState;
+		switch (synchState) {
+		case DISCONNECTED:
+			onlineOfflineButton.setDisable(true);
+			onlineOfflineButton.setText(DEFAULT_ONLINE_OFFLINE_TEXT);
+			break;
+		case LOCAL_LINKED:
+			onlineOfflineButton.setDisable(false);
+			onlineOfflineButton.setText(GO_ONLINE);
+			break;
+		case LOCAL_UNLINKED_CONNECTED:
+			onlineOfflineButton.setDisable(false);
+			onlineOfflineButton.setText(LINK_DISK);
+			break;
+		case BOTH_CONNECTED:
+			onlineOfflineButton.setDisable(false);
+			onlineOfflineButton.setText(GO_OFFLINE);
+			break;
+		case SERVER_CONNECTED:
+			onlineOfflineButton.setDisable(false);
+			onlineOfflineButton.setText(DOWNLOAD_DISK);
+			break;
+		default:
+			onlineOfflineButton.setDisable(true);
+			onlineOfflineButton.setText(DEFAULT_ONLINE_OFFLINE_TEXT);
+			break;
 		}
 	}
 }

@@ -6,6 +6,8 @@ import javafx.concurrent.Task;
 
 public interface SynchronizedTaskController extends TaskController {
 	
+	SynchronizedTaskControllerState DEFAULT_STATE = SynchronizedTaskControllerState.DISCONNECTED;
+	
 	Task<Void> createGoOfflineTask();
 	
 	Task<Void> createGoOnlineTask(URI serverUri);
@@ -15,5 +17,7 @@ public interface SynchronizedTaskController extends TaskController {
 	void addStateListener(SynchronizedTaskControllerStateListener listener);
 	
 	void removeStateListener(SynchronizedTaskControllerStateListener listener);
+
+	SynchronizedTaskControllerState getState ();
 	
 }

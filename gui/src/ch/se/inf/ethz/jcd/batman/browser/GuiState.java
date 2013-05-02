@@ -14,7 +14,9 @@ import javafx.scene.control.TreeItem;
 import javafx.stage.Stage;
 import ch.se.inf.ethz.jcd.batman.browser.controls.DirectoryTree;
 import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
-import ch.se.inf.ethz.jcd.batman.controller.TaskController;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
+import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -28,9 +30,10 @@ public class GuiState {
 	private static final int THREAD_POOL_SIZE = 1;
 
 	private final Stage primaryStage;
-	private TaskController controller;
+	private SynchronizedTaskController controller;
 	private State state;
 	private final List<StateListener> stateListener = new LinkedList<StateListener>();
+	private final List<SynchronizedTaskControllerStateListener> synchronizedStateListener = new LinkedList<>();
 	private final List<DirectoryListener> directoryListener = new LinkedList<DirectoryListener>();
 	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 	/*
@@ -59,14 +62,17 @@ public class GuiState {
 		return primaryStage;
 	}
 
-	public TaskController getController() {
+	public SynchronizedTaskController getController() {
 		return controller;
 	}
 
-	public void setController(TaskController controller) {
+	public void setController(SynchronizedTaskController controller) {
 		if (this.controller != null) {
 			for (DiskEntryListener listener : diskEntryListener) {
 				this.controller.removeDiskEntryListener(listener);
+			}
+			for (SynchronizedTaskControllerStateListener listener : synchronizedStateListener) {
+				this.controller.removeStateListener(listener);
 			}
 		}
 		directoryHistory.clear();
@@ -75,6 +81,9 @@ public class GuiState {
 		if (this.controller != null) {
 			for (DiskEntryListener listener : diskEntryListener) {
 				this.controller.addDiskEntryListener(listener);
+			}
+			for (SynchronizedTaskControllerStateListener listener : synchronizedStateListener) {
+				this.controller.addStateListener(listener);
 			}
 		}
 	}
@@ -295,4 +304,24 @@ public class GuiState {
 		}
 	}
 
+	public void addSynchronizedStateListener(SynchronizedTaskControllerStateListener listener) {
+		if (!synchronizedStateListener.contains(listener)) {
+			synchronizedStateListener.add(listener);
+			if (controller != null) {
+				controller.addStateListener(listener);
+			}
+		}
+	}
+
+	public void removeSynchronizedStateListener(SynchronizedTaskControllerStateListener listener) {
+		synchronizedStateListener.remove(listener);
+		if (controller != null) {
+			controller.removeStateListener(listener);
+		}
+	}
+	
+	public SynchronizedTaskControllerState getSynchronizedState() {
+		return (getController() == null) ? SynchronizedTaskController.DEFAULT_STATE : getController().getState();
+	}
+	
 }
