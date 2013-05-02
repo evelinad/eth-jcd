@@ -9,15 +9,16 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
-public class CreateUserDialog extends ModalDialog {
+public class LinkDiskDialog extends ModalDialog {
 
-	private final TextField uriField;
+	private final TextField serverField;
 	private final TextField userNameField;
 	private final PasswordField passwordField;
+	private final TextField diskNameField;
 	
-	public CreateUserDialog() {
+	public LinkDiskDialog() {
 		super();
-		setTitle("Create User");
+		setTitle("Link Disk");
 
 		EventHandler<KeyEvent> closeEventHandler = new EventHandler<KeyEvent>() {
 			@Override
@@ -30,14 +31,14 @@ public class CreateUserDialog extends ModalDialog {
 		};
 		
 		//Create uri field
-		Label uriLabel = new Label("Server URI:");
+		Label uriLabel = new Label("Server:");
 		getContainer().add(uriLabel, 0, 0);
 
-		uriField = new TextField();
-		uriField.setOnKeyPressed(closeEventHandler);
-		getContainer().add(uriField, 1, 0);
+		serverField = new TextField();
+		serverField.setOnKeyPressed(closeEventHandler);
+		getContainer().add(serverField, 1, 0);
 
-		//Create userName field
+		//Create userNname field
 		Label userNameLabel = new Label("Username:");
 		getContainer().add(userNameLabel, 0, 1);
 
@@ -53,6 +54,14 @@ public class CreateUserDialog extends ModalDialog {
 		passwordField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(passwordField, 1, 2);
 		
+		//Create diskName field
+		Label diskNameLabel = new Label("Diskname:");
+		getContainer().add(diskNameLabel, 0, 3);
+
+		diskNameField = new TextField();
+		diskNameField.setOnKeyPressed(closeEventHandler);
+		getContainer().add(diskNameField, 1, 3);
+		
 		Button okButton = new Button("Connect");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -62,7 +71,7 @@ public class CreateUserDialog extends ModalDialog {
 				close();
 			}
 		});
-		getContainer().add(okButton, 0, 3);
+		getContainer().add(okButton, 0, 4);
 
 		Button cancelButton = new Button("Cancel");
 		cancelButton.setCancelButton(true);
@@ -73,13 +82,13 @@ public class CreateUserDialog extends ModalDialog {
 				close();
 			}
 		});
-		getContainer().add(cancelButton, 1, 3);
+		getContainer().add(cancelButton, 1, 4);
 
-		uriField.requestFocus();
+		serverField.requestFocus();
 	}
 
-	public String getUri() {
-		return uriField.getText();
+	public String getServer() {
+		return serverField.getText();
 	}
 	
 	public String getUserName() {
@@ -88,5 +97,9 @@ public class CreateUserDialog extends ModalDialog {
 	
 	public String getPassword() {
 		return passwordField.getText();
+	}
+	
+	public String getDiskName() {
+		return diskNameField.getText();
 	}
 }

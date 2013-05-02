@@ -10,7 +10,7 @@ import ch.se.inf.ethz.jcd.batman.controller.remote.RemoteSynchronizedTaskControl
  */
 public class TaskControllerFactory {
 
-	private static final String REMOTE_SCHEME = "batman";
+	public static final String REMOTE_SCHEME = "batman";
 
 	/**
 	 * Returns the right {@link SynchronizedTaskController} for the given {@link URI}.

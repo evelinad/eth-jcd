@@ -231,17 +231,17 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	}
 
 	@Override
-	public Task<Void> createGoOnlineTask(final URI serverUri) {
-		if (serverUri == null || isServerUri(serverUri)) {
-			throw new IllegalArgumentException("Illegal server uri: " + serverUri);
-		}
+	public Task<Void> createGoOnlineTask(final String password) {
 		checkIsLocalConnected();
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException {
 				checkIsLocalConnected();
-				RemoteSynchronizedTaskController.this.serverUri = serverUri;
+				//TODO get server uri from local disk
+				if (serverUri == null || isServerUri(serverUri)) {
+					throw new IllegalArgumentException("Illegal server uri: " + serverUri);
+				}
 				updateTitle("Connecting to server");
 				updateMessage("Connecting to server...");
 				serverConnection = connect(serverUri, true);
@@ -253,6 +253,13 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		};
 	}
 
+
+	@Override
+	public Task<Void> createLinkDiskTask(URI serverUri) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public Task<Void> createDownloadDiskTask(final URI localUri) {
 		if (localUri == null || isServerUri(localUri)) {
@@ -275,7 +282,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 
 		};
 	}
-
+	
 	@Override
 	public void addStateListener(
 			SynchronizedTaskControllerStateListener listener) {

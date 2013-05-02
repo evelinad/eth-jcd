@@ -10,7 +10,9 @@ public interface SynchronizedTaskController extends TaskController {
 	
 	Task<Void> createGoOfflineTask();
 	
-	Task<Void> createGoOnlineTask(URI serverUri);
+	Task<Void> createLinkDiskTask(URI serverUri);
+	
+	Task<Void> createGoOnlineTask(String password);
 	
 	Task<Void> createDownloadDiskTask(URI localUri);
 	

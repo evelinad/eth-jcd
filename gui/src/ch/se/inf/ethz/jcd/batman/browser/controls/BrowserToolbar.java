@@ -26,6 +26,9 @@ import ch.se.inf.ethz.jcd.batman.browser.CreateUserDialog;
 import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
+import ch.se.inf.ethz.jcd.batman.browser.DownloadDiskDialog;
+import ch.se.inf.ethz.jcd.batman.browser.GoOnlineDialog;
+import ch.se.inf.ethz.jcd.batman.browser.LinkDiskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.RemoteOpenDiskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.SearchDialog;
 import ch.se.inf.ethz.jcd.batman.browser.State;
@@ -375,16 +378,44 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	protected void onlineOffline() {
 		switch (synchState) {
 		case LOCAL_LINKED:
-			//TODO go online
+			GoOnlineDialog goOnlineDialog = new GoOnlineDialog();
+			goOnlineDialog.showAndWait();
+			if (goOnlineDialog.getCloseReason() == CloseReason.OK) {
+				Task<Void> goOnlineTask = guiState.getController().createGoOnlineTask(goOnlineDialog.getPassword());
+				new TaskDialog(guiState, goOnlineTask);
+			}
 			break;
 		case LOCAL_UNLINKED_CONNECTED:
-			//TODO show dialog and connect to disk
+			LinkDiskDialog linkDiskDialog = new LinkDiskDialog();
+			linkDiskDialog.showAndWait();
+			if (linkDiskDialog.getCloseReason() == CloseReason.OK) {
+				try {
+					URI serverUri = new URI(
+						TaskControllerFactory.REMOTE_SCHEME + "//" + linkDiskDialog.getUserName() + ":" + 
+						linkDiskDialog.getPassword() + "@" + linkDiskDialog.getServer() + "?" + linkDiskDialog.getDiskName());
+					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(serverUri);
+					new TaskDialog(guiState, linkDiskTask);
+				} catch (Exception e) {
+					new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+				}
+			}
 			break;
 		case BOTH_CONNECTED:
-			//TODO go offline
+			Task<Void> goOfflineTask = guiState.getController().createGoOfflineTask();
+			new TaskDialog(guiState, goOfflineTask);
 			break;
 		case SERVER_CONNECTED:
-			//TODO download disk
+			DownloadDiskDialog downloadDiskDialog = new DownloadDiskDialog();
+			downloadDiskDialog.showAndWait();
+			if (downloadDiskDialog.getCloseReason() == CloseReason.OK) {
+				try {
+					URI localDiskUri = new URI(downloadDiskDialog.getLocalDiskUri());
+					Task<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
+					new TaskDialog(guiState, downloadDiskTask);
+				} catch (Exception e) {
+					new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+				}
+			}
 			break;
 		default:
 			break;
