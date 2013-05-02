@@ -390,10 +390,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			linkDiskDialog.showAndWait();
 			if (linkDiskDialog.getCloseReason() == CloseReason.OK) {
 				try {
-					URI serverUri = new URI(
-						TaskControllerFactory.REMOTE_SCHEME + "//" + linkDiskDialog.getUserName() + ":" + 
-						linkDiskDialog.getPassword() + "@" + linkDiskDialog.getServer() + "?" + linkDiskDialog.getDiskName());
-					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(serverUri);
+					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
 					new TaskDialog(guiState, linkDiskTask);
 				} catch (Exception e) {
 					new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
@@ -428,7 +425,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 
 		if (dialog.getCloseReason() == CloseReason.OK) {
 			try {
-				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(dialog.getUri()));
+				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + dialog.getUri()));
 				Task<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
 				new TaskDialog(guiState, newUserTask);
 			} catch (Exception e) {

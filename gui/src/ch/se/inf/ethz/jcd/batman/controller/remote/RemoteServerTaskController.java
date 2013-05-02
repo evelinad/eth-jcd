@@ -26,6 +26,8 @@ public class RemoteServerTaskController implements ServerTaskController {
 
 			@Override
 			protected Void call() throws Exception {
+				updateTitle("Creating user");
+				updateMessage("Creating user...");
 				Registry registry;
 				if (uri.getPort() == -1) {
 					registry = LocateRegistry.getRegistry(uri.getHost());

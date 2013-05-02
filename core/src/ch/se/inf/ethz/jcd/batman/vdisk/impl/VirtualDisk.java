@@ -572,6 +572,8 @@ public final class VirtualDisk implements IVirtualDisk {
 				IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.create(this, information.length);
 				addInformationSpace.seek(0);
 				addInformationSpace.write(information);
+				file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
+				file.writeLong(addInformationSpace.getVirtualDiskPosition());
 			}
 		} else {
 			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this, addInformationPosition);
