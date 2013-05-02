@@ -85,6 +85,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 			if (serverUri != null) {
 				serverConnection = connect(serverUri, createNewIfNecessary);
 			}
+			//TODO if connected to both, synchronize
 			changeState();
 		} catch (Exception e) {
 			close();
@@ -230,7 +231,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateTitle("Connecting to server");
 				updateMessage("Connecting to server...");
 				serverConnection = connect(serverUri, true);
-				//synchronize disks
+				//TODO synchronize disks
 				changeState();
 				return null;
 			}
@@ -253,7 +254,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateTitle("Connecting to local disk");
 				updateMessage("Connecting to local disk...");
 				connection = connect(uri, true);
-				//synchronize disks
+				//TODO synchronize disks
 				changeState();
 				return null;
 			}

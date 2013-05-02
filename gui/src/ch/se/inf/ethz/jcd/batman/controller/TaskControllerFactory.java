@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.controller;
 
 import java.net.URI;
 
+import ch.se.inf.ethz.jcd.batman.controller.remote.RemoteServerTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.remote.RemoteTaskController;
 
 /**
@@ -29,5 +30,15 @@ public class TaskControllerFactory {
 					+ uri.getScheme());
 		}
 	}
+	
+	public static ServerTaskController getServerController(URI uri) {
+		if (REMOTE_SCHEME.equals(uri.getScheme())) {
+			return new RemoteServerTaskController(uri);
+		} else {
+			throw new IllegalArgumentException("Unsupported scheme: "
+					+ uri.getScheme());
+		}
+	}
+	
 
 }

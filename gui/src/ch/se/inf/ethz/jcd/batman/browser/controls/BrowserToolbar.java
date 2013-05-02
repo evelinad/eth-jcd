@@ -22,6 +22,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import ch.se.inf.ethz.jcd.batman.browser.CreateDirectoryDialog;
+import ch.se.inf.ethz.jcd.batman.browser.CreateUserDialog;
 import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.ModalDialog.CloseReason;
@@ -31,6 +32,7 @@ import ch.se.inf.ethz.jcd.batman.browser.State;
 import ch.se.inf.ethz.jcd.batman.browser.StateListener;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
+import ch.se.inf.ethz.jcd.batman.controller.ServerTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
@@ -46,6 +48,8 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 
 	private final Button connectButton;
 	private final Button disconnectButton;
+	private final Button onlineOfflineButton;
+	private final Button createUserButton;
 	private final Button toParentDirButton;
 	private final Button goBackButton;
 	private final Button goForewardButton;
@@ -91,6 +95,27 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		});
 		super.getItems().add(disconnectButton);
 
+		// onlineOffline button
+		onlineOfflineButton = new Button("Online/Offline");
+		onlineOfflineButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				//TODO
+			}
+		});
+		super.getItems().add(onlineOfflineButton);
+		
+		// onlineOffline button
+		createUserButton = new Button("Create User");
+		createUserButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				event.consume();
+				createUser();
+			}
+		});
+		super.getItems().add(createUserButton);
+		
 		// separator
 		super.getItems().add(new Separator(Orientation.VERTICAL));
 
@@ -336,6 +361,22 @@ public class BrowserToolbar extends ToolBar implements StateListener {
 		stateChanged(null, guiState.getState());
 	}
 
+
+	protected void createUser() {
+		CreateUserDialog dialog = new CreateUserDialog();
+		dialog.showAndWait();
+
+		if (dialog.getCloseReason() == CloseReason.OK) {
+			try {
+				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(dialog.getUri()));
+				Task<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
+				new TaskDialog(guiState, newUserTask);
+			} catch (Exception e) {
+				new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+			}
+		}
+	}
+	
 	protected void createFolder() {
 		CreateDirectoryDialog dialog = new CreateDirectoryDialog();
 		dialog.showAndWait();

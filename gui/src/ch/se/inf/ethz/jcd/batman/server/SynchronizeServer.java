@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
@@ -25,7 +27,9 @@ import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 public class SynchronizeServer extends RemoteVirtualDisk implements
 		ISynchronizeServer {
 
-	protected static class UserData {
+	protected static class UserData implements Serializable {
+		
+		private static final long serialVersionUID = 6660922465113408804L;
 		
 		private int id;
 		private String userName;
@@ -34,6 +38,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		public UserData (int id, String userName, byte[] hashedPassword) {
 			this.id = id;
 			this.userName = userName;
+			this.hashedPassowrd = hashedPassword;
 		}
 		
 		public int getId() {
@@ -144,7 +149,8 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		try {
 			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
 			SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-			return  f.generateSecret(spec).getEncoded();
+			SecretKey secretKey = f.generateSecret(spec);
+			return  secretKey.getEncoded();
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new AuthenticationException("Passowrd hash error.", e);
 		}

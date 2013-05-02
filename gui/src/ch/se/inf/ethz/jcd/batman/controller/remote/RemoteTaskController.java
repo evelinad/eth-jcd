@@ -103,6 +103,10 @@ public class RemoteTaskController implements TaskController {
 		}
 	}
 	
+	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
+	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
+	private static final int BUFFER_SIZE = 32 * 1024;
+
 	protected static boolean isServerUri (URI uri) {
 		return uri.getUserInfo() != null;
 	}
@@ -157,10 +161,6 @@ public class RemoteTaskController implements TaskController {
 		return connection;
 	}
 	
-	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
-	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
-	private static final int BUFFER_SIZE = 32 * 1024;
-
 	private final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
 	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 
