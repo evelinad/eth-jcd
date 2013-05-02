@@ -260,4 +260,7 @@ public interface IRemoteVirtualDisk extends Remote {
 			boolean checkChildren, Entry[] parents) throws RemoteException,
 			VirtualDiskException;
 
+	byte[] getAdditionalDiskInformation(int id) throws RemoteException, VirtualDiskException;
+	
+	void saveAdditionalDiskInformation(int id, byte[] information) throws RemoteException, VirtualDiskException;
 }

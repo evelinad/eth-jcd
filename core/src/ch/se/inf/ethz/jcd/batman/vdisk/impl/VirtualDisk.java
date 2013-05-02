@@ -14,6 +14,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IFreeBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDirectory;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
+import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDiskSpace;
 import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
 
 /**
@@ -24,7 +25,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
  * 
  * 0x00 8byte MagicNumber 
  * 0x08 8byte Root Directory offset 
- * 0x10 8byte Reserved
+ * 0x10 8byte Position of additional disk information
  * 0x18 168byte FreeLists
  * 
  * The first entry after the free lists is usually the root directory. But
@@ -56,6 +57,7 @@ public final class VirtualDisk implements IVirtualDisk {
 	private static final String ROOT_DIRECTORY_NAME = "root";
 	private static final long MIN_BLOCK_SIZE = 128;
 	private static final long ROOT_DIRECTORY_POSITION = 8;
+	private static final long ADDITIONAL_DISK_INFORMATION_POSITION = 16;
 
 	private RandomAccessFile file;
 	private IVirtualDirectory rootDirectory;
@@ -545,6 +547,44 @@ public final class VirtualDisk implements IVirtualDisk {
 	@Override
 	public long getOccupiedSpace() throws IOException {
 		return getSize() - getFreeSpace();
+	}
+
+	@Override
+	public byte[] getAdditionalDiskInformation() throws IOException {
+		file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
+		long addInformationPosition = file.readLong();
+		if (addInformationPosition == 0) {
+			return new byte[0];
+		} else {
+			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this, addInformationPosition);
+			byte[] addInformation = new byte[(int) addInformationSpace.getSize()];
+			addInformationSpace.read(addInformation);
+			return addInformation;
+		}
+	}
+	
+	@Override
+	public void saveAdditionalDiskInformation(byte[] information) throws IOException {
+		file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
+		long addInformationPosition = file.readLong();
+		if (addInformationPosition == 0) {
+			if (information.length != 0) {
+				IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.create(this, information.length);
+				addInformationSpace.seek(0);
+				addInformationSpace.write(information);
+			}
+		} else {
+			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this, addInformationPosition);
+			if (information.length == 0) {
+				addInformationSpace.free();
+				file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
+				file.writeLong(0);
+			} else {
+				addInformationSpace.changeSize(information.length);
+				addInformationSpace.seek(0);
+				addInformationSpace.write(information);
+			}
+		}
 	}
 
 }

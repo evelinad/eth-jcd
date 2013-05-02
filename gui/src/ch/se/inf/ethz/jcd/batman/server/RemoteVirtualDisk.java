@@ -343,7 +343,25 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 
 	}
-
+	
+	@Override
+	public byte[] getAdditionalDiskInformation(int id) throws RemoteException, VirtualDiskException {
+		try {
+			return getDisk(id).getAdditionalDiskInformation();
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not read additional disk information", e);
+		}
+	}
+	
+	@Override
+	public void saveAdditionalDiskInformation(int id, byte[] information) throws RemoteException, VirtualDiskException {
+		try {
+			getDisk(id).saveAdditionalDiskInformation(information);
+		} catch (Exception e) {
+			throw new VirtualDiskException("Could not save additional disk information", e);
+		}
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		for (IVirtualDisk disk : diskMap.values()) {
