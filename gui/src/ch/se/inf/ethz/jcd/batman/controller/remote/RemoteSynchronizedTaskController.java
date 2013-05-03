@@ -496,8 +496,65 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return children;
 	}
 	
+	private void synchronizeEntry (Entry entry, long lastSynchronized, RemoteConnection sourceConnection, RemoteConnection destinationConnection) {
+		if (entry instanceof Directory) {
+			if (entry.getTimestamp() < lastSynchronized) {
+				//TODO check if subentries have changed if so, dont delete but add on server
+			} else {
+				//TODO upload all sub entries to destination connection
+			}
+			
+		} else if (entry instanceof File) {
+			if (entry.getTimestamp() < lastSynchronized) {
+				//TODO delete source entry
+			} else {
+				//TODO upload to destination connection
+			}
+		}
+	}
+	
 	private void synchronizeDirectory (Directory directory, long lastSynchronized, UpdateableTask<?> task) throws RemoteException, VirtualDiskException {
 		Entry[] localChildren = getLocalChildren(directory);
 		Entry[] serverChildren = getServerChildren(directory);
+		int localIndex = 0;
+		int serverIndex = 0;
+		while (localIndex < localChildren.length || serverIndex < serverChildren.length) {
+			if (localIndex < localChildren.length && serverIndex < serverChildren.length) {
+				Entry localEntry = localChildren[localIndex];
+				Entry serverEntry = serverChildren[serverIndex];
+				if (localEntry.getPath().equals(serverEntry.getPath())) {
+					//Same file paths
+					if (localEntry.getTimestamp() > lastSynchronized && serverEntry.getTimestamp() > lastSynchronized) {
+						//Both entries have changed
+						if (!(localEntry instanceof Directory && serverEntry instanceof Directory)) {
+							//TODO rename local entry and copy it to server
+						} else {
+							//TODO sync folders
+						}
+					} else if (localEntry.getTimestamp() > lastSynchronized) {
+						//Only local entry has changed
+						//TODO delete server entry and replace with server entry
+					} else if (serverEntry.getTimestamp() > lastSynchronized) {
+						//Only server entry has changed
+						//TODO delete local entry and replace with server entry
+					} else {
+						//Both unchanged
+						if (localEntry instanceof Directory) {
+							//TODO sync directory
+						}
+					}
+					localIndex++;
+					serverIndex++;
+				} else if (nameComparator.compare(localEntry, serverEntry) < 0) {
+					synchronizeEntry(localChildren[localIndex++], lastSynchronized, connection, serverConnection);
+				} else {
+					synchronizeEntry(serverChildren[serverIndex++], lastSynchronized, serverConnection, connection);
+				}
+			} else if (localIndex < localChildren.length) {
+				synchronizeEntry(localChildren[localIndex++], lastSynchronized, connection, serverConnection);
+			} else if (serverIndex < serverChildren.length) {
+				synchronizeEntry(serverChildren[serverIndex++], lastSynchronized, serverConnection, connection);
+			}
+		}
 	}
 }
