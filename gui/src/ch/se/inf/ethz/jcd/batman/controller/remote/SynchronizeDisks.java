@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
+import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.util.EntryNameComperator;
@@ -23,7 +25,7 @@ public class SynchronizeDisks {
 
 	}
 	
-	private static final class DeleteTask implements SynchronizeTask {
+	private final class DeleteTask implements SynchronizeTask {
 		private final RemoteConnection connection;
 		private final Entry entry;
 		
@@ -40,12 +42,12 @@ public class SynchronizeDisks {
 		@Override
 		public void run () throws RemoteException, VirtualDiskException {
 			connection.getDisk().deleteEntry(connection.getDiskId(), entry.getPath());
-			//TODO update listener
+			entryDeleted(entry, connection);
 		}
 
 	}
 
-	private static final class CopyTask implements SynchronizeTask {
+	private final class CopyTask implements SynchronizeTask {
 		private final RemoteConnection sourceConnection;
 		private final RemoteConnection destinationConnection;
 		private final Entry entry;
@@ -64,12 +66,12 @@ public class SynchronizeDisks {
 		@Override
 		public void run() throws RemoteException, VirtualDiskException {
 			RemoteConnectionUtil.copySingleEntry(entry, sourceConnection, destinationConnection);
-			//TODO update listener
+			entryAdded(entry, destinationConnection);
 		}
 		
 	}
 	
-	private static final class RenameTask implements SynchronizeTask {
+	private final class RenameTask implements SynchronizeTask {
 		private final RemoteConnection connection;
 		private final Entry entry;
 		private final Entry newEntry;
@@ -88,18 +90,20 @@ public class SynchronizeDisks {
 		@Override
 		public void run() throws RemoteException, VirtualDiskException {
 			connection.getDisk().moveEntry(connection.getDiskId(), entry, newEntry);
-			//TODO update listener
+			entryChanged(entry, newEntry, connection);
 		}
 		
 	}
 	
-	private static final class UpdateTimestampTask implements SynchronizeTask {
+	private final class UpdateTimestampTask implements SynchronizeTask {
 		private final RemoteConnection connection;
 		private final Entry entry;
+		private final Entry newEntry;
 		
-		public UpdateTimestampTask(RemoteConnection connection, Entry entry) {
+		public UpdateTimestampTask(RemoteConnection connection, Entry entry, Entry newEntry) {
 			this.connection = connection;
 			this.entry = entry;
+			this.newEntry = newEntry;
 		}
 
 		@Override
@@ -109,8 +113,8 @@ public class SynchronizeDisks {
 
 		@Override
 		public void run() throws RemoteException, VirtualDiskException {
-			connection.getDisk().updateLastModified(connection.getDiskId(), entry);
-			//TODO updateListener
+			connection.getDisk().updateLastModified(connection.getDiskId(), newEntry);
+			entryChanged(entry, newEntry, connection);
 		}
 		
 	}
@@ -204,6 +208,9 @@ public class SynchronizeDisks {
 	private final RemoteConnection serverConnection;
 	private final RemoteConnection localConnection;
 	
+	private final List<DiskEntryListener> localDiskEntryListener = new LinkedList<DiskEntryListener>();
+	private final List<DiskEntryListener> serverDiskEntryListener = new LinkedList<DiskEntryListener>();
+	
 	private long lastSynchronized;
 	private UpdateableTask<?> task;
 	
@@ -211,6 +218,64 @@ public class SynchronizeDisks {
 		this.serverConnection = serverConnection;
 		this.localConnection = localConnection;
 	}
+	
+	public void addLocalDiskEntryListener(DiskEntryListener listener) {
+		if (!localDiskEntryListener.contains(listener)) {
+			localDiskEntryListener.add(listener);
+		}
+	}
+
+	public void removeLocalDiskEntryListener(DiskEntryListener listener) {
+		localDiskEntryListener.remove(listener);
+	}
+
+	public void addServerDiskEntryListener(DiskEntryListener listener) {
+		if (!serverDiskEntryListener.contains(listener)) {
+			serverDiskEntryListener.add(listener);
+		}
+	}
+
+	public void removeServerDiskEntryListener(DiskEntryListener listener) {
+		serverDiskEntryListener.remove(listener);
+	}
+	
+	private void entryAdded(final Entry entry, final RemoteConnection connection) {
+		if (connection == localConnection) {
+			for (DiskEntryListener listener : localDiskEntryListener) {
+				listener.entryAdded(entry);
+			}	
+		} else if (connection == serverConnection) {
+			for (DiskEntryListener listener : serverDiskEntryListener) {
+				listener.entryAdded(entry);
+			}
+		}
+	}
+
+	private void entryDeleted(final Entry entry, final RemoteConnection connection) {
+		if (connection == localConnection) {
+			for (DiskEntryListener listener : localDiskEntryListener) {
+				listener.entryDeleted(entry);
+			}	
+		} else if (connection == serverConnection) {
+			for (DiskEntryListener listener : serverDiskEntryListener) {
+				listener.entryDeleted(entry);
+			}
+		}
+	}
+
+	private void entryChanged(final Entry oldEntry, final Entry newEntry, final RemoteConnection connection) {
+		if (connection == localConnection) {
+			for (DiskEntryListener listener : localDiskEntryListener) {
+				listener.entryChanged(oldEntry, newEntry);
+			}	
+		} else if (connection == serverConnection) {
+			for (DiskEntryListener listener : serverDiskEntryListener) {
+				listener.entryChanged(oldEntry, newEntry);
+			}
+		}
+	}
+	
+	
 	
 	public void synchronizeDisks(UpdateableTask<?> task) throws RemoteException, VirtualDiskException {
 		this.task = task;
@@ -330,9 +395,9 @@ public class SynchronizeDisks {
 						changes.addAll(synchronizeDirectory((Directory) localEntry));
 						if (localEntry.getTimestamp() > lastSynchronized || serverEntry.getTimestamp() > lastSynchronized) {
 							if (localEntry.getTimestamp() > serverEntry.getTimestamp()) {
-								changes.add(new UpdateTimestampTask(serverConnection, localEntry));
+								changes.add(new UpdateTimestampTask(serverConnection, serverEntry, localEntry));
 							} else {
-								changes.add(new UpdateTimestampTask(localConnection, serverEntry));
+								changes.add(new UpdateTimestampTask(localConnection, localEntry, serverEntry));
 							}
 						}
 					} else {

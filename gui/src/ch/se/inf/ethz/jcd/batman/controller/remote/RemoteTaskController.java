@@ -690,7 +690,7 @@ public class RemoteTaskController implements TaskController {
 		super.finalize();
 	}
 
-	private void entryAdded(final Entry entry) {
+	public void entryAdded(final Entry entry) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -702,7 +702,7 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	private void entryDeleted(final Entry entry) {
+	public void entryDeleted(final Entry entry) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -714,7 +714,7 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	private void entryChanged(final Entry oldEntry, final Entry newEntry) {
+	public void entryChanged(final Entry oldEntry, final Entry newEntry) {
 		Platform.runLater(new Runnable() {
 
 			@Override

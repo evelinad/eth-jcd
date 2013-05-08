@@ -11,6 +11,7 @@ import java.util.List;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
@@ -22,7 +23,7 @@ import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.IRemoteVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
-public class RemoteSynchronizedTaskController extends RemoteTaskController implements SynchronizedTaskController {
+public class RemoteSynchronizedTaskController extends RemoteTaskController implements SynchronizedTaskController, DiskEntryListener {
 
 	private SynchronizedTaskControllerState state = DEFAULT_STATE;
 	private URI serverUri;
@@ -111,7 +112,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				serverConnection = connect(serverUri, createNewIfNecessary);
 			}
 			if (isLocalConnected() && isServerConnected()) {
-				synchronizeDisks(task);
+				synchronizeDisks(task, connection);
 			}
 			updateState();
 		} catch (Exception e) {
@@ -292,7 +293,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateMessage("Connecting to server...");
 				serverConnection = connect(serverUri, true);
 				RemoteSynchronizedTaskController.this.serverUri = serverUri;
-				synchronizeDisks(this);
+				synchronizeDisks(this, connection);
 				updateState();
 				return null;
 			}
@@ -319,7 +320,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				serverConnection = connect(serverUri, true);
 				RemoteSynchronizedTaskController.this.serverUri = serverUri;
 				saveLocalDiskInformation(diskInformation);
-				synchronizeDisks(this);
+				synchronizeDisks(this, connection);
 				updateState();
 				return null;
 			}
@@ -340,11 +341,11 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				checkIsServerConnected();
 				updateTitle("Connecting to local disk");
 				updateMessage("Connecting to local disk...");
-				connection = connect(uri, true);
+				connection = connect(localUri, true);
 				RemoteSynchronizedTaskController.this.uri = localUri;
 				String[] userInfoSplit = serverUri.getUserInfo().split(":");
 				saveLocalDiskInformation(new AdditionalLocalDiskInformation(userInfoSplit[0], serverUri.getHost(), userInfoSplit[1], 0));
-				synchronizeDisks(this);
+				synchronizeDisks(this, serverConnection);
 				updateState();
 				return null;
 			}
@@ -387,11 +388,16 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return state;
 	}
 	
-	public void synchronizeDisks (UpdateableTask<?> task) throws RemoteException, VirtualDiskException {
+	public void synchronizeDisks (UpdateableTask<?> task, RemoteConnection prevConnectedConnection) throws RemoteException, VirtualDiskException {
 		if (!isLocalConnected() || !isServerConnected()) {
 			throw new IllegalStateException("Can't synchronize disks if not connected to both server and local disk");
 		}
 		SynchronizeDisks synchronizeDisks = new SynchronizeDisks(serverConnection, connection);
+		if (prevConnectedConnection == connection) {
+			synchronizeDisks.addLocalDiskEntryListener(this);
+		} else if (prevConnectedConnection == serverConnection) {
+			synchronizeDisks.addServerDiskEntryListener(this);
+		}
 		synchronizeDisks.synchronizeDisks(task);
 	}
 }
