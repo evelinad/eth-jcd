@@ -378,6 +378,17 @@ public class SynchronizeDisks {
 		return changes;
 	}
 	
+	private boolean contains (Entry[] entries, String path) {
+		if (entries != null) {
+			for (Entry entry : entries) {
+				if (entry.getPath().getPath().equals(path)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	private ChangeList synchronizeDirectory (Directory directory) throws RemoteException, VirtualDiskException {
 		ChangeList changes = new ChangeList(false);
 		Entry[] localChildren = RemoteConnectionUtil.getChildrenSorted(localConnection, directory);
@@ -406,7 +417,7 @@ public class SynchronizeDisks {
 							String baseEntryName = localEntry.getPath().getName() + CONFLICT_NAME_END;
 							String newName = baseEntryName;
 							int id = 1;
-							while (Arrays.binarySearch(localChildren, newName) >= 0 || Arrays.binarySearch(serverChildren, newName) >= 0) {
+							while (contains(localChildren, newName) || contains(serverChildren, newName)) {
 								newName = baseEntryName + id++;
 							}
 							Entry newEntry = null;
