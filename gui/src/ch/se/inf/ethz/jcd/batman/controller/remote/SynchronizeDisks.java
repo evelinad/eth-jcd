@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -65,8 +66,20 @@ public class SynchronizeDisks {
 
 		@Override
 		public void run() throws RemoteException, VirtualDiskException {
-			RemoteConnectionUtil.copySingleEntry(entry, sourceConnection, destinationConnection);
-			entryAdded(entry, destinationConnection);
+			if (destinationConnection == serverConnection) {
+				Entry newEntry = null;
+				try {
+					newEntry = (Entry) entry.clone();
+				} catch (CloneNotSupportedException e) { }
+				newEntry.setTimestamp(new Date().getTime());
+				localConnection.getDisk().updateLastModified(localConnection.getDiskId(), newEntry);
+				entryChanged(entry, newEntry, localConnection);
+				RemoteConnectionUtil.copySingleEntry(newEntry, sourceConnection, destinationConnection);
+				entryAdded(newEntry, destinationConnection);
+			} else {
+				RemoteConnectionUtil.copySingleEntry(entry, sourceConnection, destinationConnection);
+				entryAdded(entry, destinationConnection);
+			}
 		}
 		
 	}
@@ -89,6 +102,7 @@ public class SynchronizeDisks {
 
 		@Override
 		public void run() throws RemoteException, VirtualDiskException {
+			newEntry.setTimestamp(new Date().getTime());
 			connection.getDisk().moveEntry(connection.getDiskId(), entry, newEntry);
 			entryChanged(entry, newEntry, connection);
 		}
