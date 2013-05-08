@@ -25,6 +25,7 @@ import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
 import ch.se.inf.ethz.jcd.batman.model.Path;
+import ch.se.inf.ethz.jcd.batman.model.util.FileBeforeDirectoryComparator;
 import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.IRemoteVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.server.ISimpleVirtualDisk;
@@ -42,70 +43,9 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
  */
 public class RemoteTaskController implements TaskController {
 
-	/**
-	 * Sorts entries in the following way: Files > Entries > Directories
-	 */
-	private static final class FileBeforeDirectoryComparator implements
-			Comparator<Entry> {
-
-		@Override
-		public int compare(Entry entry1, Entry entry2) {
-			if (entry1 instanceof File) {
-				if (entry2 instanceof File) {
-					return entry2.getPath().getPath()
-							.compareTo(entry1.getPath().getPath());
-				} else {
-					return -1;
-				}
-			} else if (entry1 instanceof Directory) {
-				if (entry2 instanceof Directory) {
-					return entry2.getPath().getPath()
-							.compareTo(entry1.getPath().getPath());
-				} else {
-					return 1;
-				}
-			} else {
-				return entry2.getPath().getPath()
-						.compareTo(entry1.getPath().getPath());
-			}
-		}
-
-	}
-
-	protected static final class RemoteConnection {
-		
-		private Integer diskId;
-		private IRemoteVirtualDisk disk;
-		
-		public RemoteConnection() {
-			this(null, null);
-		}
-		
-		public RemoteConnection(Integer diskId, IRemoteVirtualDisk disk) {
-			this.diskId = diskId;
-			this.disk = disk;
-		}
-		
-		public Integer getDiskId () {
-			return diskId;
-		}
-		
-		public void setDiskId (Integer diskId) {
-			this.diskId = diskId;
-		}
-		
-		public IRemoteVirtualDisk getDisk() {
-			return disk;
-		}
-		
-		public void setDisk (IRemoteVirtualDisk disk) {
-			this.disk = disk;
-		}
-	}
-	
 	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
-	private static final int BUFFER_SIZE = 32 * 1024;
+	protected static final int BUFFER_SIZE = RemoteConnectionUtil.BUFFER_SIZE;
 
 	protected static boolean isServerUri (URI uri) {
 		return uri.getUserInfo() != null;
@@ -161,7 +101,7 @@ public class RemoteTaskController implements TaskController {
 		return connection;
 	}
 	
-	private final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
+	protected final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
 	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 
 	protected URI uri;
@@ -193,7 +133,7 @@ public class RemoteTaskController implements TaskController {
 		return connection.getDisk();
 	}
 
-	protected void connect(boolean createNewIfNecessary) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
 		connection = connect(uri, createNewIfNecessary);
 	}
 	
@@ -239,19 +179,19 @@ public class RemoteTaskController implements TaskController {
 		getRemoteDisk().copyEntry(getDiskId(), source, destination);
 	}
 	
-	protected void importFile(java.io.File file, String destination)
+	protected Entry importFile(java.io.File file, String destination)
 			throws RemoteException, VirtualDiskException, IOException {
-		importFile(getRemoteDisk(), getDiskId(), file, destination);
+		return importFile(getRemoteDisk(), getDiskId(), file, destination);
 	}
 	
-	protected void importFile(IRemoteVirtualDisk disk, Integer diskId, java.io.File file, String destination)
+	protected Entry importFile(IRemoteVirtualDisk disk, Integer diskId, java.io.File file, String destination)
 			throws RemoteException, VirtualDiskException, IOException {
 		
 		if (file.isDirectory()) {
 			Directory newDirectory = new Directory(
 					new Path(destination), new Date().getTime());
 			disk.createDirectory(diskId, newDirectory);
-			entryAdded(newDirectory);
+			return newDirectory;
 		} else if (file.isFile()) {
 			File diskFile = new File(new Path(destination),
 					new Date().getTime(), file.length());
@@ -276,13 +216,14 @@ public class RemoteTaskController implements TaskController {
 					bytesToRead -= currentBytesRead;
 					bytesRead += currentBytesRead;
 				}
-				entryAdded(diskFile);
+				return diskFile;
 			} finally {
 				if (inputStream != null) {
 					inputStream.close();
 				}
 			}
 		}
+		return null;
 	}
 	
 	@Override
@@ -291,7 +232,7 @@ public class RemoteTaskController implements TaskController {
 			throw new IllegalStateException("Already connected.");
 		}
 
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
 			protected Void call() throws ConnectionException, AuthenticationException {
@@ -301,7 +242,7 @@ public class RemoteTaskController implements TaskController {
 				try {
 					updateTitle("Connecting");
 					updateMessage("Connecting to virtual disk...");
-					connect(createNewIfNecessary);
+					connect(createNewIfNecessary, this);
 				} catch (RemoteException | NotBoundException
 						| VirtualDiskException e) {
 					throw new ConnectionException(e);
@@ -545,7 +486,7 @@ public class RemoteTaskController implements TaskController {
 						updateProgress(entriesImported, totalEntriesToImport);
 						updateMessage("Importing entry " + file.toString() + " to "
 								+ destination);
-						importFile(file, destination);
+						entryAdded(importFile(file, destination));
 						entriesImported++;
 						if (isCancelled()) {
 							return null;

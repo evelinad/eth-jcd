@@ -423,19 +423,16 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 	
-	public void updateLastModified(int id, Entry[] entries) throws RemoteException, VirtualDiskException {
+	public void updateLastModified(int id, Entry entry) throws RemoteException, VirtualDiskException {
 		IVirtualDisk disk = getDisk(id);
-		for (Entry entry : entries) {
-			try {
-				VDiskFile file = new VDiskFile(entry.getPath().getPath(), disk);
-				if (!file.exists()) {
-					throw new VirtualDiskException("Can't update last modified for " + entry.getPath() + ", entry does not exist.");
-				}
-				file.setLastModified(entry.getTimestamp());
-			} catch (IOException e) {
-				throw new VirtualDiskException("Could not update last modified for " + entry.getPath(), e);
+		try {
+			VDiskFile file = new VDiskFile(entry.getPath().getPath(), disk);
+			if (!file.exists()) {
+				throw new VirtualDiskException("Can't update last modified for " + entry.getPath() + ", entry does not exist.");
 			}
-			
+			file.setLastModified(entry.getTimestamp());
+		} catch (IOException e) {
+			throw new VirtualDiskException("Could not update last modified for " + entry.getPath(), e);
 		}
 	}
 	

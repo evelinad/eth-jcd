@@ -1,17 +1,10 @@
 package ch.se.inf.ethz.jcd.batman.controller.remote;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,79 +15,19 @@ import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
-import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
-import ch.se.inf.ethz.jcd.batman.model.util.EntryNameComperator;
 import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.IRemoteVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class RemoteSynchronizedTaskController extends RemoteTaskController implements SynchronizedTaskController {
 
-	protected static final class AdditionalLocalDiskInformation implements Serializable {
-		
-		private static final long serialVersionUID = -2547837072567273526L;
-
-		protected static AdditionalLocalDiskInformation readFromByteArray(byte[] data) throws IOException, ClassNotFoundException {
-			ByteArrayInputStream bis = new ByteArrayInputStream(data);
-			ObjectInputStream ois = new ObjectInputStream(bis);
-			Object object = ois.readObject();
-			if (object instanceof AdditionalLocalDiskInformation) {
-				return (AdditionalLocalDiskInformation) object;
-			}
-			return null;
-		}
-		
-		private String userName;
-		private String server;
-		private String diskName;
-		private long lastSynchronized;
-		
-		public AdditionalLocalDiskInformation(String userName, String server, String diskName, long lastSynchronized) {
-			this.userName = userName;
-			this.server = server;
-			this.diskName = diskName;
-			this.lastSynchronized = lastSynchronized;
-		}
-		
-		public boolean isLinked() {
-			return (userName != null && !userName.isEmpty());
-		}
-		
-		public URI createUri (String password) throws URISyntaxException {
-			return new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + userName + ":" + 
-					password + "@" + server + "?" + diskName);
-		}
-		
-		public void setLastSynchronized(long lastSynchronized) {
-			this.lastSynchronized = lastSynchronized;
-		}
-		
-		public long getLastSynchronized() {
-			return lastSynchronized;
-		}
-		
-		public byte[] toByteArray() {
-			try {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
-				ObjectOutputStream oos = new ObjectOutputStream(bos); 
-				oos.writeObject(this);
-				oos.close();
-				return bos.toByteArray();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
-	}
-	
 	private SynchronizedTaskControllerState state = DEFAULT_STATE;
 	private URI serverUri;
 	private RemoteConnection serverConnection;
 	private final List<SynchronizedTaskControllerStateListener> stateListener = new LinkedList<SynchronizedTaskControllerStateListener>();
-	private final Comparator<Entry> nameComparator = new EntryNameComperator();
 	
 	public RemoteSynchronizedTaskController(URI uri) {
 		if (isServerUri(uri)) {
@@ -112,7 +45,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		if (localUri != null && isServerUri(localUri)) {
 			throw new IllegalArgumentException("Illegal local uri: " + localUri);
 		}
-		if (serverUri != null && !isServerUri(localUri)) {
+		if (serverUri != null && !isServerUri(serverUri)) {
 			throw new IllegalArgumentException("Illegal server uri " + serverUri);
 		}
 		this.uri = localUri;
@@ -152,7 +85,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 			setState(SynchronizedTaskControllerState.BOTH_CONNECTED);
 		} else if (isLocalConnected()) {
 			try {
-				AdditionalLocalDiskInformation diskInformation = getLocalDiskInformation();
+				AdditionalLocalDiskInformation diskInformation = RemoteConnectionUtil.getDiskInformation(connection);
 				if (diskInformation != null && diskInformation.isLinked()) {
 					setState(SynchronizedTaskControllerState.LOCAL_LINKED);
 				} else {
@@ -273,14 +206,16 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		}
 	}
 	
-	protected void importFile(java.io.File file, String destination)
+	protected Entry importFile(java.io.File file, String destination)
 			throws RemoteException, VirtualDiskException, IOException {
+		Entry entry = null;
 		if (isLocalConnected()) {
-			importFile(connection.getDisk(), connection.getDiskId(), file, destination);
+			entry = importFile(connection.getDisk(), connection.getDiskId(), file, destination);
 		}
 		if (isServerConnected()) {
-			importFile(serverConnection.getDisk(), serverConnection.getDiskId(), file, destination);
+			entry = importFile(serverConnection.getDisk(), serverConnection.getDiskId(), file, destination);
 		}
+		return entry;
 	}
 	
 	protected void checkIsLocalConnected () {
@@ -302,7 +237,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	
 	protected void updateLastSynchronized(long lastSynchronized) {
 		try {
-			AdditionalLocalDiskInformation localDiskInformation = getLocalDiskInformation();
+			AdditionalLocalDiskInformation localDiskInformation = RemoteConnectionUtil.getDiskInformation(connection);
 			if (localDiskInformation != null) {
 				localDiskInformation.setLastSynchronized(lastSynchronized);
 				saveLocalDiskInformation(localDiskInformation);
@@ -331,21 +266,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		};
 	}
 
-	private AdditionalLocalDiskInformation getLocalDiskInformation () throws RemoteException, VirtualDiskException {
-		byte[] additionalDiskInformation = connection.getDisk().getAdditionalDiskInformation(connection.getDiskId());
-		if (additionalDiskInformation == null || additionalDiskInformation.length == 0) {
-			return null;
-		}
-		try {
-			AdditionalLocalDiskInformation localDiskInformation = AdditionalLocalDiskInformation.readFromByteArray(additionalDiskInformation);
-			if (localDiskInformation == null) {
-				return null;
-			}
-			return localDiskInformation;
-		} catch (Exception e) {
-			throw new VirtualDiskException("Invalid disk information", e);
-		}
-	}
+	
 	
 	private void saveLocalDiskInformation (AdditionalLocalDiskInformation diskInformation) throws RemoteException, VirtualDiskException {
 		connection.getDisk().saveAdditionalDiskInformation(connection.getDiskId(), diskInformation.toByteArray());
@@ -359,7 +280,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 			@Override
 			protected Void call() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
 				checkIsLocalConnected();
-				AdditionalLocalDiskInformation localDiskInformation = getLocalDiskInformation();
+				AdditionalLocalDiskInformation localDiskInformation = RemoteConnectionUtil.getDiskInformation(connection);
 				if (localDiskInformation == null) {
 					throw new VirtualDiskException("No valid disk information found");
 				}
@@ -470,91 +391,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		if (!isLocalConnected() || !isServerConnected()) {
 			throw new IllegalStateException("Can't synchronize disks if not connected to both server and local disk");
 		}
-		task.updateMessage("Synchronize disks");
-		long lastSynchronized = 0;
-		try {
-			AdditionalLocalDiskInformation diskInformation = getLocalDiskInformation();
-			if (diskInformation != null) {
-				lastSynchronized = diskInformation.getLastSynchronized();
-			}
-		} catch (VirtualDiskException | RemoteException e) {
-			//ignore because its possible that the disk has never been synchronized and no disk information exist
-		}
-		Directory rootDirectory = new Directory();
-		synchronizeDirectory(rootDirectory, lastSynchronized, task);
-	}
-	
-	private Entry[] getLocalChildren (Entry entry) throws RemoteException, VirtualDiskException {
-		Entry[] children = connection.getDisk().getChildren(connection.getDiskId(), entry);
-		Arrays.sort(children, nameComparator);
-		return children;
-	}
-	
-	private Entry[] getServerChildren (Entry entry) throws RemoteException, VirtualDiskException {
-		Entry[] children = serverConnection.getDisk().getChildren(serverConnection.getDiskId(), entry);
-		Arrays.sort(children, nameComparator);
-		return children;
-	}
-	
-	private void synchronizeEntry (Entry entry, long lastSynchronized, RemoteConnection sourceConnection, RemoteConnection destinationConnection) {
-		if (entry instanceof Directory) {
-			if (entry.getTimestamp() < lastSynchronized) {
-				//TODO check if subentries have changed if so, dont delete but add on server
-			} else {
-				//TODO upload all sub entries to destination connection
-			}
-			
-		} else if (entry instanceof File) {
-			if (entry.getTimestamp() < lastSynchronized) {
-				//TODO delete source entry
-			} else {
-				//TODO upload to destination connection
-			}
-		}
-	}
-	
-	private void synchronizeDirectory (Directory directory, long lastSynchronized, UpdateableTask<?> task) throws RemoteException, VirtualDiskException {
-		Entry[] localChildren = getLocalChildren(directory);
-		Entry[] serverChildren = getServerChildren(directory);
-		int localIndex = 0;
-		int serverIndex = 0;
-		while (localIndex < localChildren.length || serverIndex < serverChildren.length) {
-			if (localIndex < localChildren.length && serverIndex < serverChildren.length) {
-				Entry localEntry = localChildren[localIndex];
-				Entry serverEntry = serverChildren[serverIndex];
-				if (localEntry.getPath().equals(serverEntry.getPath())) {
-					//Same file paths
-					if (localEntry.getTimestamp() > lastSynchronized && serverEntry.getTimestamp() > lastSynchronized) {
-						//Both entries have changed
-						if (!(localEntry instanceof Directory && serverEntry instanceof Directory)) {
-							//TODO rename local entry and copy it to server
-						} else {
-							//TODO sync folders
-						}
-					} else if (localEntry.getTimestamp() > lastSynchronized) {
-						//Only local entry has changed
-						//TODO delete server entry and replace with server entry
-					} else if (serverEntry.getTimestamp() > lastSynchronized) {
-						//Only server entry has changed
-						//TODO delete local entry and replace with server entry
-					} else {
-						//Both unchanged
-						if (localEntry instanceof Directory) {
-							//TODO sync directory
-						}
-					}
-					localIndex++;
-					serverIndex++;
-				} else if (nameComparator.compare(localEntry, serverEntry) < 0) {
-					synchronizeEntry(localChildren[localIndex++], lastSynchronized, connection, serverConnection);
-				} else {
-					synchronizeEntry(serverChildren[serverIndex++], lastSynchronized, serverConnection, connection);
-				}
-			} else if (localIndex < localChildren.length) {
-				synchronizeEntry(localChildren[localIndex++], lastSynchronized, connection, serverConnection);
-			} else if (serverIndex < serverChildren.length) {
-				synchronizeEntry(serverChildren[serverIndex++], lastSynchronized, serverConnection, connection);
-			}
-		}
+		SynchronizeDisks synchronizeDisks = new SynchronizeDisks(serverConnection, connection);
+		synchronizeDisks.synchronizeDisks(task);
 	}
 }
