@@ -344,7 +344,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				connection = connect(localUri, true);
 				RemoteSynchronizedTaskController.this.uri = localUri;
 				String[] userInfoSplit = serverUri.getUserInfo().split(":");
-				saveLocalDiskInformation(new AdditionalLocalDiskInformation(userInfoSplit[0], serverUri.getHost(), userInfoSplit[1], 0));
+				saveLocalDiskInformation(new AdditionalLocalDiskInformation(userInfoSplit[0], serverUri.getHost(), serverUri.getQuery(), 0));
 				synchronizeDisks(this, serverConnection);
 				updateState();
 				return null;
