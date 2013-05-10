@@ -359,30 +359,63 @@ As ``search" was a new requirement in the second milestone we added the needed a
 
 \section{Synchronization Server}
 
-% TODO: Remove this line
-\textbf{[This section has to be completed by May 13th.]}
-
-%TODO: Remove this text and replace it with actual content
-\emph{Give a short (1-2 paragraphs) description of what VFS Browser is.}
-
+The synchronization server allows to work on multiple local virtual disks and keep them in sync by connecting to a central server. The accordingly extended file browser allows the user a simple way to use this new functionality. For the new requirements we extended our server from part two to support a server disk for synchronization proposes.
 
 \subsection{Requirements}
 
-% TODO: Remove this text and replace it with actual content
-\emph{Describe which requirements (and possibly bonus requirements) you have implemented in this part. Give a quick description (1-2 sentences) of each requirement. List the software elements (classes and or functions) that are mainly involved in implementing each requirement.}
+\subsubsection{Important Note}
+As we implemented a client-server-model in part two we don't really have a ``local disk". Every disk is in some way a remote/server disk. If we talk in the following about the ``local disk" we think about a specific disk that is located locally or at a remote location and was created as described in part two.
 
+% TODO: Remove this text and replace it with actual content
+\subsubsection{Creating new account / log in into existing account}
+Creating a user and logging in as an existing one is done by using the \mono{.server.ISynchronizeServer} interface. This interface is implemented by \mono{.server.SynchronizeServer}.
+
+TODO: GUI Bilder und wie wir es in der GUI dem User präsentieren.
+
+The server allows to create unique usernames with a password. The password is saved as a salted hash with the corresponding username inside \mono{users.data}.
+
+\subsubsection{Go Offline}
+We provide the user with a button to go online respectively offline. Either way the user operates on his local disk. If the file browser is in online mode it keeps the local disk synchronized with the remote synchronization disk. If the user connects to the server after being offline the file browser initiates a synchronization right after the connection is established.
+
+\subsubsection{Binding a disk to an account}
+This is done by linking a local disk to a synchronization disk on a server. If the given disk name already exists on the synchronization server, we link the local disk to it and perform a synchronization. If the name doesn't yet exists it is created and, again, a synchronization is performed.
+
+We save the related information of the synchronization server on the local disk. This includes the host address, username and disk name. Therefore the user has only to provide his password while going online.
+
+\subsubsection{Track changes and Synchronize}
+The new RMI server interface \mono{.server.ISynchronizeServer} allows to synchronize local disks with a server disk. The logic behind our synchronization process is implemented client-side inside \mono{.controller.remote.SynchronizeDisks}.
+
+\subsubsection{Basic: Conflict Resolution}
+If the application cannot resolve a conflict it will rename the local version and download the version on the synchronization server. This way the user can decide which one is the right one and no data is lost in any case.
 
 \subsection{Design}
 
-% TODO: Remove this text and replace it with actual content
-\emph{Give an overview of the design of this part and describe in general terms how the implementation works. You can mention design patterns used, class diagrams, definition of custom file formats, network protocols, or anything else that helps understand the implementation.}
+\subsubsection{Client-Server Architecture}
+As we already implemented a client-server-model in part two we could just extend the client and server to support synchronization. Therefore in a typical setup one server runs on the client machine or inside the clients network to provide the user with a ``local disk" and one server instance runs on a remote server that acts as the synchronization server.
 
+\subsubsection{Synchronization}
+In general the synchronization is done by traversing the file tree and to search for differences between the synchronization server's one and the local disk's. To help the decision making process we save a timestamp of the last synchronization on the local disk. The following cases exist and were implemented.
+
+\paragraph{A file exists on both disks (same path):} If both files were changed after the last synchronization we have a conflict. This is handled by renaming the local file and downloading the server's version to the local disk.
+
+If only one of the two files were changed after the last synchronization, the older one will be replaced with the newer one.
+
+If no changes happen since the last synchronization, nothing has to be done.
+
+\paragraph{A files exists only on one disk:} If the last changed timestamp is older than the last synchronization timestamp the file was deleted and a delete command is send to the other disk. Otherwise the file was created after the last synchronization and is transferred to the other disk while synchronizing.
+
+\paragraph{A folder exists on both disks (same path):} We go inside the folder and check the files.
+
+\paragraph{A folder exists only on one disk:} If the last changed timestamp of the folder is newer than the last synchronization timestamp the folder and it's content is transferred to the other disk.
+
+If the last changed timestamp of the folder is older than the timestamp of the last synchronization we have to check if it contains an object with a timestamp that is newer than the synchronization timestamp. If such an object exists the folder and the found object are transferred to the other disk. If no such object is found, the folder is deleted on the other disk.
 
 \subsection{Integration}
+\subsubsection{Changes to part 1}
+We used previously reserved metadata space inside our virtual disk to save information about the synchronization disk (host address, username and disk name). Otherwise everything is the same inside the core.
 
-% TODO: Remove this text and replace it with actual content
-\emph{If you had to change the design or API of the previous part, describe the changes and the reasons for each change here.}
-
+\subsubsection{Changes to part 2}
+We obviously added additional buttons to the file browser GUI. In addition we added controller code to handle the synchronization process and created new code on the server side to provide the needed functionality for the mentioned task. In other words, we extended the code base built in part two but did not change the already existing functionality. This is also shown by the fact that the ``local disk" is still created and used the same way as before. It can just be synchronized with a synchronize server disk now.
 
 
 % PART IV: Quick Start Guide
