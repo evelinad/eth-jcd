@@ -58,7 +58,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		}
 
 		public byte[] getHashedPassowrd() {
-			return hashedPassowrd;
+			return Arrays.copyOf(hashedPassowrd, hashedPassowrd.length);
 		}
 
 		public void setHashedPassowrd(byte[] hashedPassowrd) {
@@ -93,12 +93,15 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 					userMap = (Map<String, UserData>) object;
 				}
 			} catch (IOException | ClassNotFoundException e) {
+				//As this prevents the server from running properly a RuntimerException is thrown
 				throw new RuntimeException("Unable to load users", e);
 			} finally {
 				if (objStream != null) {
 					try {
 						objStream.close();
-					} catch (IOException e) { }
+					} catch (IOException e) {
+						//Ignore as nothing can be done
+					}
 				}
 			}
 		}
@@ -111,12 +114,15 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 			objStream.writeInt(nextId);
 			objStream.writeObject(userMap);
 		} catch (IOException e) {
+			//As this prevents the server from running properly a RuntimerException is thrown
 			throw new RuntimeException("Unable to save users", e);
 		} finally {
 			if (objStream != null) {
 				try {
 					objStream.close();
-				} catch (IOException e) { }
+				} catch (IOException e) {
+					//Ignore as nothing can be done
+				}
 			}
 		}
 	}
@@ -178,7 +184,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 			int id = getNextId();
 			getDiskMap().put(id, newDisk);
 			return id;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
 					+ getDiskPath(userName, diskName), e);
 		}
@@ -190,7 +196,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		checkPassword(userName, password);
 		String diskPath = getDiskPath(userName, diskName);
 		try {
-			java.io.File diskFile = new java.io.File(diskPath);
+			File diskFile = new File(diskPath);
 			if (isVirtualDisk(diskFile)) {
 				if (!diskFile.delete()) {
 					throw new VirtualDiskException(
@@ -200,7 +206,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 				throw new IllegalArgumentException(diskPath
 						+ "  is not a virtual disk. File not deleted.");
 			}
-		} catch (Exception e) {
+		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not delete virtual disk at "
 					+ diskPath, e);
 		}
@@ -216,7 +222,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 			int id = getNextId();
 			getDiskMap().put(id, loadedDisk);
 			return id;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
 					+ diskPath, e);
 		}
@@ -226,7 +232,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 	public boolean diskExists(String userName, String diskName)
 			throws RemoteException, VirtualDiskException {
 		if (userMap.containsKey(userName)) {
-			return isVirtualDisk(new java.io.File(getDiskPath(userName, diskName)));
+			return isVirtualDisk(new File(getDiskPath(userName, diskName)));
 		}
 		return false;
 	}

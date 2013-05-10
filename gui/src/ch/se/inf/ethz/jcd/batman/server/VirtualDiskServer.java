@@ -31,6 +31,7 @@ public final class VirtualDiskServer {
 			final Remote remoteSynchronizeServer = UnicastRemoteObject.exportObject(synchronizeServer, 0);
 			registry.rebind(SYNCHRONIZE_SERVICE_NAME, remoteSynchronizeServer);
 			
+			//This is necessary because i want to know when i start the server if it was started properly
 			System.out.println(DISK_SERVICE_NAME + " bound");
 		} catch (Exception e) {
 			System.err.println(DISK_SERVICE_NAME + " exception:");

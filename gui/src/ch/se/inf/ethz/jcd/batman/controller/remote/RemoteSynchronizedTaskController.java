@@ -92,7 +92,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				} else {
 					setState(SynchronizedTaskControllerState.LOCAL_UNLINKED_CONNECTED);
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				//No valid disk information found
 				setState(SynchronizedTaskControllerState.LOCAL_UNLINKED_CONNECTED);
 			}
@@ -239,7 +239,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				localDiskInformation.setLastSynchronized(lastSynchronized);
 				saveLocalDiskInformation(localDiskInformation);
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			//Don't update last synchronized if no valid disk information exist
 		}
 	}

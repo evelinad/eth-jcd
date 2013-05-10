@@ -372,6 +372,10 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 							}
 						});
 
+		initStates();
+	}
+	
+	private void initStates () {
 		stateChanged(null, guiState.getState());
 		stateChanged(null, guiState.getSynchronizedState());
 	}
@@ -393,6 +397,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				try {
 					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
 					new TaskDialog(guiState, linkDiskTask);
+					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 				} catch (Exception e) {
 					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
@@ -410,6 +415,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 					URI localDiskUri = new URI(downloadDiskDialog.getLocalDiskUri());
 					Task<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
 					new TaskDialog(guiState, downloadDiskTask);
+					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 				} catch (Exception e) {
 					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
@@ -429,6 +435,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + dialog.getUri()));
 				Task<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
 				new TaskDialog(guiState, newUserTask);
+				//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 			} catch (Exception e) {
 				new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 			}
@@ -534,6 +541,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 						guiState.setCurrentDirectory(new Directory(new Path()));
 					}
 				};
+				//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 			} catch (Exception e) {
 				guiState.setController(null);
 				new ErrorDialog(ERROR_DIALOG_TITLE, e.getMessage()).showAndWait();

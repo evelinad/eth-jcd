@@ -1,11 +1,15 @@
 package ch.se.inf.ethz.jcd.batman.controller.remote;
 
 import java.net.URI;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import ch.se.inf.ethz.jcd.batman.controller.ServerTaskController;
+import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.ISynchronizeServer;
+import ch.se.inf.ethz.jcd.batman.server.InvalidUserNameException;
 import ch.se.inf.ethz.jcd.batman.server.VirtualDiskServer;
 
 import javafx.concurrent.Task;
@@ -25,7 +29,7 @@ public class RemoteServerTaskController implements ServerTaskController {
 		return new Task<Void>() {
 
 			@Override
-			protected Void call() throws Exception {
+			protected Void call() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException {
 				updateTitle("Creating user");
 				updateMessage("Creating user...");
 				Registry registry;

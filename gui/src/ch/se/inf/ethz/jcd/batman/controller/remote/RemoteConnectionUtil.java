@@ -1,5 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.controller.remote;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -41,7 +42,7 @@ public class RemoteConnectionUtil {
 		}
 		try {
 			return AdditionalLocalDiskInformation.readFromByteArray(additionalDiskInformation);
-		} catch (Exception e) {
+		} catch (IOException | ClassNotFoundException e) {
 			throw new VirtualDiskException("Invalid disk information", e);
 		}
 	}

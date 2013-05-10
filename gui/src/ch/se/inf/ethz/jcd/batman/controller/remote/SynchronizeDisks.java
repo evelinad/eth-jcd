@@ -137,37 +137,37 @@ public class SynchronizeDisks {
 
 		private static final long serialVersionUID = -1125789772914391557L;
 		
-		private boolean containsNewEntry = false;
+		private boolean newEntry = false;
 		
 		public ChangeList() { }
 		
 		public ChangeList(boolean newEntry) {
-			this.containsNewEntry = newEntry;
+			this.newEntry = newEntry;
 		}
 
 		public ChangeList(boolean newEntry, SynchronizeTask task) {
-			this.containsNewEntry = newEntry;
+			this.newEntry = newEntry;
 			add(task);
 		}
 		
 		public boolean containsNewEntry() {
-			return containsNewEntry;
+			return newEntry;
 		}
 
 		public void setContainsNewEntry(boolean containsNewEntry) {
-			this.containsNewEntry = containsNewEntry;
+			this.newEntry = containsNewEntry;
 		}
 		
 		private void checkNew(SynchronizeTask e) {
 			if (!(e instanceof DeleteTask)) {
-				containsNewEntry = true;
+				newEntry = true;
 			}
 		}
 		
 		private void checkNew(Collection<? extends SynchronizeTask> c) {
-			if (!containsNewEntry) {
+			if (!newEntry) {
 				if (c instanceof ChangeList) {
-					containsNewEntry = ((ChangeList) c).containsNewEntry();
+					newEntry = ((ChangeList) c).containsNewEntry();
 				} else {
 					for (SynchronizeTask task : c) {
 						checkNew(task);

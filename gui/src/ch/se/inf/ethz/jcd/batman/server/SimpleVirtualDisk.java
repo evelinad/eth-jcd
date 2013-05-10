@@ -1,5 +1,6 @@
 package ch.se.inf.ethz.jcd.batman.server;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -25,7 +26,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 			int id = getNextId();
 			getDiskMap().put(id, newDisk);
 			return id;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
 					+ path.getPath(), e);
 		}
@@ -38,7 +39,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 			int id = getNextId();
 			getDiskMap().put(id, loadedDisk);
 			return id;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
 					+ path.getPath(), e);
 		}
@@ -58,7 +59,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 				throw new IllegalArgumentException(path
 						+ "  is not a virtual disk. File not deleted.");
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new VirtualDiskException("Could not delete virtual disk at "
 					+ path, e);
 		}
