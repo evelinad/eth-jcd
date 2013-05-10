@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.util.EntryNameComperator;

@@ -3,7 +3,6 @@ package ch.se.inf.ethz.jcd.batman.browser.controls;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -12,6 +11,7 @@ import javafx.scene.input.KeyEvent;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -98,7 +98,7 @@ public class NameCell extends EntryCell<Entry, Entry> {
 		if (!newValue.getPath().equals(editingItem.getPath())) {
 			Entry[] sourceEntries = new Entry[] { editingItem };
 			Path[] destinationPaths = new Path[] { newValue.getPath() };
-			Task<Void> moveTask = guiState.getController().createMoveTask(
+			UpdateableTask<Void> moveTask = guiState.getController().createMoveTask(
 					sourceEntries, destinationPaths);
 			new TaskDialog(guiState, moveTask);
 		}

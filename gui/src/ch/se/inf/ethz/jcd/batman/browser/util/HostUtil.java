@@ -3,11 +3,11 @@ package ch.se.inf.ethz.jcd.batman.browser.util;
 import java.awt.Desktop;
 import java.io.IOException;
 
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import ch.se.inf.ethz.jcd.batman.browser.ErrorDialog;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
 
@@ -31,7 +31,7 @@ public class HostUtil {
 					"open_disk_out", file.getPath().getName());
 			hostFile.delete();
 
-			Task<Void> task = state.getController().createExportTask(
+			UpdateableTask<Void> task = state.getController().createExportTask(
 					new Entry[] { file }, new String[] { hostFile.getPath() });
 
 			new TaskDialog(state, task) {

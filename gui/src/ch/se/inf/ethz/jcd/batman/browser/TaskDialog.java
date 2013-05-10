@@ -3,8 +3,9 @@ package ch.se.inf.ethz.jcd.batman.browser;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
+
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -21,9 +22,9 @@ public class TaskDialog extends ModalDialog {
 
 	private static final double TASK_DIALOG_MAX_WIDTH = 500;
 
-	private final Task<?> task;
+	private final UpdateableTask<?> task;
 
-	public TaskDialog(GuiState guiState, final Task<?> task) {
+	public TaskDialog(GuiState guiState, final UpdateableTask<?> task) {
 		this.task = task;
 
 		super.setMaxWidth(TASK_DIALOG_MAX_WIDTH);
@@ -44,26 +45,28 @@ public class TaskDialog extends ModalDialog {
 		progressBox.setAlignment(Pos.CENTER);
 
 		HBox buttonBox = new HBox();
-		Button cancelButton = new Button("Stop Task");
+		final Button cancelButton = new Button("Stop Task");
 		cancelButton.setCancelButton(true);
 		cancelButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {
-				task.cancel();
+				cancelButton.setText("Canceling...");
+				cancelButton.setDisable(true);
+				task.setOnFinished(new EventHandler<WorkerStateEvent>() {
+
+					@Override
+					public void handle(WorkerStateEvent event) {
+						close();
+					}
+				
+				});
+				task.cancel(true);
 				setCloseReason(CloseReason.CANCEL);
 			}
 		});
 		buttonBox.getChildren().add(cancelButton);
 		getContainer().add(buttonBox, 0, 2);
 		buttonBox.setAlignment(Pos.CENTER);
-
-		task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
-
-			@Override
-			public void handle(WorkerStateEvent event) {
-				close();
-			}
-		});
 		task.setOnRunning(new EventHandler<WorkerStateEvent>() {
 
 			@Override

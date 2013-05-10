@@ -7,12 +7,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import ch.se.inf.ethz.jcd.batman.controller.ServerTaskController;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.ISynchronizeServer;
 import ch.se.inf.ethz.jcd.batman.server.InvalidUserNameException;
 import ch.se.inf.ethz.jcd.batman.server.VirtualDiskServer;
-
-import javafx.concurrent.Task;
 
 public class RemoteServerTaskController implements ServerTaskController {
 	
@@ -25,11 +24,11 @@ public class RemoteServerTaskController implements ServerTaskController {
 	}
 	
 	@Override
-	public Task<Void> createNewUserTask(final String userName, final String password) {
-		return new Task<Void>() {
+	public UpdateableTask<Void> createNewUserTask(final String userName, final String password) {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException {
+			protected Void callImpl() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException {
 				updateTitle("Creating user");
 				updateMessage("Creating user...");
 				Registry registry;

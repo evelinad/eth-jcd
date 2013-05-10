@@ -4,7 +4,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
@@ -17,6 +16,7 @@ import ch.se.inf.ethz.jcd.batman.browser.State;
 import ch.se.inf.ethz.jcd.batman.browser.StateListener;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.images.ImageResource;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -72,7 +72,7 @@ public class DirectoryTree extends TreeView<String> implements
 		private ObservableList<TreeItem<String>> buildChildren(
 				final TreeItem<String> treeItem) {
 			Path path = new Path(getPath(treeItem));
-			final Task<Entry[]> entriesTask = guiState.getController()
+			final UpdateableTask<Entry[]> entriesTask = guiState.getController()
 					.createDirectoryEntriesTask(new Directory(path));
 			final ObservableList<TreeItem<String>> childDirectories = FXCollections
 					.observableArrayList();

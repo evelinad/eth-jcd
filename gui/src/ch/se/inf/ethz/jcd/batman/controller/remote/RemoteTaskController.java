@@ -17,10 +17,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.TaskController;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
@@ -229,7 +229,7 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createConnectTask(final boolean createNewIfNecessary) {
+	public UpdateableTask<Void> createConnectTask(final boolean createNewIfNecessary) {
 		if (isConnected()) {
 			throw new IllegalStateException("Already connected.");
 		}
@@ -237,7 +237,7 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws ConnectionException, AuthenticationException {
+			protected Void callImpl() throws ConnectionException, AuthenticationException {
 				if (isConnected()) {
 					throw new IllegalStateException("Already connected.");
 				}
@@ -258,12 +258,12 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Entry[]> createDirectoryEntriesTask(final Directory directory) {
+	public UpdateableTask<Entry[]> createDirectoryEntriesTask(final Directory directory) {
 		checkIsConnected();
-		return new Task<Entry[]>() {
+		return new UpdateableTask<Entry[]>() {
 
 			@Override
-			protected Entry[] call() throws RemoteException, VirtualDiskException {
+			protected Entry[] callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Retrieve directory entries");
 				updateMessage("Retrieving directory entries...");
@@ -274,12 +274,12 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> createFreeSpaceTask() {
+	public UpdateableTask<Long> createFreeSpaceTask() {
 		checkIsConnected();
-		return new Task<Long>() {
+		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long call() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate free space");
 				updateMessage("Calculating free space...");
@@ -290,12 +290,12 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> createOccupiedSpaceTask() {
+	public UpdateableTask<Long> createOccupiedSpaceTask() {
 		checkIsConnected();
-		return new Task<Long>() {
+		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long call() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate occupied space");
 				updateMessage("Calculating occupied space...");
@@ -306,12 +306,12 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Long> createUsedSpaceTask() {
+	public UpdateableTask<Long> createUsedSpaceTask() {
 		checkIsConnected();
-		return new Task<Long>() {
+		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long call() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate used space");
 				updateMessage("Calculating used space...");
@@ -322,12 +322,12 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createFileTask(final File file) {
+	public UpdateableTask<Void> createFileTask(final File file) {
 		checkIsConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Create file");
 				updateMessage("Creating file...");
@@ -340,12 +340,12 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createDirectoryTask(final Directory directory) {
+	public UpdateableTask<Void> createDirectoryTask(final Directory directory) {
 		checkIsConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Create directory");
 				updateMessage("Creating directory...");
@@ -358,12 +358,12 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createDeleteEntriesTask(final Entry[] entries) {
+	public UpdateableTask<Void> createDeleteEntriesTask(final Entry[] entries) {
 		checkIsConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Deleting entries");
 
@@ -401,17 +401,17 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createMoveTask(final Entry[] sourceEntries,
+	public UpdateableTask<Void> createMoveTask(final Entry[] sourceEntries,
 			final Path[] destinationPaths) {
 		checkIsConnected();
 		if (sourceEntries.length != destinationPaths.length) {
 			throw new IllegalArgumentException(
 					"Source and destination arrays have to be the same size");
 		}
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Moving entries");
 				// check if destination paths not already exist
@@ -447,17 +447,17 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createImportTask(final String[] sourcePaths,
+	public UpdateableTask<Void> createImportTask(final String[] sourcePaths,
 			final Path[] destinationPaths) {
 		checkIsConnected();
 		if (sourcePaths.length != destinationPaths.length) {
 			throw new IllegalArgumentException(
 					"Source and destination arrays have to be the same size");
 		}
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws IOException {
+			protected Void callImpl() throws IOException {
 				checkIsConnected();
 				updateTitle("Import entries");
 				// check if destination paths not already exist
@@ -505,10 +505,10 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createExportTask(final Entry[] sourceEntries,
+	public UpdateableTask<Void> createExportTask(final Entry[] sourceEntries,
 			final String[] destinationPaths) {
 		checkIsConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			private void exportFile(Entry entry, String destination)
 					throws RemoteException, IOException {
@@ -544,7 +544,7 @@ public class RemoteTaskController implements TaskController {
 			}
 
 			@Override
-			protected Void call() throws IOException {
+			protected Void callImpl() throws IOException {
 				checkIsConnected();
 				updateTitle("Export entries");
 				// check if destination paths not already exist
@@ -590,13 +590,13 @@ public class RemoteTaskController implements TaskController {
 	}
 	
 	@Override
-	public Task<Void> createCopyTask(final Entry[] sourceEntries,
+	public UpdateableTask<Void> createCopyTask(final Entry[] sourceEntries,
 			final Path[] destinationPaths) {
 		checkIsConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 				updateMessage(TASK_DISCOVER_ITEMS);
 				// check if destination paths not already exist
@@ -646,11 +646,11 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Void> createDisconnectTask() {
-		return new Task<Void>() {
+	public UpdateableTask<Void> createDisconnectTask() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				close();
 				return null;
 			}
@@ -659,13 +659,13 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public Task<Entry[]> createSearchTask(final String term,
+	public UpdateableTask<Entry[]> createSearchTask(final String term,
 			final boolean isRegex, final boolean checkFiles,
 			final boolean checkFolders, final boolean isCaseSensitive,
 			final boolean checkChildren, final Entry... parents) {
-		return new Task<Entry[]>() {
+		return new UpdateableTask<Entry[]>() {
 			@Override
-			protected Entry[] call() throws RemoteException, VirtualDiskException {
+			protected Entry[] callImpl() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
 
 				updateTitle(String.format("Searching for '%s'", term));

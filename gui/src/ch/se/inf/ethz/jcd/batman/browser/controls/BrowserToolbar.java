@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -40,6 +39,7 @@ import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
 import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -386,7 +386,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			GoOnlineDialog goOnlineDialog = new GoOnlineDialog();
 			goOnlineDialog.showAndWait();
 			if (goOnlineDialog.getCloseReason() == CloseReason.OK) {
-				Task<Void> goOnlineTask = guiState.getController().createGoOnlineTask(goOnlineDialog.getPassword());
+				UpdateableTask<Void> goOnlineTask = guiState.getController().createGoOnlineTask(goOnlineDialog.getPassword());
 				new TaskDialog(guiState, goOnlineTask);
 			}
 			break;
@@ -395,7 +395,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			linkDiskDialog.showAndWait();
 			if (linkDiskDialog.getCloseReason() == CloseReason.OK) {
 				try {
-					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
+					UpdateableTask<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
 					new TaskDialog(guiState, linkDiskTask);
 					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 				} catch (Exception e) {
@@ -404,7 +404,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			}
 			break;
 		case BOTH_CONNECTED:
-			Task<Void> goOfflineTask = guiState.getController().createGoOfflineTask();
+			UpdateableTask<Void> goOfflineTask = guiState.getController().createGoOfflineTask();
 			new TaskDialog(guiState, goOfflineTask);
 			break;
 		case SERVER_CONNECTED:
@@ -413,7 +413,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			if (downloadDiskDialog.getCloseReason() == CloseReason.OK) {
 				try {
 					URI localDiskUri = new URI(downloadDiskDialog.getLocalDiskUri());
-					Task<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
+					UpdateableTask<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
 					new TaskDialog(guiState, downloadDiskTask);
 					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 				} catch (Exception e) {
@@ -433,7 +433,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		if (dialog.getCloseReason() == CloseReason.OK) {
 			try {
 				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + dialog.getUri()));
-				Task<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
+				UpdateableTask<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
 				new TaskDialog(guiState, newUserTask);
 				//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
 			} catch (Exception e) {
@@ -451,7 +451,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 					.getCurrentDirectory().getPath(), dialog.getUserInput()));
 			target.setTimestamp(new Date().getTime());
 
-			Task<Void> task = guiState.getController().createDirectoryTask(
+			UpdateableTask<Void> task = guiState.getController().createDirectoryTask(
 					target);
 			new TaskDialog(guiState, task);
 		}
@@ -471,7 +471,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 							+ File.separator
 							+ selectedEntries[i].getPath().getName();
 				}
-				Task<Void> exportTask = guiState.getController()
+				UpdateableTask<Void> exportTask = guiState.getController()
 						.createExportTask(selectedEntries, destinationPaths);
 				new TaskDialog(guiState, exportTask);
 			}
@@ -491,7 +491,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				destinationPath.add(new Path(guiState.getCurrentDirectory()
 						.getPath(), file.getName()));
 			}
-			Task<Void> importTask = guiState.getController().createImportTask(
+			UpdateableTask<Void> importTask = guiState.getController().createImportTask(
 					sourcePaths.toArray(new String[sourcePaths.size()]),
 					destinationPath.toArray(new Path[destinationPath.size()]));
 			new TaskDialog(guiState, importTask);
@@ -503,7 +503,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		File importFiles = directoryChooser.showDialog(guiState
 				.getPrimaryStage());
 		if (importFiles != null) {
-			Task<Void> importTask = guiState.getController().createImportTask(
+			UpdateableTask<Void> importTask = guiState.getController().createImportTask(
 					new String[] { importFiles.getAbsolutePath() },
 					new Path[] { new Path(guiState.getCurrentDirectory()
 							.getPath(), importFiles.getName()) });
@@ -534,7 +534,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				final SynchronizedTaskController controller = TaskControllerFactory
 						.getController(new URI(uri));
 				guiState.setController(controller);
-				Task<Void> connectTask = controller.createConnectTask(true);
+				UpdateableTask<Void> connectTask = controller.createConnectTask(true);
 				new TaskDialog(guiState, connectTask) {
 					protected void succeeded(WorkerStateEvent event) {
 						guiState.setState(State.CONNECTED);
@@ -551,7 +551,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	}
 
 	protected void disconnect() {
-		Task<Void> disconnectTask = guiState.getController()
+		UpdateableTask<Void> disconnectTask = guiState.getController()
 				.createDisconnectTask();
 		new TaskDialog(guiState, disconnectTask) {
 			@Override

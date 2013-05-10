@@ -3,7 +3,6 @@ package ch.se.inf.ethz.jcd.batman.browser.controls;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.SelectionMode;
@@ -22,6 +21,7 @@ import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.browser.GuiState;
 import ch.se.inf.ethz.jcd.batman.browser.TaskDialog;
 import ch.se.inf.ethz.jcd.batman.browser.util.HostUtil;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
@@ -205,7 +205,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		if (directory != null) {
 			if (directory instanceof SearchDirectory) {
 				SearchDirectory search = (SearchDirectory) directory;
-				final Task<Entry[]> searchTask = guiState.getController()
+				final UpdateableTask<Entry[]> searchTask = guiState.getController()
 						.createSearchTask(search.getTerm(), search.isRegex(),
 								search.isCheckFiles(), search.isCheckFolders(),
 								search.isCaseSensitive(),
@@ -217,7 +217,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					}
 				};
 			} else {
-				final Task<Entry[]> entriesTask = guiState.getController()
+				final UpdateableTask<Entry[]> entriesTask = guiState.getController()
 						.createDirectoryEntriesTask(directory);
 				new TaskDialog(guiState, entriesTask) {
 					protected void succeeded(WorkerStateEvent event) {

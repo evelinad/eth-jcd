@@ -8,7 +8,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.TreeItem;
 import javafx.stage.Stage;
@@ -17,6 +16,7 @@ import ch.se.inf.ethz.jcd.batman.browser.controls.EntryView;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.Path;
@@ -209,7 +209,7 @@ public class GuiState {
 		}
 	}
 
-	public void submitTask(Task<?> task) {
+	public void submitTask(UpdateableTask<?> task) {
 		scheduler.submit(task);
 	}
 
@@ -231,7 +231,7 @@ public class GuiState {
 
 	public void delete() {
 		Entry[] selectedEntries = getSelectedEntries();
-		Task<Void> deleteEntriesTask = getController().createDeleteEntriesTask(
+		UpdateableTask<Void> deleteEntriesTask = getController().createDeleteEntriesTask(
 				selectedEntries);
 		new TaskDialog(this, deleteEntriesTask);
 	}
@@ -240,7 +240,7 @@ public class GuiState {
 		if (controller == null) {
 			scheduler.shutdownNow();
 		} else {
-			Task<Void> disconnectTask = getController().createDisconnectTask();
+			UpdateableTask<Void> disconnectTask = getController().createDisconnectTask();
 			new TaskDialog(this, disconnectTask) {
 				private void shutdownScheduler() {
 					Platform.runLater(new Runnable() {
@@ -290,7 +290,7 @@ public class GuiState {
 				destinationPaths[i] = new Path(currentDirectoryPath,
 						copiedCutEntries[i].getPath().getName());
 			}
-			Task<Void> task = null;
+			UpdateableTask<Void> task = null;
 			if (LastAction.COPY == lastAction) {
 				task = getController().createCopyTask(copiedCutEntries,
 						destinationPaths);

@@ -1,6 +1,5 @@
 package ch.se.inf.ethz.jcd.batman.controller;
 
-import javafx.concurrent.Task;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
@@ -49,7 +48,7 @@ public interface TaskController {
 	 *            an array of destinations inside the virtual disk
 	 * @return the task to execute the import
 	 */
-	Task<Void> createImportTask(String[] sourcePaths, Path[] destinationPath);
+	UpdateableTask<Void> createImportTask(String[] sourcePaths, Path[] destinationPath);
 
 	/**
 	 * Creates a task to export the given entries into the given destinations.
@@ -61,7 +60,7 @@ public interface TaskController {
 	 *            target of an export
 	 * @return the task to execute the export
 	 */
-	Task<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths);
+	UpdateableTask<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths);
 
 	/**
 	 * Creates a task to move entries to new locations.
@@ -76,7 +75,7 @@ public interface TaskController {
 	 *            destinations of the move
 	 * @return the task to execute the move
 	 */
-	Task<Void> createMoveTask(Entry[] sourceEntries, Path[] destinationPaths);
+	UpdateableTask<Void> createMoveTask(Entry[] sourceEntries, Path[] destinationPaths);
 
 	/**
 	 * Creates a task to copy entries.
@@ -87,7 +86,7 @@ public interface TaskController {
 	 *            an array of destinations for the copies
 	 * @return the task to execute the copy
 	 */
-	Task<Void> createCopyTask(Entry[] sourceEntries, Path[] destinationPaths);
+	UpdateableTask<Void> createCopyTask(Entry[] sourceEntries, Path[] destinationPaths);
 
 	/**
 	 * Creates a task that deletes the given entries.
@@ -96,7 +95,7 @@ public interface TaskController {
 	 *            an array of entries to delete
 	 * @return the task to execute the deletion
 	 */
-	Task<Void> createDeleteEntriesTask(Entry[] entries);
+	UpdateableTask<Void> createDeleteEntriesTask(Entry[] entries);
 
 	/**
 	 * Creates a task to create a new file.
@@ -105,7 +104,7 @@ public interface TaskController {
 	 *            the file to create
 	 * @return task to execute the creation
 	 */
-	Task<Void> createFileTask(File file);
+	UpdateableTask<Void> createFileTask(File file);
 
 	/**
 	 * Creates a task to create a directory.
@@ -114,7 +113,7 @@ public interface TaskController {
 	 *            the directory to create
 	 * @return task to execute the creation
 	 */
-	Task<Void> createDirectoryTask(Directory directory);
+	UpdateableTask<Void> createDirectoryTask(Directory directory);
 
 	/**
 	 * Creates a task to get the children of a directory.
@@ -123,28 +122,28 @@ public interface TaskController {
 	 *            the parent of the returned child entries
 	 * @return task to execute the query
 	 */
-	Task<Entry[]> createDirectoryEntriesTask(Directory directory);
+	UpdateableTask<Entry[]> createDirectoryEntriesTask(Directory directory);
 
 	/**
 	 * Creates a task to retrieve the amount of free space.
 	 * 
 	 * @return task to execute the query
 	 */
-	Task<Long> createFreeSpaceTask();
+	UpdateableTask<Long> createFreeSpaceTask();
 
 	/**
 	 * Creates a task to retrieve the amount of occupied space.
 	 * 
 	 * @return task to execute the query
 	 */
-	Task<Long> createOccupiedSpaceTask();
+	UpdateableTask<Long> createOccupiedSpaceTask();
 
 	/**
 	 * Creates a task to retrieve the amount of used space.
 	 * 
 	 * @return task to execute the query
 	 */
-	Task<Long> createUsedSpaceTask();
+	UpdateableTask<Long> createUsedSpaceTask();
 
 	/**
 	 * Creates a task to connect to virtual disk
@@ -155,14 +154,14 @@ public interface TaskController {
 	 * 
 	 * @return task to execute the connection
 	 */
-	Task<Void> createConnectTask(boolean createNewIfNecessary);
+	UpdateableTask<Void> createConnectTask(boolean createNewIfNecessary);
 
 	/**
 	 * Creates a task to disconnect to the virtual disk
 	 * 
 	 * @return task to execute the disconnect
 	 */
-	Task<Void> createDisconnectTask();
+	UpdateableTask<Void> createDisconnectTask();
 
 	/**
 	 * Creates a task to search for the given term inside the given parents.
@@ -183,7 +182,7 @@ public interface TaskController {
 	 *            list of parents to search in
 	 * @return task to execute the search
 	 */
-	Task<Entry[]> createSearchTask(String term, boolean isRegex,
+	UpdateableTask<Entry[]> createSearchTask(String term, boolean isRegex,
 			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
 			boolean checkChildren, Entry... parents);
 }

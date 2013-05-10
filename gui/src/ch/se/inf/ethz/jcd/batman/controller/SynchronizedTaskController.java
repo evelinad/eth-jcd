@@ -2,19 +2,17 @@ package ch.se.inf.ethz.jcd.batman.controller;
 
 import java.net.URI;
 
-import javafx.concurrent.Task;
-
 public interface SynchronizedTaskController extends TaskController {
 	
 	SynchronizedTaskControllerState DEFAULT_STATE = SynchronizedTaskControllerState.DISCONNECTED;
 	
-	Task<Void> createGoOfflineTask();
+	UpdateableTask<Void> createGoOfflineTask();
 	
-	Task<Void> createLinkDiskTask(String server, String userName, String password, String diskName);
+	UpdateableTask<Void> createLinkDiskTask(String server, String userName, String password, String diskName);
 	
-	Task<Void> createGoOnlineTask(String password);
+	UpdateableTask<Void> createGoOnlineTask(String password);
 	
-	Task<Void> createDownloadDiskTask(URI localUri);
+	UpdateableTask<Void> createDownloadDiskTask(URI localUri);
 	
 	void addStateListener(SynchronizedTaskControllerStateListener listener);
 	

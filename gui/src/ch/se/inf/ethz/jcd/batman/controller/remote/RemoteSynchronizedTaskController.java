@@ -10,12 +10,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import ch.se.inf.ethz.jcd.batman.browser.DiskEntryListener;
 import ch.se.inf.ethz.jcd.batman.controller.ConnectionException;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskController;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerState;
 import ch.se.inf.ethz.jcd.batman.controller.SynchronizedTaskControllerStateListener;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 import ch.se.inf.ethz.jcd.batman.model.Directory;
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 import ch.se.inf.ethz.jcd.batman.model.File;
@@ -245,12 +245,12 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	}
 	
 	@Override
-	public Task<Void> createGoOfflineTask() {
+	public UpdateableTask<Void> createGoOfflineTask() {
 		checkIsBothConnected();
-		return new Task<Void>() {
+		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException {
 				checkIsBothConnected();
 				updateTitle("Disconnecting from server");
 				updateMessage("Disconnecting from server...");
@@ -270,12 +270,12 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	}
 	
 	@Override
-	public Task<Void> createGoOnlineTask(final String password) {
+	public UpdateableTask<Void> createGoOnlineTask(final String password) {
 		checkIsLocalConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
 				checkIsLocalConnected();
 				AdditionalLocalDiskInformation localDiskInformation = RemoteConnectionUtil.getDiskInformation(connection);
 				if (localDiskInformation == null) {
@@ -299,12 +299,12 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 
 
 	@Override
-	public Task<Void> createLinkDiskTask(final String server, final String userName, final String password, final String diskName) {
+	public UpdateableTask<Void> createLinkDiskTask(final String server, final String userName, final String password, final String diskName) {
 		checkIsLocalConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
 				checkIsLocalConnected();
 				AdditionalLocalDiskInformation diskInformation = new AdditionalLocalDiskInformation(userName, server, diskName, 0);
 				URI serverUri = diskInformation.createUri(password);
@@ -325,7 +325,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	}
 	
 	@Override
-	public Task<Void> createDownloadDiskTask(final URI localUri) {
+	public UpdateableTask<Void> createDownloadDiskTask(final URI localUri) {
 		if (localUri == null || isServerUri(localUri)) {
 			throw new IllegalArgumentException("Illegal local uri: " + localUri);
 		}
@@ -333,7 +333,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void call() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException {
 				checkIsServerConnected();
 				updateTitle("Connecting to local disk");
 				updateMessage("Connecting to local disk...");
