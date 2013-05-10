@@ -104,20 +104,16 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	}
 	
 	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
-		try {
-			if (uri != null) {
-				connection = connect(uri, createNewIfNecessary);
-			}
-			if (serverUri != null) {
-				serverConnection = connect(serverUri, createNewIfNecessary);
-			}
-			if (isLocalConnected() && isServerConnected()) {
-				synchronizeDisks(task, connection);
-			}
-			updateState();
-		} catch (Exception e) {
-			close();
+		if (uri != null) {
+			connection = connect(uri, createNewIfNecessary);
 		}
+		if (serverUri != null) {
+			serverConnection = connect(serverUri, createNewIfNecessary);
+		}
+		if (isLocalConnected() && isServerConnected()) {
+			synchronizeDisks(task, connection);
+		}
+		updateState();
 	}
 	
 	public void close() {
