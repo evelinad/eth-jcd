@@ -32,6 +32,7 @@ public abstract class UpdateableTask<V> extends Task<V> {
 		}
 	}
 	
+	//As this should have the same interface as Task.call, it throws the same exception
 	@Override
 	protected V call() throws Exception {
 		try {
@@ -43,6 +44,7 @@ public abstract class UpdateableTask<V> extends Task<V> {
 		
 	}
 	
+	//As this should have the same interface as Task.call, it throws the same exception
 	protected abstract V callImpl() throws Exception;
 	
 	/*
