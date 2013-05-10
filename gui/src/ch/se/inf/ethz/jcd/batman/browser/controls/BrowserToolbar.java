@@ -47,6 +47,7 @@ import ch.se.inf.ethz.jcd.batman.model.SearchDirectory;
 
 public class BrowserToolbar extends ToolBar implements StateListener, SynchronizedTaskControllerStateListener {
 	
+	private final static String ERROR_DIALOG_TITLE = "Error";
 	private final static String EMPTY_STRING = "";
 	private final static String DOWNLOAD_DISK = "Download disk";
 	private final static String GO_OFFLINE = "Go offline";
@@ -393,7 +394,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 					Task<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
 					new TaskDialog(guiState, linkDiskTask);
 				} catch (Exception e) {
-					new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
 			}
 			break;
@@ -410,7 +411,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 					Task<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
 					new TaskDialog(guiState, downloadDiskTask);
 				} catch (Exception e) {
-					new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
 			}
 			break;
@@ -429,7 +430,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				Task<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
 				new TaskDialog(guiState, newUserTask);
 			} catch (Exception e) {
-				new ErrorDialog("Error", e.getClass() + ": " + e.getMessage()).showAndWait();
+				new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 			}
 		}
 	}
@@ -535,7 +536,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				};
 			} catch (Exception e) {
 				guiState.setController(null);
-				new ErrorDialog("Error", e.getMessage()).showAndWait();
+				new ErrorDialog(ERROR_DIALOG_TITLE, e.getMessage()).showAndWait();
 				return;
 			}
 		}

@@ -398,7 +398,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 
-	protected IVirtualDisk getDisk(int id) {
+	protected IVirtualDisk getDisk(int id) throws IllegalArgumentException {
 		IVirtualDisk disk = diskMap.get(id);
 		if (disk == null) {
 			throw new IllegalArgumentException("Invalid id.");

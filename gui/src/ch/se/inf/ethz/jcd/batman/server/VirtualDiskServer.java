@@ -26,7 +26,7 @@ public final class VirtualDiskServer {
 			final Remote remoteDisk = UnicastRemoteObject.exportObject(rVirtualDisk, 0);
 			registry.rebind(DISK_SERVICE_NAME, remoteDisk);
 			
-			//Start synchronise server
+			//Start synchronize server
 			final SynchronizeServer synchronizeServer = new SynchronizeServer();
 			final Remote remoteSynchronizeServer = UnicastRemoteObject.exportObject(synchronizeServer, 0);
 			registry.rebind(SYNCHRONIZE_SERVICE_NAME, remoteSynchronizeServer);

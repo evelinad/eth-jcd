@@ -119,13 +119,15 @@ public class GuiState {
 	}
 
 	public Entry[] getSelectedEntries() {
-		if (activeTreeView != null && !lastFocusEntryView) {
-			Path path = new Path(DirectoryTree.getPath(activeTreeView
-					.getSelectionModel().getSelectedItem()));
-			Directory dir = new Directory(path);
-			return new Entry[] { dir };
-		} else if (activeEntryView != null) {
-			return activeEntryView.getSelectedEntries();
+		if (activeTreeView != null) {
+			if (lastFocusEntryView) {
+				return activeEntryView.getSelectedEntries();
+			} else {
+				Path path = new Path(DirectoryTree.getPath(activeTreeView
+						.getSelectionModel().getSelectedItem()));
+				Directory dir = new Directory(path);
+				return new Entry[] { dir };
+			}
 		}
 
 		return new Entry[0];

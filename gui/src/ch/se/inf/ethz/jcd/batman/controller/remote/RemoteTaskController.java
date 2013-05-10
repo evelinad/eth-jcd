@@ -43,6 +43,8 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
  */
 public class RemoteTaskController implements TaskController {
 
+	private static final String TASK_DISCOVER_ITEMS = "Discover items";
+	
 	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
 	protected static final int BUFFER_SIZE = RemoteConnectionUtil.BUFFER_SIZE;
@@ -243,8 +245,10 @@ public class RemoteTaskController implements TaskController {
 					updateTitle("Connecting");
 					updateMessage("Connecting to virtual disk...");
 					connect(createNewIfNecessary, this);
-				} catch (RemoteException | NotBoundException
-						| VirtualDiskException e) {
+					//Regarding the PMD error, its important to catch all possible exceptions
+					//Because the connection has to be cleaned up if an error occurred
+				} catch (Exception e) {
+					close();
 					throw new ConnectionException(e);
 				}
 				return null;
@@ -363,7 +367,7 @@ public class RemoteTaskController implements TaskController {
 				checkIsConnected();
 				updateTitle("Deleting entries");
 
-				updateMessage("Discovering items");
+				updateMessage(TASK_DISCOVER_ITEMS);
 				SortedSet<Entry> subEntries = new TreeSet<Entry>(
 						fileBeforeDirectoryComp);
 				for (int i = 0; i < entries.length; i++) {
@@ -459,7 +463,7 @@ public class RemoteTaskController implements TaskController {
 				// check if destination paths not already exist
 				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				// check how many and which files need to be imported
-				updateMessage("Discovering items");
+				updateMessage(TASK_DISCOVER_ITEMS);
 				@SuppressWarnings("unchecked")
 				List<java.io.File>[] importFiles = new List[sourcePaths.length];
 				long totalEntriesToImport = 0;
@@ -546,7 +550,7 @@ public class RemoteTaskController implements TaskController {
 				// check if destination paths not already exist
 				checkEntriesAlreadyExistOnHost(destinationPaths);
 				// check how many and which files need to be exported
-				updateMessage("Discovering items");
+				updateMessage(TASK_DISCOVER_ITEMS);
 				@SuppressWarnings("unchecked")
 				List<Entry>[] exportFiles = new List[sourceEntries.length];
 				long totalEntriesToImport = 0;
@@ -594,7 +598,7 @@ public class RemoteTaskController implements TaskController {
 			@Override
 			protected Void call() throws RemoteException, VirtualDiskException {
 				checkIsConnected();
-				updateMessage("Discovering items");
+				updateMessage(TASK_DISCOVER_ITEMS);
 				// check if destination paths not already exist
 				checkEntriesAlreadyExistOnDisk(destinationPaths);
 				@SuppressWarnings("unchecked")

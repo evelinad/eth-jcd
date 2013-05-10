@@ -11,17 +11,19 @@ import javafx.scene.image.Image;
  */
 public final class ImageResource {
 
-	private static ImageResource instance;
+	private static volatile ImageResource instance;
 
-	/*
-	 * regarding PMD warning: We do not use it in a multithreaded environment.
-	 */
 	public static ImageResource getImageResource() {
-		if (instance == null) {
-			instance = new ImageResource();
-		}
-
-		return instance;
+		ImageResource result = instance;
+        if (result == null) {
+            synchronized(ImageResource.class) {
+                result = instance;
+                if (result == null) {
+                    instance = result = new ImageResource();
+                }
+            }
+        }
+        return result;
 	}
 
 	private final Image up;

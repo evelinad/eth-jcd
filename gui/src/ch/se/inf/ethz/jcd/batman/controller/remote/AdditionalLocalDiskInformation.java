@@ -25,9 +25,9 @@ public final class AdditionalLocalDiskInformation implements Serializable {
 		return null;
 	}
 	
-	private String userName;
-	private String server;
-	private String diskName;
+	private final String userName;
+	private final String server;
+	private final String diskName;
 	private long lastSynchronized;
 	
 	public AdditionalLocalDiskInformation(String userName, String server, String diskName, long lastSynchronized) {
@@ -38,7 +38,7 @@ public final class AdditionalLocalDiskInformation implements Serializable {
 	}
 	
 	public boolean isLinked() {
-		return (userName != null && !userName.isEmpty());
+		return userName != null && !userName.isEmpty();
 	}
 	
 	public URI createUri (String password) throws URISyntaxException {
