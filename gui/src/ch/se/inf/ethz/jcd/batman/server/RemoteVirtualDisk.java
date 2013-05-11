@@ -25,16 +25,22 @@ import ch.se.inf.ethz.jcd.batman.vdisk.search.VirtualDiskSearch;
 public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 
 	private final Map<Integer, IVirtualDisk> diskMap;
+	private final Map<Integer, List<IRemoteDiskClient>> clientMap;
 	private int nextId = Integer.MIN_VALUE;
 
 	public RemoteVirtualDisk() {
 		diskMap = new HashMap<Integer, IVirtualDisk>();
+		clientMap = new HashMap<Integer, List<IRemoteDiskClient>>();
 	}
 
 	public Map<Integer, IVirtualDisk> getDiskMap () {
 		return diskMap;
 	}
 
+	public Map<Integer, List<IRemoteDiskClient>> getClientMap () {
+		return clientMap;
+	}
+	
 	protected int getNextId() {
 		return nextId++;
 	}
@@ -93,8 +99,8 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				throw new VirtualDiskException("Could not create file at "
 						+ file.getPath());
 			}
-
 			diskFile.setLastModified(file.getTimestamp());
+			notifyEntryAdded(id, file);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not create file at "
 					+ file.getPath(), e);
@@ -111,8 +117,8 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				throw new VirtualDiskException("Could not create directory at "
 						+ directory.getPath());
 			}
-
 			diskFile.setLastModified(directory.getTimestamp());
+			notifyEntryAdded(id, directory);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not create directory at "
 					+ directory.getPath(), e);
@@ -120,16 +126,17 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 
 	@Override
-	public void deleteEntry(int id, Path path) throws RemoteException,
+	public void deleteEntry(int id, Entry entry) throws RemoteException,
 			VirtualDiskException {
 		try {
-			VDiskFile diskFile = new VDiskFile(path.getPath(), getDisk(id));
+			VDiskFile diskFile = new VDiskFile(entry.getPath().getPath(), getDisk(id));
 			if (!diskFile.delete()) {
 				throw new VirtualDiskException("Could not delete file at "
-						+ path);
+						+ entry.getPath());
 			}
+			notifyEntryDeleted(id, entry);
 		} catch (IOException | IllegalArgumentException e) {
-			throw new VirtualDiskException("Could not delete file at " + path,
+			throw new VirtualDiskException("Could not delete file at " + entry.getPath(),
 					e);
 		}
 	}
@@ -141,9 +148,14 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			VDiskFile diskFile = new VDiskFile(file.getPath().getPath(),
 					getDisk(id));
 			if (diskFile.isFile()) {
+				long oldFileSize = diskFile.getFileSize();
 				IVirtualFile vFile = (IVirtualFile) diskFile.getDiskEntry();
 				vFile.seek(fileOffset);
 				vFile.write(data);
+				notifyWriteToEntry(id, file, fileOffset, data);
+				if (diskFile.getFileSize() != oldFileSize) {
+					notifyEntryChanged(id, file, createModel(diskFile));
+				}
 			} else {
 				throw new IllegalArgumentException(file.getPath()
 						+ " is not a file.");
@@ -225,6 +237,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				throw new VirtualDiskException();
 			}
 			diskEntry.setLastModified(newEntry.getTimestamp());
+			notifyEntryChanged(id, entry, newEntry);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not rename entry "
 					+ entry.getPath() + " to " + newEntry.getPath(), e);
@@ -337,6 +350,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				throw new VirtualDiskException("Invalid disk entry type "
 						+ source.getClass());
 			}
+			notifyEntryCopied(id, source, destination);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not copy entry "
 					+ source.getPath() + " to " + destination, e);
@@ -423,16 +437,85 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 	
-	public void updateLastModified(int id, Entry entry) throws RemoteException, VirtualDiskException {
+	public Entry updateLastModified(int id, Entry entry, long newTimestamp) throws RemoteException, VirtualDiskException {
 		try {
 			IVirtualDisk disk = getDisk(id);
 			VDiskFile file = new VDiskFile(entry.getPath().getPath(), disk);
 			if (!file.exists()) {
 				throw new VirtualDiskException("Can't update last modified for " + entry.getPath() + ", entry does not exist.");
 			}
-			file.setLastModified(entry.getTimestamp());
+			file.setLastModified(newTimestamp);
+			Entry newEntry = createModel(file);
+			notifyEntryChanged(id, entry, newEntry);
+			return newEntry;
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not update last modified for " + entry.getPath(), e);
+		}
+	}
+	
+	protected void notifyEntryAdded(int id, Entry entry) throws RemoteException, VirtualDiskException {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			for (IRemoteDiskClient client : list) {
+				client.entryAdded(entry);
+			}
+		}
+	}
+
+	protected void notifyEntryDeleted(int id, Entry entry) throws RemoteException, VirtualDiskException {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			for (IRemoteDiskClient client : list) {
+				client.entryDeleted(entry);
+			}
+		}
+	}
+
+	protected void notifyEntryChanged(int id, Entry oldEntry, Entry newEntry) throws RemoteException, VirtualDiskException {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			for (IRemoteDiskClient client : list) {
+				client.entryChanged(oldEntry, newEntry);
+			}
+		}
+	}
+	
+	protected void notifyEntryCopied(int id, Entry sourceEntry, Entry destinationEntry) throws RemoteException, VirtualDiskException {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			for (IRemoteDiskClient client : list) {
+				client.entryCopied(sourceEntry, destinationEntry);
+			}
+		}
+	}
+	
+	protected void notifyWriteToEntry(int id, File file, long fileOffset, byte[] data) throws RemoteException, VirtualDiskException {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			for (IRemoteDiskClient client : list) {
+				client.writeToEntry(file, fileOffset, data);
+			}
+		}
+	}
+	
+	public void registerClient(int id, IRemoteDiskClient client) {
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list == null) {
+			list = new LinkedList<IRemoteDiskClient>();
+			clientMap.put(id, list);
+		}
+		if (!list.contains(client)) {
+			list.add(client);
+		}
+	}
+	
+	public void unregisterClient(int id, IRemoteDiskClient client){
+		List<IRemoteDiskClient> list = clientMap.get(id);
+		if (list != null) {
+			list.remove(client);
+			if (list.isEmpty()) {
+				clientMap.remove(id);
+			}
 		}
 	}
 	
