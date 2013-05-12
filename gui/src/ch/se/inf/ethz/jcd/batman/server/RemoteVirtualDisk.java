@@ -598,15 +598,11 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	}
 	
 	public void acquireLock(int id) throws RemoteException, InterruptedException {
-		System.out.println("Try acquire lock " + id);
 		idToDiskMap.get(id).acquireLock(id);
-		System.out.println("Lock acquired " + id);
 	}
 	
 	public void releaseLock(int id) throws RemoteException {
-		System.out.println("Try release lock " + id);
 		idToDiskMap.get(id).releaseLock(id);
-		System.out.println("Lock released " + id);
 	}
 	
 }
