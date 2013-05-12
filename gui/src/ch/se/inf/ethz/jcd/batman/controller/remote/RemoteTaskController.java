@@ -79,6 +79,8 @@ public class RemoteTaskController implements TaskController {
 		
 	}
 	
+	private static final String ACQUIRE_LOCK = "Acquiring lock...";
+	private static final String RELEASE_LOCK = "Releasing lock...";
 	private static final String TASK_DISCOVER_ITEMS = "Discover items";
 	
 	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
@@ -172,7 +174,7 @@ public class RemoteTaskController implements TaskController {
 		return connection.getDisk();
 	}
 
-	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException, InterruptedException {
 		connection = connect(uri, createNewIfNecessary);
 	}
 	
@@ -374,18 +376,33 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
+	protected void acquireLock(UpdateableTask<?> task) throws RemoteException, InterruptedException {
+		task.updateMessage(ACQUIRE_LOCK);
+		getRemoteDisk().acquireLock(getDiskId());
+	}
+	
+	protected void releaseLock(UpdateableTask<?> task) throws RemoteException {
+		task.updateMessage(RELEASE_LOCK);
+		getRemoteDisk().releaseLock(getDiskId());
+	}
+	
 	@Override
 	public UpdateableTask<Void> createFileTask(final File file) {
 		checkIsConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Create file");
-				updateMessage("Creating file...");
-				createFile(file);
-				return null;
+				acquireLock(this);
+				try {
+					updateMessage("Creating file " + file.getPath());
+					createFile(file);
+					return null;
+				} finally {
+					releaseLock(this);
+				}
 			}
 
 		};
@@ -397,12 +414,17 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Create directory");
-				updateMessage("Creating directory...");
-				createDirectory(directory);
-				return null;
+				acquireLock(this);
+				try {
+					updateMessage("Creating directory " + directory.getPath());
+					createDirectory(directory);
+					return null;
+				} finally {
+					releaseLock(this);
+				}
 			}
 
 		};
@@ -414,37 +436,41 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Deleting entries");
-
-				updateMessage(TASK_DISCOVER_ITEMS);
-				SortedSet<Entry> subEntries = new TreeSet<Entry>(
-						fileBeforeDirectoryComp);
-				for (int i = 0; i < entries.length; i++) {
-					subEntries.addAll(Arrays.asList(getRemoteDisk()
-							.getAllChildrenBelow(getDiskId(), entries[i])));
-					subEntries.add(entries[i]);
-					if (isCancelled()) {
-						return null;
+				acquireLock(this);
+				try {
+					updateMessage(TASK_DISCOVER_ITEMS);
+					SortedSet<Entry> subEntries = new TreeSet<Entry>(
+							fileBeforeDirectoryComp);
+					for (int i = 0; i < entries.length; i++) {
+						subEntries.addAll(Arrays.asList(getRemoteDisk()
+								.getAllChildrenBelow(getDiskId(), entries[i])));
+						subEntries.add(entries[i]);
+						if (isCancelled()) {
+							return null;
+						}
 					}
-				}
-
-				int totalEntries = subEntries.size();
-				int currentEntryNumber = 0;
-				updateProgress(0, totalEntries);
-				for (Entry entry : subEntries) {
-					updateMessage("Deleting " + entry.getPath() + " ("
-							+ currentEntryNumber + 1 + " of " + totalEntries
-							+ ")");
-					deleteEntry(entry);
-					currentEntryNumber++;
-					updateProgress(currentEntryNumber, totalEntries);
-					if (isCancelled()) {
-						return null;
+	
+					int totalEntries = subEntries.size();
+					int currentEntryNumber = 0;
+					updateProgress(0, totalEntries);
+					for (Entry entry : subEntries) {
+						updateMessage("Deleting " + entry.getPath() + " ("
+								+ currentEntryNumber + 1 + " of " + totalEntries
+								+ ")");
+						deleteEntry(entry);
+						currentEntryNumber++;
+						updateProgress(currentEntryNumber, totalEntries);
+						if (isCancelled()) {
+							return null;
+						}
 					}
+					return null;
+				} finally {
+					releaseLock(this);
 				}
-				return null;
 			}
 
 		};
@@ -461,31 +487,37 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Moving entries");
-				// check if destination paths not already exist
-				checkEntriesAlreadyExistOnDisk(destinationPaths);
-				// move entries
-				int totalEntriesToMove = sourceEntries.length;
-				for (int i = 0; i < totalEntriesToMove; i++) {
-					updateProgress(i, totalEntriesToMove);
-					Entry oldEntry = sourceEntries[i];
-					Entry newEntry = null;
-					try {
-						newEntry = (Entry) oldEntry.clone();
-					} catch (CloneNotSupportedException e) { }
-					newEntry.setPath(destinationPaths[i]);
-					newEntry.setTimestamp(new Date().getTime());
-					updateMessage("Moving entry " + oldEntry.getPath() + " to "
-							+ newEntry.getPath());
-					moveEntry(oldEntry, newEntry);
-					if (isCancelled()) {
-						return null;
+				acquireLock(this);
+				try {
+					updateMessage("Prepare moving");
+					// check if destination paths not already exist
+					checkEntriesAlreadyExistOnDisk(destinationPaths);
+					// move entries
+					int totalEntriesToMove = sourceEntries.length;
+					for (int i = 0; i < totalEntriesToMove; i++) {
+						updateProgress(i, totalEntriesToMove);
+						Entry oldEntry = sourceEntries[i];
+						Entry newEntry = null;
+						try {
+							newEntry = (Entry) oldEntry.clone();
+						} catch (CloneNotSupportedException e) { }
+						newEntry.setPath(destinationPaths[i]);
+						newEntry.setTimestamp(new Date().getTime());
+						updateMessage("Moving entry " + oldEntry.getPath() + " to "
+								+ newEntry.getPath());
+						moveEntry(oldEntry, newEntry);
+						if (isCancelled()) {
+							return null;
+						}
 					}
+					updateProgress(totalEntriesToMove, totalEntriesToMove);
+					return null;
+				} finally {
+					releaseLock(this);
 				}
-				updateProgress(totalEntriesToMove, totalEntriesToMove);
-				return null;
 			}
 
 		};
@@ -506,48 +538,54 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws IOException {
+			protected Void callImpl() throws IOException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Import entries");
-				// check if destination paths not already exist
-				checkEntriesAlreadyExistOnDisk(destinationPaths);
-				// check how many and which files need to be imported
-				updateMessage(TASK_DISCOVER_ITEMS);
-				@SuppressWarnings("unchecked")
-				List<java.io.File>[] importFiles = new List[sourcePaths.length];
-				long totalEntriesToImport = 0;
-				for (int i = 0; i < sourcePaths.length; i++) {
-					importFiles[i] = new LinkedList<java.io.File>();
-					getAllSubEntries(new java.io.File(sourcePaths[i]),
-							importFiles[i]);
-					totalEntriesToImport += importFiles[i].size();
-					if (isCancelled()) {
-						return null;
-					}
-				}
-
-				// import all entries
-				long entriesImported = 0;
-				for (int i = 0; i < sourcePaths.length; i++) {
-					java.io.File baseFile = importFiles[i].get(0);
-					String baseFilePath = getFilePathAsDiskPath(baseFile);
-					for (java.io.File file : importFiles[i]) {
-						String entryPath = getFilePathAsDiskPath(file);
-						String destination = destinationPaths[i]
-								+ entryPath.substring(baseFilePath.length(),
-										entryPath.length());
-						updateProgress(entriesImported, totalEntriesToImport);
-						updateMessage("Importing entry " + file.toString() + " to "
-								+ destination);
-						importFile(file, destination);
-						entriesImported++;
+				acquireLock(this);
+				try {
+					updateMessage("Prepare importing");
+					// check if destination paths not already exist
+					checkEntriesAlreadyExistOnDisk(destinationPaths);
+					// check how many and which files need to be imported
+					updateMessage(TASK_DISCOVER_ITEMS);
+					@SuppressWarnings("unchecked")
+					List<java.io.File>[] importFiles = new List[sourcePaths.length];
+					long totalEntriesToImport = 0;
+					for (int i = 0; i < sourcePaths.length; i++) {
+						importFiles[i] = new LinkedList<java.io.File>();
+						getAllSubEntries(new java.io.File(sourcePaths[i]),
+								importFiles[i]);
+						totalEntriesToImport += importFiles[i].size();
 						if (isCancelled()) {
 							return null;
 						}
 					}
+	
+					// import all entries
+					long entriesImported = 0;
+					for (int i = 0; i < sourcePaths.length; i++) {
+						java.io.File baseFile = importFiles[i].get(0);
+						String baseFilePath = getFilePathAsDiskPath(baseFile);
+						for (java.io.File file : importFiles[i]) {
+							String entryPath = getFilePathAsDiskPath(file);
+							String destination = destinationPaths[i]
+									+ entryPath.substring(baseFilePath.length(),
+											entryPath.length());
+							updateProgress(entriesImported, totalEntriesToImport);
+							updateMessage("Importing entry " + file.toString() + " to "
+									+ destination);
+							importFile(file, destination);
+							entriesImported++;
+							if (isCancelled()) {
+								return null;
+							}
+						}
+					}
+					updateProgress(entriesImported, totalEntriesToImport);
+					return null;
+				} finally {
+					releaseLock(this);
 				}
-				updateProgress(entriesImported, totalEntriesToImport);
-				return null;
 			}
 
 		};
@@ -593,46 +631,51 @@ public class RemoteTaskController implements TaskController {
 			}
 
 			@Override
-			protected Void callImpl() throws IOException {
+			protected Void callImpl() throws IOException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Export entries");
-				// check if destination paths not already exist
-				checkEntriesAlreadyExistOnHost(destinationPaths);
-				// check how many and which files need to be exported
-				updateMessage(TASK_DISCOVER_ITEMS);
-				@SuppressWarnings("unchecked")
-				List<Entry>[] exportFiles = new List[sourceEntries.length];
-				long totalEntriesToImport = 0;
-				for (int i = 0; i < sourceEntries.length; i++) {
-					exportFiles[i] = new LinkedList<Entry>();
-					exportFiles[i].add(sourceEntries[i]);
-					exportFiles[i].addAll(Arrays.asList(getRemoteDisk()
-							.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
-					totalEntriesToImport += exportFiles[i].size();
-					if (isCancelled()) {
-						return null;
-					}
-				}
-
-				// export all entries
-				long entriesExported = 0;
-				for (int i = 0; i < sourceEntries.length; i++) {
-					Entry baseEntry = exportFiles[i].get(0);
-					for (Entry entry : exportFiles[i]) {
-						String destination = destinationPaths[i]
-								+ entry.getPath()
-										.getRelativePath(baseEntry.getPath())
-										.getPath();
-						updateProgress(entriesExported, totalEntriesToImport);
-						exportFile(entry, destination);
-						entriesExported++;
+				acquireLock(this);
+				try {
+					// check if destination paths not already exist
+					checkEntriesAlreadyExistOnHost(destinationPaths);
+					// check how many and which files need to be exported
+					updateMessage(TASK_DISCOVER_ITEMS);
+					@SuppressWarnings("unchecked")
+					List<Entry>[] exportFiles = new List[sourceEntries.length];
+					long totalEntriesToImport = 0;
+					for (int i = 0; i < sourceEntries.length; i++) {
+						exportFiles[i] = new LinkedList<Entry>();
+						exportFiles[i].add(sourceEntries[i]);
+						exportFiles[i].addAll(Arrays.asList(getRemoteDisk()
+								.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
+						totalEntriesToImport += exportFiles[i].size();
 						if (isCancelled()) {
 							return null;
 						}
 					}
+	
+					// export all entries
+					long entriesExported = 0;
+					for (int i = 0; i < sourceEntries.length; i++) {
+						Entry baseEntry = exportFiles[i].get(0);
+						for (Entry entry : exportFiles[i]) {
+							String destination = destinationPaths[i]
+									+ entry.getPath()
+											.getRelativePath(baseEntry.getPath())
+											.getPath();
+							updateProgress(entriesExported, totalEntriesToImport);
+							exportFile(entry, destination);
+							entriesExported++;
+							if (isCancelled()) {
+								return null;
+							}
+						}
+					}
+					updateProgress(entriesExported, totalEntriesToImport);
+					return null;
+				} finally {
+					releaseLock(this);
 				}
-				updateProgress(entriesExported, totalEntriesToImport);
-				return null;
 			}
 
 		};
@@ -645,49 +688,56 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
 				checkIsConnected();
-				updateMessage(TASK_DISCOVER_ITEMS);
-				// check if destination paths not already exist
-				checkEntriesAlreadyExistOnDisk(destinationPaths);
-				@SuppressWarnings("unchecked")
-				List<Entry>[] copyFiles = new List[sourceEntries.length];
-				long totalEntriesToCopy = 0;
-				for (int i = 0; i < sourceEntries.length; i++) {
-					copyFiles[i] = new LinkedList<Entry>();
-					copyFiles[i].add(sourceEntries[i]);
-					copyFiles[i].addAll(Arrays.asList(getRemoteDisk()
-							.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
-					totalEntriesToCopy += copyFiles[i].size();
-					if (isCancelled()) {
-						return null;
-					}
-				}
-
-				long entriesExported = 0;
-				for (int i = 0; i < sourceEntries.length; i++) {
-					Entry baseEntry = copyFiles[i].get(0);
-					for (Entry entry : copyFiles[i]) {
-						Path destination = new Path(destinationPaths[i]
-								+ entry.getPath()
-										.getRelativePath(baseEntry.getPath())
-										.getPath());
-						updateProgress(entriesExported, totalEntriesToCopy);
-						Entry newEntry = null;
-						try {
-							newEntry = (Entry) entry.clone();
-						} catch (CloneNotSupportedException e) { }
-						newEntry.setPath(destination);
-						newEntry.setTimestamp(new Date().getTime());
-						copyEntry(entry, newEntry);
-						entriesExported++;
+				updateTitle("Copy entries");
+				acquireLock(this);
+				try {
+					updateMessage(TASK_DISCOVER_ITEMS);
+					// check if destination paths not already exist
+					checkEntriesAlreadyExistOnDisk(destinationPaths);
+					@SuppressWarnings("unchecked")
+					List<Entry>[] copyFiles = new List[sourceEntries.length];
+					long totalEntriesToCopy = 0;
+					for (int i = 0; i < sourceEntries.length; i++) {
+						copyFiles[i] = new LinkedList<Entry>();
+						copyFiles[i].add(sourceEntries[i]);
+						copyFiles[i].addAll(Arrays.asList(getRemoteDisk()
+								.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
+						totalEntriesToCopy += copyFiles[i].size();
 						if (isCancelled()) {
 							return null;
 						}
 					}
+	
+					long entriesExported = 0;
+					for (int i = 0; i < sourceEntries.length; i++) {
+						Entry baseEntry = copyFiles[i].get(0);
+						for (Entry entry : copyFiles[i]) {
+							Path destination = new Path(destinationPaths[i]
+									+ entry.getPath()
+											.getRelativePath(baseEntry.getPath())
+											.getPath());
+							updateProgress(entriesExported, totalEntriesToCopy);
+							Entry newEntry = null;
+							try {
+								newEntry = (Entry) entry.clone();
+							} catch (CloneNotSupportedException e) { }
+							newEntry.setPath(destination);
+							newEntry.setTimestamp(new Date().getTime());
+							updateMessage("Copy entry " + entry.getPath() + " to " + newEntry.getPath());
+							copyEntry(entry, newEntry);
+							entriesExported++;
+							if (isCancelled()) {
+								return null;
+							}
+						}
+					}
+					updateProgress(entriesExported, totalEntriesToCopy);
+					return null;
+				} finally {
+					releaseLock(this);
 				}
-				updateProgress(entriesExported, totalEntriesToCopy);
-				return null;
 			}
 
 		};

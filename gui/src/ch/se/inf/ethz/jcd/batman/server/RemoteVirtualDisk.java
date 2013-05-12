@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
@@ -30,10 +31,13 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		
 		private final IVirtualDisk disk;
 		private final List<Integer> ids;
+		private final Semaphore semaphore;
+		private Integer lockedFor;
 		
 		public LoadedDisk(IVirtualDisk disk) {
 			this.disk = disk;
 			ids = new LinkedList<Integer>();
+			semaphore = new Semaphore(1);
 		}
 		
 		public IVirtualDisk getDisk () {
@@ -52,6 +56,20 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		
 		public boolean hasNoIds () {
 			return ids.isEmpty();
+		}
+		
+		public void acquireLock(int id) throws InterruptedException {
+			semaphore.acquire();
+			lockedFor = id;
+		}
+		
+		public void releaseLock(int id) {
+			if (lockedFor == id) {
+				lockedFor = null;
+				semaphore.release();
+			} else {
+				throw new IllegalStateException("Lock was not hold by " + id);
+			}
 		}
 	}
 	
@@ -398,7 +416,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 				
 				if (!destinationEntry.mkdir()) {
 					throw new VirtualDiskException(
-							"Could not create directory at " + destination);
+							"Could not create directory at " + destination.getPath());
 				}
 				destinationEntry.setLastModified(destination.getTimestamp());
 			} else {
@@ -408,7 +426,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			notifyEntryCopied(id, source, destination);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new VirtualDiskException("Could not copy entry "
-					+ source.getPath() + " to " + destination, e);
+					+ source.getPath() + " to " + destination.getPath(), e);
 		}
 
 	}
@@ -579,12 +597,16 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		}
 	}
 	
-	public void aquireLock(int id, Entry entry) throws RemoteException {
-		
+	public void acquireLock(int id) throws RemoteException, InterruptedException {
+		System.out.println("Try acquire lock " + id);
+		idToDiskMap.get(id).acquireLock(id);
+		System.out.println("Lock acquired " + id);
 	}
 	
-	public void releaseLock(int id, Entry entry) throws RemoteException {
-		
+	public void releaseLock(int id) throws RemoteException {
+		System.out.println("Try release lock " + id);
+		idToDiskMap.get(id).releaseLock(id);
+		System.out.println("Lock released " + id);
 	}
 	
 }

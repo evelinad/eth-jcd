@@ -144,18 +144,23 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		}
 	}
 	
-	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException, InterruptedException {
 		if (uri != null) {
 			connection = connect(uri, createNewIfNecessary);
 		}
 		if (serverUri != null) {
 			serverConnection = connect(serverUri, createNewIfNecessary);
 		}
-		if (isLocalConnected() && isServerConnected()) {
-			synchronizeDisks(task, connection);
+		acquireLock(task);
+		try {
+			if (isLocalConnected() && isServerConnected()) {
+				synchronizeDisks(task, connection);
+			}
+			updateState();
+			registerClient();
+		} finally {
+			releaseLock(task);
 		}
-		updateState();
-		registerClient();
 	}
 	
 	public void close() {
@@ -260,7 +265,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException, InterruptedException {
 				checkIsLocalConnected();
 				AdditionalLocalDiskInformation localDiskInformation = RemoteConnectionUtil.getDiskInformation(connection);
 				if (localDiskInformation == null) {
@@ -274,11 +279,16 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				updateMessage("Connecting to server...");
 				serverConnection = connect(serverUri, true);
 				RemoteSynchronizedTaskController.this.serverUri = serverUri;
-				synchronizeDisks(this, connection);
-				unregisterClient();
-				updateState();
-				registerClient();
-				return null;
+				acquireLock(this);
+				try {
+					synchronizeDisks(this, connection);
+					unregisterClient();
+					updateState();
+					registerClient();
+					return null;
+				} finally {
+					releaseLock(this);
+				}
 			}
 
 		};
@@ -290,7 +300,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, URISyntaxException, InterruptedException {
 				checkIsLocalConnected();
 				AdditionalLocalDiskInformation diskInformation = new AdditionalLocalDiskInformation(userName, server, diskName, 0);
 				URI serverUri = diskInformation.createUri(password);
@@ -302,11 +312,16 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				serverConnection = connect(serverUri, true);
 				RemoteSynchronizedTaskController.this.serverUri = serverUri;
 				saveLocalDiskInformation(diskInformation);
-				synchronizeDisks(this, connection);
-				unregisterClient();
-				updateState();
-				registerClient();
-				return null;
+				acquireLock(this);
+				try {
+					synchronizeDisks(this, connection);
+					unregisterClient();
+					updateState();
+					registerClient();
+					return null;
+				} finally {
+					releaseLock(this);
+				}
 			}
 
 		};
@@ -321,7 +336,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException {
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, ConnectionException, NotBoundException, InterruptedException {
 				checkIsServerConnected();
 				updateTitle("Connecting to local disk");
 				updateMessage("Connecting to local disk...");
@@ -329,9 +344,14 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 				RemoteSynchronizedTaskController.this.uri = localUri;
 				String[] userInfoSplit = serverUri.getUserInfo().split(":");
 				saveLocalDiskInformation(new AdditionalLocalDiskInformation(userInfoSplit[0], serverUri.getHost(), serverUri.getQuery(), 0));
-				synchronizeDisks(this, serverConnection);
-				updateState();
-				return null;
+				acquireLock(this);
+				try {
+					synchronizeDisks(this, serverConnection);
+					updateState();
+					return null;
+				} finally {
+					releaseLock(this);
+				}
 			}
 
 		};
