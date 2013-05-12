@@ -20,9 +20,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
-import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 public class SynchronizeServer extends RemoteVirtualDisk implements
 		ISynchronizeServer {
@@ -179,14 +177,12 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 	public int createDisk(String userName, String password, String diskName)
 			throws RemoteException, VirtualDiskException, AuthenticationException {
 		checkPassword(userName, password);
+		String diskPath = getDiskPath(userName, diskName);
 		try {
-			IVirtualDisk newDisk = VirtualDisk.create(getDiskPath(userName, diskName));
-			int id = getNextId();
-			getDiskMap().put(id, newDisk);
-			return id;
+			return createDisk(diskPath);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
-					+ getDiskPath(userName, diskName), e);
+					+ diskPath, e);
 		}
 	}
 
@@ -218,10 +214,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		checkPassword(userName, password);
 		String diskPath = getDiskPath(userName, diskName);
 		try {
-			IVirtualDisk loadedDisk = VirtualDisk.load(diskPath);
-			int id = getNextId();
-			getDiskMap().put(id, loadedDisk);
-			return id;
+			return loadDisk(diskPath);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
 					+ diskPath, e);

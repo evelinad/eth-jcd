@@ -269,4 +269,8 @@ public interface IRemoteVirtualDisk extends Remote {
 	void registerClient(int id, IRemoteDiskClient client) throws RemoteException;
 	
 	void unregisterClient(int id, IRemoteDiskClient client) throws RemoteException;
+	
+	void aquireLock(int id, Entry entry) throws RemoteException;
+	
+	void releaseLock(int id, Entry entry) throws RemoteException;
 }
