@@ -60,7 +60,6 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	private final Button connectButton;
 	private final Button disconnectButton;
 	private final Button onlineOfflineButton;
-	private final Button createUserButton;
 	private final Button toParentDirButton;
 	private final Button goBackButton;
 	private final Button goForewardButton;
@@ -121,7 +120,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		super.getItems().add(onlineOfflineButton);
 		
 		// onlineOffline button
-		createUserButton = new Button("Create User");
+		Button createUserButton = new Button("Create User");
 		createUserButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {

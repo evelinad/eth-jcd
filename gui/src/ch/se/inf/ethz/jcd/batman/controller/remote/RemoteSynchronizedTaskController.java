@@ -431,10 +431,12 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 	public void entryChanged(final Entry oldEntry, final Entry newEntry) throws RemoteException, VirtualDiskException {
 		super.entryChanged(oldEntry, newEntry);
 		if (synchronizeChanges()) {
-			if (!oldEntry.getPath().equals(newEntry.getPath())) {
+			if (oldEntry.getPath().equals(newEntry.getPath())) {
+				if (oldEntry.getTimestamp() != newEntry.getTimestamp()) {
+					connection.getDisk().updateLastModified(connection.getDiskId(), oldEntry, newEntry.getTimestamp());
+				}
+			} else {
 				connection.getDisk().moveEntry(connection.getDiskId(), oldEntry, newEntry);
-			} else if (oldEntry.getTimestamp() != newEntry.getTimestamp()) {
-				connection.getDisk().updateLastModified(connection.getDiskId(), oldEntry, newEntry.getTimestamp());
 			}
 		}
 	}
