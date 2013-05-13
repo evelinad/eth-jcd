@@ -95,12 +95,12 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * 
 	 * @param id
 	 *            the ID representing a loaded virtual disk
-	 * @param path
-	 *            the path to the entry to delete
+	 * @param entry
+	 *            the entry to delete
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void deleteEntry(int id, Path path) throws RemoteException,
+	void deleteEntry(int id, Entry entry) throws RemoteException,
 			VirtualDiskException;
 
 	/**
@@ -264,5 +264,13 @@ public interface IRemoteVirtualDisk extends Remote {
 	
 	void saveAdditionalDiskInformation(int id, byte[] information) throws RemoteException, VirtualDiskException;
 	
-	void updateLastModified(int id, Entry entry) throws RemoteException, VirtualDiskException;
+	Entry updateLastModified(int id, Entry entry, long newTimestamp) throws RemoteException, VirtualDiskException;
+	
+	void registerClient(int id, IRemoteDiskClient client) throws RemoteException;
+	
+	void unregisterClient(int id, IRemoteDiskClient client) throws RemoteException;
+	
+	void acquireLock(int id) throws RemoteException, InterruptedException;
+	
+	void releaseLock(int id) throws RemoteException;
 }

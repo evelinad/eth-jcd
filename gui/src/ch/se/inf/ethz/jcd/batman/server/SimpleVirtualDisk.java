@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import ch.se.inf.ethz.jcd.batman.model.Path;
-import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
-import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 
 /**
  * Implementation of the IRemoteVirtualDisk. An instance of this class is used
@@ -22,10 +20,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 	public int createDisk(Path path) throws RemoteException,
 			VirtualDiskException {
 		try {
-			IVirtualDisk newDisk = VirtualDisk.create(path.getPath());
-			int id = getNextId();
-			getDiskMap().put(id, newDisk);
-			return id;
+			return createDisk(path.getPath());
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
 					+ path.getPath(), e);
@@ -35,10 +30,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 	@Override
 	public int loadDisk(Path path) throws RemoteException, VirtualDiskException {
 		try {
-			IVirtualDisk loadedDisk = VirtualDisk.load(path.getPath());
-			int id = getNextId();
-			getDiskMap().put(id, loadedDisk);
-			return id;
+			return loadDisk(path.getPath());
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
 					+ path.getPath(), e);

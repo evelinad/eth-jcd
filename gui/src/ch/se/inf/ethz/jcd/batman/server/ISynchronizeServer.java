@@ -13,7 +13,7 @@ public interface ISynchronizeServer extends IRemoteVirtualDisk {
 	void deleteDisk(String userName, String password, String diskName) throws RemoteException, AuthenticationException, VirtualDiskException;
 
 	int loadDisk(String userName, String password, String diskName) throws RemoteException, AuthenticationException, VirtualDiskException;
-
+	
 	boolean diskExists(String userName, String diskName) throws RemoteException, VirtualDiskException;
 	
 }
