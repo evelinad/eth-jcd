@@ -158,7 +158,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		});
 		super.getItems().add(goBackButton);
 
-		// go foreward button
+		// go forward button
 		Image goForewardDirImage = ImageResource.getImageResource()
 				.goForwardImage();
 		goForewardButton = new Button(EMPTY_STRING, new ImageView(goForewardDirImage));
