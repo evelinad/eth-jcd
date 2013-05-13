@@ -97,27 +97,56 @@ public class RemoteTaskController implements TaskController {
 		return uri.getUserInfo() != null;
 	}
 	
-	protected static RemoteConnection connect (URI uri, boolean createNewIfNecessary) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+	protected static String getUserName (URI uri) throws AuthenticationException {
+		String[] splitUserInfo = uri.getUserInfo().split(":");
+		if (splitUserInfo.length != 2) {
+			throw new AuthenticationException("Invalid user info");
+		}
+		return splitUserInfo[0];
+	}
+	
+	protected static String getPassword (URI uri) throws AuthenticationException {
+		String[] splitUserInfo = uri.getUserInfo().split(":");
+		if (splitUserInfo.length != 2) {
+			throw new AuthenticationException("Invalid user info");
+		}
+		return splitUserInfo[1];
+	}
+	
+	protected static String getHost(URI uri) {
+		return uri.getHost();
+	}
+	
+	protected static String getDiskPath(URI uri) {
+		return uri.getQuery();
+	}
+	
+	protected static IRemoteVirtualDisk getRemoteVirtualDisk(URI uri) throws RemoteException, NotBoundException {
 		Registry registry;
 		if (uri.getPort() == -1) {
-			registry = LocateRegistry.getRegistry(uri.getHost());
+			registry = LocateRegistry.getRegistry(getHost(uri));
 		} else {
-			registry = LocateRegistry.getRegistry(uri.getHost(),
+			registry = LocateRegistry.getRegistry(getHost(uri),
 					uri.getPort());
 		}
+		if (isServerUri(uri)) {
+			return (IRemoteVirtualDisk) registry
+					.lookup(SYNCHRONIZE_SERVICE_NAME);
+		} else {
+			return (IRemoteVirtualDisk) registry
+					.lookup(DIKS_SERVICE_NAME);
+		}
+	}
+	
+	protected static RemoteConnection connect (URI uri, boolean createNewIfNecessary) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+		IRemoteVirtualDisk remoteVirtualDisk = getRemoteVirtualDisk(uri);
 		RemoteConnection connection = new RemoteConnection();
 		if (isServerUri(uri)) {
-			String userInfo = uri.getUserInfo();
-			ISynchronizeServer synchronizeServer = (ISynchronizeServer) registry
-					.lookup(SYNCHRONIZE_SERVICE_NAME);
-			connection.setDisk(synchronizeServer);
+			connection.setDisk(remoteVirtualDisk);
+			ISynchronizeServer synchronizeServer = (ISynchronizeServer) remoteVirtualDisk;
 			String diskName = uri.getQuery();
-			String[] splitUserInfo = userInfo.split(":");
-			if (splitUserInfo.length != 2) {
-				throw new AuthenticationException("Invalid user info");
-			}
-			String userName = splitUserInfo[0];
-			String password = splitUserInfo[1];
+			String userName = getUserName(uri);
+			String password = getPassword(uri);
 			if (synchronizeServer.diskExists(userName, diskName)) {
 				connection.setDiskId(synchronizeServer.loadDisk(userName, password, diskName));
 			} else {
@@ -129,15 +158,13 @@ public class RemoteTaskController implements TaskController {
 				}
 			}
 		} else {
-			Path diskPath = new Path(uri.getQuery());
-			ISimpleVirtualDisk remoteDisk = (ISimpleVirtualDisk) registry
-					.lookup(DIKS_SERVICE_NAME);
-			connection.setDisk(remoteDisk);
-			if (remoteDisk.diskExists(diskPath)) {
-				connection.setDiskId(remoteDisk.loadDisk(diskPath));
+			ISimpleVirtualDisk simpleVirtualDisk = (ISimpleVirtualDisk) remoteVirtualDisk;
+			connection.setDisk(simpleVirtualDisk);
+			if (simpleVirtualDisk.diskExists(getDiskPath(uri))) {
+				connection.setDiskId(simpleVirtualDisk.loadDisk(getDiskPath(uri)));
 			} else {
 				if (createNewIfNecessary) {
-					connection.setDiskId(remoteDisk.createDisk(diskPath));
+					connection.setDiskId(simpleVirtualDisk.createDisk(getDiskPath(uri)));
 				} else {
 					throw new ConnectionException(
 							"Disk does not exist.");
@@ -889,6 +916,44 @@ public class RemoteTaskController implements TaskController {
 				}
 			}
 		}
+	}
+
+	protected void deleteDiskImpl(URI uri) throws VirtualDiskException, RemoteException, AuthenticationException, NotBoundException {
+		IRemoteVirtualDisk connection = getRemoteVirtualDisk(uri);
+		if (isServerUri(uri)) {
+			if (connection instanceof ISynchronizeServer) {
+				ISynchronizeServer synchronizeServer = (ISynchronizeServer) connection;
+				synchronizeServer.deleteDisk(getUserName(uri), getPassword(uri), getDiskPath(uri));
+			} else {
+				throw new VirtualDiskException("Could not delete disk");
+			}
+		} else {
+			if (connection instanceof ISimpleVirtualDisk) {
+				ISimpleVirtualDisk simpleDisk = (ISimpleVirtualDisk) connection;
+				simpleDisk.deleteDisk(getDiskPath(uri));
+			} else {
+				throw new VirtualDiskException("Could not delete disk");
+			}
+		}
+	}
+	
+	protected void deleteDisk() throws VirtualDiskException, RemoteException, AuthenticationException, NotBoundException {
+		URI diskUri = uri;
+		close();
+		deleteDiskImpl(diskUri);
+	}
+	
+	@Override
+	public UpdateableTask<Void> createDeleteDiskTask() {
+		return new UpdateableTask<Void>() {
+
+			@Override
+			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, NotBoundException {
+				deleteDisk();
+				return null;
+			}
+
+		};
 	}
 
 }

@@ -123,6 +123,28 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		}
 	}
 
+	protected void deleteDisk() throws VirtualDiskException, RemoteException, AuthenticationException, NotBoundException {
+		URI deleteDiskUri = null;
+		switch (state) {
+		case DISCONNECTED:
+			break;
+		case BOTH_CONNECTED:
+		case LOCAL_LINKED:
+		case LOCAL_UNLINKED_CONNECTED:
+			deleteDiskUri = uri;
+			break;
+		case SERVER_CONNECTED:
+			deleteDiskUri = serverUri;
+			break;
+		default:
+			break;
+		}
+		close();
+		if (deleteDiskUri != null) {
+			deleteDiskImpl(deleteDiskUri);
+		}
+	}
+	
 	private void updateState() {
 		if (isLocalConnected() && isServerConnected()) {
 			setState(SynchronizedTaskControllerState.BOTH_CONNECTED);

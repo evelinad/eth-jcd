@@ -53,7 +53,7 @@ public class CreateUserDialog extends ModalDialog {
 		passwordField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(passwordField, 1, 2);
 		
-		Button okButton = new Button("Connect");
+		Button okButton = new Button("Create");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override

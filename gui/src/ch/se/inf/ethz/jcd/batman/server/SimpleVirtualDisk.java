@@ -3,7 +3,6 @@ package ch.se.inf.ethz.jcd.batman.server;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
@@ -17,31 +16,35 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtualDisk {
 
 	@Override
-	public int createDisk(Path path) throws RemoteException,
+	public int createDisk(String path) throws RemoteException,
 			VirtualDiskException {
 		try {
-			return createDisk(path.getPath());
+			return createDiskImpl(path);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
-					+ path.getPath(), e);
+					+ path, e);
 		}
 	}
 
 	@Override
-	public int loadDisk(Path path) throws RemoteException, VirtualDiskException {
+	public int loadDisk(String path) throws RemoteException, VirtualDiskException {
 		try {
-			return loadDisk(path.getPath());
+			return loadDiskImpl(path);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
-					+ path.getPath(), e);
+					+ path, e);
 		}
 	}
 
 	@Override
-	public void deleteDisk(Path path) throws RemoteException,
+	public void deleteDisk(String path) throws RemoteException,
 			VirtualDiskException {
+		LoadedDisk disk = getPathToDiskMap().get(path);
+		if (disk != null && !disk.hasNoIds()) {
+			throw new VirtualDiskException("Could not delete disk, disk still in use");
+		}
 		try {
-			java.io.File diskFile = new java.io.File(path.getPath());
+			java.io.File diskFile = new java.io.File(path);
 			if (isVirtualDisk(diskFile)) {
 				if (!diskFile.delete()) {
 					throw new VirtualDiskException(
@@ -58,8 +61,8 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 	}
 
 	@Override
-	public boolean diskExists(Path path) throws RemoteException,
+	public boolean diskExists(String path) throws RemoteException,
 			VirtualDiskException {
-		return isVirtualDisk(new java.io.File(path.getPath()));
+		return isVirtualDisk(new java.io.File(path));
 	}
 }

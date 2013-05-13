@@ -60,6 +60,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	private final Button connectButton;
 	private final Button disconnectButton;
 	private final Button onlineOfflineButton;
+	private final Button deleteDiskButton;
 	private final Button toParentDirButton;
 	private final Button goBackButton;
 	private final Button goForewardButton;
@@ -120,6 +121,17 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		super.getItems().add(onlineOfflineButton);
 		
 		// onlineOffline button
+		deleteDiskButton = new Button("Delete disk");
+		deleteDiskButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				event.consume();
+				deleteDisk();
+			}
+		});
+		super.getItems().add(deleteDiskButton);
+		
+		// user button
 		Button createUserButton = new Button("Create User");
 		createUserButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -380,6 +392,19 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		stateChangedImpl(guiState.getSynchronizedState());
 	}
 	
+	protected void deleteDisk() {
+		UpdateableTask<Void> deleteDiskTask = guiState.getController()
+				.createDeleteDiskTask();
+		new TaskDialog(guiState, deleteDiskTask) {
+			@Override
+			protected void succeeded(WorkerStateEvent event) {
+				guiState.setController(null);
+				guiState.setCurrentDirectory(null);
+				guiState.setState(State.DISCONNECTED);
+			}
+		};
+	}
+	
 	protected void onlineOffline() {
 		switch (synchState) {
 		case LOCAL_LINKED:
@@ -593,6 +618,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		if (newState == State.DISCONNECTED) {
 			connectButton.setDisable(false);
 			disconnectButton.setDisable(true);
+			deleteDiskButton.setDisable(true);
 			toParentDirButton.setDisable(true);
 			goBackButton.setDisable(true);
 			goForewardButton.setDisable(true);
@@ -610,6 +636,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		} else if (newState == State.CONNECTED) {
 			connectButton.setDisable(true);
 			disconnectButton.setDisable(false);
+			deleteDiskButton.setDisable(false);
 			toParentDirButton.setDisable(false);
 			goBackButton.setDisable(false);
 			goForewardButton.setDisable(false);

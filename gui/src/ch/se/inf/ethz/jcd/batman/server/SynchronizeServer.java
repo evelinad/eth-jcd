@@ -179,7 +179,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		checkPassword(userName, password);
 		String diskPath = getDiskPath(userName, diskName);
 		try {
-			return createDisk(diskPath);
+			return createDiskImpl(diskPath);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not create disk at "
 					+ diskPath, e);
@@ -190,7 +190,12 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 	public void deleteDisk(String userName, String password, String diskName)
 			throws RemoteException, VirtualDiskException, AuthenticationException {
 		checkPassword(userName, password);
+		
 		String diskPath = getDiskPath(userName, diskName);
+		LoadedDisk disk = getPathToDiskMap().get(diskPath);
+		if (disk != null && !disk.hasNoIds()) {
+			throw new VirtualDiskException("Could not delete disk, disk still in use");
+		}
 		try {
 			File diskFile = new File(diskPath);
 			if (isVirtualDisk(diskFile)) {
@@ -214,7 +219,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		checkPassword(userName, password);
 		String diskPath = getDiskPath(userName, diskName);
 		try {
-			return loadDisk(diskPath);
+			return loadDiskImpl(diskPath);
 		} catch (IOException e) {
 			throw new VirtualDiskException("Could not load disk at "
 					+ diskPath, e);
