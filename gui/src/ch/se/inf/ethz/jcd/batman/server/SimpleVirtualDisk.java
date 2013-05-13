@@ -39,7 +39,7 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 	@Override
 	public void deleteDisk(String path) throws RemoteException,
 			VirtualDiskException {
-		LoadedDisk disk = getPathToDiskMap().get(path);
+		LoadedDisk disk = getPathToDiskMap().get(new java.io.File(path).toURI());
 		if (disk != null && !disk.hasNoIds()) {
 			throw new VirtualDiskException("Could not delete disk, disk still in use");
 		}

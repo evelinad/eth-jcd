@@ -402,6 +402,16 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 				guiState.setCurrentDirectory(null);
 				guiState.setState(State.DISCONNECTED);
 			}
+			
+			@Override
+			protected void failed(WorkerStateEvent event) {
+				if (!guiState.getController().isConnected()) {
+					guiState.setController(null);
+					guiState.setCurrentDirectory(null);
+					guiState.setState(State.DISCONNECTED);
+				}
+				super.failed(event);
+			}
 		};
 	}
 	

@@ -192,7 +192,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		checkPassword(userName, password);
 		
 		String diskPath = getDiskPath(userName, diskName);
-		LoadedDisk disk = getPathToDiskMap().get(diskPath);
+		LoadedDisk disk = getPathToDiskMap().get(new java.io.File(diskPath).toURI());
 		if (disk != null && !disk.hasNoIds()) {
 			throw new VirtualDiskException("Could not delete disk, disk still in use");
 		}
