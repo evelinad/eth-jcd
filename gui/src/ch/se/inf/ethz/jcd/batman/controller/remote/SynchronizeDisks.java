@@ -19,6 +19,8 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class SynchronizeDisks {
 
+	private static final String SYNCHRONIZE = "Synchronize ";
+	
 	private interface SynchronizeTask {
 		
 		String getMessage();
@@ -38,7 +40,7 @@ public class SynchronizeDisks {
 	
 		@Override
 		public String getMessage() {
-			return "Delete " + entry.getPath();
+			return SYNCHRONIZE + entry.getPath();
 		}
 		
 		@Override
@@ -62,7 +64,7 @@ public class SynchronizeDisks {
 
 		@Override
 		public String getMessage() {
-			return "Copy " + entry.getPath();
+			return SYNCHRONIZE + entry.getPath();
 		}
 
 		@Override
@@ -98,7 +100,7 @@ public class SynchronizeDisks {
 
 		@Override
 		public String getMessage() {
-			return "Rename " + entry.getPath() + " to " + entry.getPath();
+			return SYNCHRONIZE + entry.getPath();
 		}
 
 		@Override
@@ -123,7 +125,7 @@ public class SynchronizeDisks {
 
 		@Override
 		public String getMessage() {
-			return "Update " + entry.getPath();
+			return SYNCHRONIZE + entry.getPath();
 		}
 
 		@Override
@@ -296,14 +298,15 @@ public class SynchronizeDisks {
 		this.task = task;
 		task.updateTitle("Synchronize disks");
 		task.updateMessage("Initialize...");
-		lastSynchronized = 0;
 		try {
 			AdditionalLocalDiskInformation diskInformation = RemoteConnectionUtil.getDiskInformation(localConnection);
-			if (diskInformation != null) {
+			if (diskInformation == null) {
+				lastSynchronized = 0;
+			} else {
 				lastSynchronized = diskInformation.getLastSynchronized();
 			}
 		} catch (VirtualDiskException | RemoteException e) {
-			//ignore because its possible that the disk has never been synchronized and no disk information exist
+			lastSynchronized = 0;
 		}
 		task.updateMessage("Discovering changes...");
 		Directory rootDirectory = new Directory();

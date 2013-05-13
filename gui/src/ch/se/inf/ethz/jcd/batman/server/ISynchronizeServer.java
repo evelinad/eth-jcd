@@ -6,7 +6,7 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public interface ISynchronizeServer extends IRemoteVirtualDisk {
 
-	void createUser(String userName, String password) throws RemoteException, InvalidUserNameException, AuthenticationException;
+	void createUser(String userName, String password) throws RemoteException, InvalidUserNameException, AuthenticationException, VirtualDiskException;
 	
 	int createDisk(String userName, String password, String diskName) throws RemoteException, AuthenticationException, VirtualDiskException;
 

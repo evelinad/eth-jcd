@@ -93,8 +93,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 					userMap = (Map<String, UserData>) object;
 				}
 			} catch (IOException | ClassNotFoundException e) {
-				//As this prevents the server from running properly a RuntimerException is thrown
-				throw new RuntimeException("Unable to load users", e);
+				throw new InvalidUserDataException(e);
 			} finally {
 				if (objStream != null) {
 					try {
@@ -107,15 +106,12 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		}
 	}
 	
-	private void saveUsers() {
+	private void saveUsers() throws IOException {
 		ObjectOutputStream objStream = null;
 		try {
 			objStream = new ObjectOutputStream (new FileOutputStream(USER_FILE));
 			objStream.writeInt(nextId);
 			objStream.writeObject(userMap);
-		} catch (IOException e) {
-			//As this prevents the server from running properly a RuntimerException is thrown
-			throw new RuntimeException("Unable to save users", e);
 		} finally {
 			if (objStream != null) {
 				try {
@@ -128,7 +124,7 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 	}
 	
 	@Override
-	public void createUser(String userName, String password) throws RemoteException, InvalidUserNameException, AuthenticationException {
+	public void createUser(String userName, String password) throws RemoteException, InvalidUserNameException, AuthenticationException, VirtualDiskException {
 		if (userName == null || userName.isEmpty()) {
 			throw new IllegalArgumentException("Username can not be null or empty");
 		}
@@ -140,7 +136,11 @@ public class SynchronizeServer extends RemoteVirtualDisk implements
 		}
 		UserData userData = new UserData(nextId++, userName, hashPassword(password));
 		userMap.put(userName, userData);
-		saveUsers();
+		try {
+			saveUsers();
+		} catch (IOException e) {
+			throw new VirtualDiskException("Unable to save users", e);
+		}
 	}
 
 	private byte[] getHashedPassword(String userName) {

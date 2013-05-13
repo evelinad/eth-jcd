@@ -12,6 +12,7 @@ import ch.se.inf.ethz.jcd.batman.server.AuthenticationException;
 import ch.se.inf.ethz.jcd.batman.server.ISynchronizeServer;
 import ch.se.inf.ethz.jcd.batman.server.InvalidUserNameException;
 import ch.se.inf.ethz.jcd.batman.server.VirtualDiskServer;
+import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class RemoteServerTaskController implements ServerTaskController {
 	
@@ -28,7 +29,7 @@ public class RemoteServerTaskController implements ServerTaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException {
+			protected Void callImpl() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException, VirtualDiskException {
 				updateTitle("Creating user");
 				updateMessage("Creating user...");
 				Registry registry;

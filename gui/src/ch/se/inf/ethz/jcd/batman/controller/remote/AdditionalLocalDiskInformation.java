@@ -62,7 +62,7 @@ public final class AdditionalLocalDiskInformation implements Serializable {
 			oos.close();
 			return bos.toByteArray();
 		} catch (IOException e) {
-			//This should never happen, because its working on byte stream
+			//This should never happen, because its working on a byte stream
 			//But if for some reason an error occurred, it should not be ignored
 			throw new RuntimeException(e);
 		}

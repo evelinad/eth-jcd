@@ -241,6 +241,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 			}
 		} catch (IOException e) {
 			//Don't update last synchronized if no valid disk information exist
+			//Otherwise different disk information could be overwritten
 		}
 	}
 	
