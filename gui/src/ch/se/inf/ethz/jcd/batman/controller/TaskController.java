@@ -185,4 +185,6 @@ public interface TaskController {
 	UpdateableTask<Entry[]> createSearchTask(String term, boolean isRegex,
 			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
 			boolean checkChildren, Entry... parents);
+	
+	UpdateableTask<Void> createDeleteDiskTask();
 }

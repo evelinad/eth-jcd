@@ -3,7 +3,6 @@ package ch.se.inf.ethz.jcd.batman.server;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import ch.se.inf.ethz.jcd.batman.model.Path;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 /**
@@ -31,7 +30,7 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	int createDisk(Path path) throws RemoteException, VirtualDiskException;
+	int createDisk(String path) throws RemoteException, VirtualDiskException;
 
 	/**
 	 * Deletes a virtual disk on the remote host.
@@ -41,7 +40,7 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	void deleteDisk(Path path) throws RemoteException, VirtualDiskException;
+	void deleteDisk(String path) throws RemoteException, VirtualDiskException;
 
 	/**
 	 * Loads the given path as a virtual disk.
@@ -52,7 +51,7 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	int loadDisk(Path path) throws RemoteException, VirtualDiskException;
+	int loadDisk(String path) throws RemoteException, VirtualDiskException;
 
 	/**
 	 * Indicates if the given path represents a virtual disk.
@@ -63,7 +62,7 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	boolean diskExists(Path path) throws RemoteException, VirtualDiskException;
+	boolean diskExists(String path) throws RemoteException, VirtualDiskException;
 
 	
 }

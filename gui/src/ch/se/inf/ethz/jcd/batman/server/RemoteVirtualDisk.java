@@ -88,23 +88,23 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 		return nextId++;
 	}
 	
-	protected synchronized int createDisk (String path) throws IOException {
+	protected synchronized int createDiskImpl (String path) throws IOException {
 		IVirtualDisk disk = VirtualDisk.create(path);
 		LoadedDisk loadedDisk = new LoadedDisk(disk);
-		pathToDiskMap.put(new java.io.File(path).toURI(), loadedDisk);
+		getPathToDiskMap().put(new java.io.File(path).toURI(), loadedDisk);
 		int id = getNextId();
 		loadedDisk.addId(id);
 		idToDiskMap.put(id, loadedDisk);
 		return id;
 	}
 	
-	protected synchronized int loadDisk (String path) throws IOException {
+	protected synchronized int loadDiskImpl (String path) throws IOException {
 		URI uri = new java.io.File(path).toURI();
-		LoadedDisk loadedDisk = pathToDiskMap.get(uri);
+		LoadedDisk loadedDisk = getPathToDiskMap().get(uri);
 		if (loadedDisk == null) {
 			IVirtualDisk disk = VirtualDisk.load(path);
 			loadedDisk = new LoadedDisk(disk);
-			pathToDiskMap.put(uri, loadedDisk);
+			getPathToDiskMap().put(uri, loadedDisk);
 		}
 		int id = getNextId();
 		loadedDisk.addId(id);
@@ -120,7 +120,7 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 			if (loadedDisk != null) {
 				loadedDisk.removeId(id);
 				if (loadedDisk.hasNoIds()) {
-					pathToDiskMap.remove(loadedDisk.getDisk().getHostLocation());
+					getPathToDiskMap().remove(loadedDisk.getDisk().getHostLocation());
 					loadedDisk.getDisk().close();
 				}
 			}
@@ -603,6 +603,10 @@ public abstract class RemoteVirtualDisk implements IRemoteVirtualDisk {
 	
 	public void releaseLock(int id) throws RemoteException {
 		idToDiskMap.get(id).releaseLock(id);
+	}
+
+	public Map<URI, LoadedDisk> getPathToDiskMap() {
+		return pathToDiskMap;
 	}
 	
 }
