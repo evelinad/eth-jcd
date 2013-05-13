@@ -21,12 +21,14 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 
 public class RemoteOpenDiskDialog extends ModalDialog {
 
-	private final static String LOCAL = "Local";
+	private final static String LOCAL = "Local  ";
 	private final static String SERVER = "Server";
 	
+	private final Label connectToLabel = new Label("Connect to");
 	private final ToggleGroup group;
 
 	private final List<Node> localNodes = new LinkedList<>();
@@ -36,7 +38,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 	private final TextField localDiskPathField = new TextField();;
 
 	private final List<Node> serverNodes = new LinkedList<>();
-	private final Label serverHostLabel = new Label("Server");
+	private final Label serverHostLabel = new Label("Host");
 	private final Label serverUserNameLabel = new Label("Username");
 	private final Label serverPasswordLabel = new Label("Password");
 	private final Label serverDiskNameLabel = new Label("Diskname");
@@ -65,7 +67,10 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		RadioButton serverRadioButton = new RadioButton(SERVER);
 		serverRadioButton.setUserData(SERVER);
 		serverRadioButton.setToggleGroup(group);
-		getContainer().addRow(0, localRadioButton, serverRadioButton);
+		HBox radioLayout = new HBox();
+		radioLayout.getChildren().add(localRadioButton);
+		radioLayout.getChildren().add(serverRadioButton);
+		getContainer().addRow(0, connectToLabel, radioLayout);
 		
 		localNodes.add(localHostLabel);
 		localNodes.add(localHostField);
@@ -119,6 +124,8 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		});
 		getContainer().addRow(5, okButton, cancelButton);
 
+		setResizable(false);
+		setMinWidth(0);
 		localRadioButton.setSelected(true);
 	}
 
@@ -128,6 +135,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 			getContainer().addRow(1, localHostLabel, localHostField);
 			getContainer().addRow(2, localDiskPathLabel, localDiskPathField);
 			localHostField.requestFocus();
+			sizeToScene();
 		} else if (SERVER.equals(option)) {
 			getContainer().getChildren().removeAll(localNodes);
 			getContainer().addRow(1, serverHostLabel, serverHostField);
@@ -135,6 +143,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 			getContainer().addRow(3, serverPasswordLabel, serverPasswordField);
 			getContainer().addRow(4, serverDiskNameLabel, serverDiskNameField);
 			serverHostField.requestFocus();
+			sizeToScene();
 		}
 	}
 	
