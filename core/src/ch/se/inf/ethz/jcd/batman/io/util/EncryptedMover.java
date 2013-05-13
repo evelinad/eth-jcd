@@ -18,36 +18,36 @@ import javax.crypto.CipherOutputStream;
  */
 public class EncryptedMover implements DataMover {
 
-    private final Cipher encryptCipher;
-    private final Cipher decryptCipher;
+	private final Cipher encryptCipher;
+	private final Cipher decryptCipher;
 
-    public EncryptedMover(Cipher encrypt, Cipher decrypt) {
-        this.encryptCipher = encrypt;
-        this.decryptCipher = decrypt;
-    }
+	public EncryptedMover(Cipher encrypt, Cipher decrypt) {
+		this.encryptCipher = encrypt;
+		this.decryptCipher = decrypt;
+	}
 
-    @Override
-    public void importMove(InputStream hostSource, OutputStream virtualTarget)
-            throws IOException {
-        CipherOutputStream encryptedOut = new CipherOutputStream(virtualTarget,
-                this.encryptCipher);
+	@Override
+	public void importMove(InputStream hostSource, OutputStream virtualTarget)
+			throws IOException {
+		CipherOutputStream encryptedOut = new CipherOutputStream(virtualTarget,
+				this.encryptCipher);
 
-        DefaultMover.move(hostSource, encryptedOut);
+		DefaultMover.move(hostSource, encryptedOut);
 
-        encryptedOut.close();
-        hostSource.close();
-    }
+		encryptedOut.close();
+		hostSource.close();
+	}
 
-    @Override
-    public void exportMove(InputStream virtualSource, OutputStream hostTarget)
-            throws IOException {
-        CipherInputStream decryptIn = new CipherInputStream(virtualSource,
-                this.decryptCipher);
+	@Override
+	public void exportMove(InputStream virtualSource, OutputStream hostTarget)
+			throws IOException {
+		CipherInputStream decryptIn = new CipherInputStream(virtualSource,
+				this.decryptCipher);
 
-        DefaultMover.move(decryptIn, hostTarget);
+		DefaultMover.move(decryptIn, hostTarget);
 
-        hostTarget.close();
-        decryptIn.close();
-    }
+		hostTarget.close();
+		decryptIn.close();
+	}
 
 }

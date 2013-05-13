@@ -10,36 +10,36 @@ import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
  */
 public class DeleteCommand implements Command {
 
-    private static final String[] COMMAND_STRINGS = { "delete", "del" };
+	private static final String[] COMMAND_STRINGS = { "delete", "del" };
 
-    @Override
-    public String[] getAliases() {
-        return DeleteCommand.COMMAND_STRINGS;
-    }
+	@Override
+	public String[] getAliases() {
+		return DeleteCommand.COMMAND_STRINGS;
+	}
 
-    @Override
-    public void execute(CommandLine caller, String alias, String... params) {
-        VDiskFile curLocation = caller.getCurrentLocation();
-        if (curLocation == null) {
-            caller.writeln("no disk loaded.");
-            return;
-        }
+	@Override
+	public void execute(CommandLine caller, String alias, String... params) {
+		VDiskFile curLocation = caller.getCurrentLocation();
+		if (curLocation == null) {
+			caller.writeln("no disk loaded.");
+			return;
+		}
 
-        VDiskFile commandRoot = null;
+		VDiskFile commandRoot = null;
 
-        if (params.length == 1) {
-            commandRoot = CommandUtil.getFile(caller, params[0]);
-        } else {
-            commandRoot = curLocation;
-        }
+		if (params.length == 1) {
+			commandRoot = CommandUtil.getFile(caller, params[0]);
+		} else {
+			commandRoot = curLocation;
+		}
 
-        if (commandRoot != null) {
-            if (commandRoot.delete()) {
-                caller.writeln("deleted '%s'", commandRoot.getPath());
-            } else {
-                caller.writeln("could not delete '%s'", commandRoot.getPath());
-            }
-        }
-    }
+		if (commandRoot != null) {
+			if (commandRoot.delete()) {
+				caller.writeln("deleted '%s'", commandRoot.getPath());
+			} else {
+				caller.writeln("could not delete '%s'", commandRoot.getPath());
+			}
+		}
+	}
 
 }

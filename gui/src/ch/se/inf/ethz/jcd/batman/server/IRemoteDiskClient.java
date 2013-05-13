@@ -13,10 +13,13 @@ public interface IRemoteDiskClient extends Remote {
 
 	void entryDeleted(Entry entry) throws RemoteException, VirtualDiskException;
 
-	void entryChanged(Entry oldEntry, Entry newEntry) throws RemoteException, VirtualDiskException;
-	
-	void entryCopied(Entry sourceEntry, Entry destinationEntry) throws RemoteException, VirtualDiskException;
-	
-	void writeToEntry(File file, long fileOffset, byte[] data) throws RemoteException, VirtualDiskException;
-	
+	void entryChanged(Entry oldEntry, Entry newEntry) throws RemoteException,
+			VirtualDiskException;
+
+	void entryCopied(Entry sourceEntry, Entry destinationEntry)
+			throws RemoteException, VirtualDiskException;
+
+	void writeToEntry(File file, long fileOffset, byte[] data)
+			throws RemoteException, VirtualDiskException;
+
 }

@@ -24,18 +24,16 @@ import ch.se.inf.ethz.jcd.batman.vdisk.IVirtualFile;
  * The VirtualDisk needs at least 192(superblock) + 128(root directory entry)
  * byte to store its meta data. The first 192 byte are structured as follows:
  * 
- * 0x00 8byte MagicNumber 
- * 0x08 8byte Root Directory offset 
- * 0x10 8byte Position of additional disk information
- * 0x18 168byte FreeLists
+ * 0x00 8byte MagicNumber 0x08 8byte Root Directory offset 0x10 8byte Position
+ * of additional disk information 0x18 168byte FreeLists
  * 
  * The first entry after the free lists is usually the root directory. But
  * because there is an offset saved in the superblock which gives the offset of
  * the root directory, it could also be saved in another place.
  * 
  * The VirtualDisk will dynamically increase the underlying file and add the new
- * space to the free lists. Which are used when new {@link IDataBlock} need to be 
- * allocated.
+ * space to the free lists. Which are used when new {@link IDataBlock} need to
+ * be allocated.
  */
 public final class VirtualDisk implements IVirtualDisk {
 
@@ -51,8 +49,9 @@ public final class VirtualDisk implements IVirtualDisk {
 		return virtualDisk;
 	}
 
-	private final static Logger LOGGER = Logger.getLogger(VirtualDisk.class.getName()); 
-	
+	private final static Logger LOGGER = Logger.getLogger(VirtualDisk.class
+			.getName());
+
 	private static final int SUPERBLOCK_SIZE = 192;
 	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
@@ -66,12 +65,8 @@ public final class VirtualDisk implements IVirtualDisk {
 	private IVirtualDirectory rootDirectory;
 	/**
 	 * Holds the offset position of the start of each free list. The free lists
-	 * are handled as follows: 
-	 * FreeListIndex : Size of blocks in the free list 
-	 * 1             : 128*2^0-128*2^1 - 1 
-	 * 2             : 128*2^1-128*2^2 - 1 
-	 * ... 
-	 * 21            : 128*2^21-infinity
+	 * are handled as follows: FreeListIndex : Size of blocks in the free list 1
+	 * : 128*2^0-128*2^1 - 1 2 : 128*2^1-128*2^2 - 1 ... 21 : 128*2^21-infinity
 	 */
 	private final List<Long> freeLists = new ArrayList<Long>();
 	private final String path;
@@ -128,11 +123,11 @@ public final class VirtualDisk implements IVirtualDisk {
 		return newSpace;
 	}
 
-	private void shrink (long amount) throws IOException {
+	private void shrink(long amount) throws IOException {
 		long previousSize = file.length();
 		file.setLength(previousSize - amount);
 	}
-	
+
 	private void initializeFreeList() throws IOException {
 		file.seek(FREE_LISTS_POSITION);
 		for (int i = 0; i < NR_FREE_LISTS; i++) {
@@ -279,12 +274,13 @@ public final class VirtualDisk implements IVirtualDisk {
 		return new File(path).toURI();
 	}
 
-	private void setFirstBlockFreeList (int index, long position) throws IOException {
+	private void setFirstBlockFreeList(int index, long position)
+			throws IOException {
 		freeLists.set(index, position);
 		file.seek(FREE_LISTS_POSITION + index * POSITION_SIZE);
 		file.writeLong(position);
 	}
-	
+
 	private void removeFreeBlockFromList(IFreeBlock block) throws IOException {
 		if (block.getPreviousBlock() == 0) {
 			// First block in the list
@@ -307,7 +303,7 @@ public final class VirtualDisk implements IVirtualDisk {
 			}
 		}
 	}
-	
+
 	private void addFreeBlockToList(IFreeBlock block) throws IOException {
 		if (isLastBlock(block.getBlockPosition(), block.getDiskSize())) {
 			shrink(block.getDiskSize());
@@ -385,7 +381,7 @@ public final class VirtualDisk implements IVirtualDisk {
 	}
 
 	@SuppressWarnings("unused")
-	private void checkBlocks () throws IOException {
+	private void checkBlocks() throws IOException {
 		if (getRootDirectory() != null) {
 			long position = getRootDirectory().getPosition();
 			IVirtualBlock block = VirtualBlock.loadBlock(this, position);
@@ -398,44 +394,43 @@ public final class VirtualDisk implements IVirtualDisk {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("unused")
-	private void checkFreeBlocks () throws IOException {
+	private void checkFreeBlocks() throws IOException {
 		for (int i = 0; i < freeLists.size(); i++) {
 			Long position = freeLists.get(i);
 			if (position != 0) {
-				for (
-					IFreeBlock freeBlock = FreeBlock.load(this, position); 
-					freeBlock.getNextBlock() != 0; 
-					freeBlock = FreeBlock.load(this, freeBlock.getNextBlock())
-				) {
-					int freeListIndex = getFreeListIndex(freeBlock.getDiskSize());
+				for (IFreeBlock freeBlock = FreeBlock.load(this, position); freeBlock
+						.getNextBlock() != 0; freeBlock = FreeBlock.load(this,
+						freeBlock.getNextBlock())) {
+					int freeListIndex = getFreeListIndex(freeBlock
+							.getDiskSize());
 					if (i != freeListIndex) {
 						printFreeLists();
-						throw new IllegalStateException("Free list in wrong index saved!");
+						throw new IllegalStateException(
+								"Free list in wrong index saved!");
 					}
 				}
 			}
 		}
 	}
-	
-	private void printFreeLists () throws IOException {
+
+	private void printFreeLists() throws IOException {
 		for (int i = 0; i < freeLists.size(); i++) {
 			Long position = freeLists.get(i);
 			if (position != 0) {
-				LOGGER.finer("Block index: " + i  + " position: " + position);
-				for (
-					IFreeBlock freeBlock = FreeBlock.load(this, position); 
-					freeBlock.getNextBlock() != 0; 
-					freeBlock = FreeBlock.load(this, freeBlock.getNextBlock())
-				) {
-					LOGGER.finer("(" + freeBlock.getDiskSize() + ") " + freeBlock.getNextBlock());
+				LOGGER.finer("Block index: " + i + " position: " + position);
+				for (IFreeBlock freeBlock = FreeBlock.load(this, position); freeBlock
+						.getNextBlock() != 0; freeBlock = FreeBlock.load(this,
+						freeBlock.getNextBlock())) {
+					LOGGER.finer("(" + freeBlock.getDiskSize() + ") "
+							+ freeBlock.getNextBlock());
 				}
 			}
-			
+
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -555,27 +550,32 @@ public final class VirtualDisk implements IVirtualDisk {
 		if (addInformationPosition == 0) {
 			return new byte[0];
 		} else {
-			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this, addInformationPosition);
-			byte[] addInformation = new byte[(int) addInformationSpace.getSize()];
+			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this,
+					addInformationPosition);
+			byte[] addInformation = new byte[(int) addInformationSpace
+					.getSize()];
 			addInformationSpace.read(addInformation);
 			return addInformation;
 		}
 	}
-	
+
 	@Override
-	public void saveAdditionalDiskInformation(byte[] information) throws IOException {
+	public void saveAdditionalDiskInformation(byte[] information)
+			throws IOException {
 		file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
 		long addInformationPosition = file.readLong();
 		if (addInformationPosition == 0) {
 			if (information.length != 0) {
-				IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.create(this, information.length);
+				IVirtualDiskSpace addInformationSpace = VirtualDiskSpace
+						.create(this, information.length);
 				addInformationSpace.seek(0);
 				addInformationSpace.write(information);
 				file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);
 				file.writeLong(addInformationSpace.getVirtualDiskPosition());
 			}
 		} else {
-			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this, addInformationPosition);
+			IVirtualDiskSpace addInformationSpace = VirtualDiskSpace.load(this,
+					addInformationPosition);
 			if (information.length == 0) {
 				addInformationSpace.free();
 				file.seek(ADDITIONAL_DISK_INFORMATION_POSITION);

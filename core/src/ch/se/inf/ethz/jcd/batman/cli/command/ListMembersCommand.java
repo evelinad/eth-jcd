@@ -12,41 +12,41 @@ import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
  */
 public class ListMembersCommand implements Command {
 
-    private static final String[] COMMAND_STRINGS = { "list", "ls", "dir" };
+	private static final String[] COMMAND_STRINGS = { "list", "ls", "dir" };
 
-    @Override
-    public String[] getAliases() {
-        return ListMembersCommand.COMMAND_STRINGS;
-    }
+	@Override
+	public String[] getAliases() {
+		return ListMembersCommand.COMMAND_STRINGS;
+	}
 
-    @Override
-    public void execute(CommandLine caller, String alias, String... params) {
-        VDiskFile curLocation = caller.getCurrentLocation();
-        if (curLocation == null) {
-            caller.writeln("no disk loaded.");
-            return;
-        }
+	@Override
+	public void execute(CommandLine caller, String alias, String... params) {
+		VDiskFile curLocation = caller.getCurrentLocation();
+		if (curLocation == null) {
+			caller.writeln("no disk loaded.");
+			return;
+		}
 
-        VDiskFile listRoot = null;
-        if (params.length == 1) {
-            listRoot = CommandUtil.getFile(caller, params[0]);
-        } else {
-            listRoot = curLocation;
-        }
+		VDiskFile listRoot = null;
+		if (params.length == 1) {
+			listRoot = CommandUtil.getFile(caller, params[0]);
+		} else {
+			listRoot = curLocation;
+		}
 
-        try {
-            for (VDiskFile child : listRoot.listFiles()) {
-                if (child.isDirectory()) {
-                    caller.writeln("%s [D]", child.getName());
-                } else if (child.isFile()) {
-                    caller.writeln("%s [F]", child.getName());
-                } else {
-                    caller.writeln("%s [?]", child.getName());
-                }
-            }
-        } catch (IOException e) {
-            caller.write(e);
-        }
-    }
+		try {
+			for (VDiskFile child : listRoot.listFiles()) {
+				if (child.isDirectory()) {
+					caller.writeln("%s [D]", child.getName());
+				} else if (child.isFile()) {
+					caller.writeln("%s [F]", child.getName());
+				} else {
+					caller.writeln("%s [?]", child.getName());
+				}
+			}
+		} catch (IOException e) {
+			caller.write(e);
+		}
+	}
 
 }

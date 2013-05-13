@@ -17,23 +17,27 @@ public final class VirtualDiskServer {
 	public final static String DISK_SERVICE_NAME = "VirtualDisk";
 	public final static String SYNCHRONIZE_SERVICE_NAME = "SynchronizeServer";
 
-	private final static Logger LOGGER = Logger.getLogger(VirtualDiskServer.class.getName()); 
-	
-	private VirtualDiskServer () {}
+	private final static Logger LOGGER = Logger
+			.getLogger(VirtualDiskServer.class.getName());
+
+	private VirtualDiskServer() {
+	}
 
 	public static void main(final String[] args) {
 		try {
 			final Registry registry = LocateRegistry.getRegistry();
-			
-			//Start disk server
+
+			// Start disk server
 			final SimpleVirtualDisk rVirtualDisk = new SimpleVirtualDisk();
-			final Remote remoteDisk = UnicastRemoteObject.exportObject(rVirtualDisk, 0);
+			final Remote remoteDisk = UnicastRemoteObject.exportObject(
+					rVirtualDisk, 0);
 			registry.rebind(DISK_SERVICE_NAME, remoteDisk);
 			LOGGER.info(DISK_SERVICE_NAME + " bound");
-			
-			//Start synchronize server
+
+			// Start synchronize server
 			final SynchronizeServer synchronizeServer = new SynchronizeServer();
-			final Remote remoteSynchronizeServer = UnicastRemoteObject.exportObject(synchronizeServer, 0);
+			final Remote remoteSynchronizeServer = UnicastRemoteObject
+					.exportObject(synchronizeServer, 0);
 			registry.rebind(SYNCHRONIZE_SERVICE_NAME, remoteSynchronizeServer);
 			LOGGER.info(SYNCHRONIZE_SERVICE_NAME + " bound");
 		} catch (RemoteException e) {

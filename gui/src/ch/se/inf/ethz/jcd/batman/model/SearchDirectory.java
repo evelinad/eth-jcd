@@ -10,8 +10,9 @@ public class SearchDirectory extends Directory implements Cloneable {
 	private final boolean caseSensitive;
 	private final boolean checkChildren;
 
-	public SearchDirectory(final Path path, final String term, final boolean regex,
-			final boolean checkFiles, final boolean checkFolders, final boolean caseSensitive,
+	public SearchDirectory(final Path path, final String term,
+			final boolean regex, final boolean checkFiles,
+			final boolean checkFolders, final boolean caseSensitive,
 			final boolean checkChildren) {
 		super(path);
 		this.term = term;

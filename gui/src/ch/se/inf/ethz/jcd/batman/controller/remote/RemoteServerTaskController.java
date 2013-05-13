@@ -15,21 +15,24 @@ import ch.se.inf.ethz.jcd.batman.server.VirtualDiskServer;
 import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
 
 public class RemoteServerTaskController implements ServerTaskController {
-	
+
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
-	
+
 	private final URI uri;
-	
+
 	public RemoteServerTaskController(URI uri) {
 		this.uri = uri;
 	}
-	
+
 	@Override
-	public UpdateableTask<Void> createNewUserTask(final String userName, final String password) {
+	public UpdateableTask<Void> createNewUserTask(final String userName,
+			final String password) {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, InvalidUserNameException, AuthenticationException, NotBoundException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException,
+					InvalidUserNameException, AuthenticationException,
+					NotBoundException, VirtualDiskException {
 				updateTitle("Creating user");
 				updateMessage("Creating user...");
 				Registry registry;
@@ -44,8 +47,8 @@ public class RemoteServerTaskController implements ServerTaskController {
 				synchronizeServer.createUser(userName, password);
 				return null;
 			}
-			
+
 		};
 	}
-	
+
 }

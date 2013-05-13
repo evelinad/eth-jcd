@@ -3,8 +3,6 @@ package ch.se.inf.ethz.jcd.batman.browser;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
-
 import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -15,6 +13,7 @@ import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import ch.se.inf.ethz.jcd.batman.controller.UpdateableTask;
 
 public class TaskDialog extends ModalDialog {
 
@@ -58,7 +57,7 @@ public class TaskDialog extends ModalDialog {
 					public void handle(WorkerStateEvent event) {
 						close();
 					}
-				
+
 				});
 				task.cancel(true);
 				setCloseReason(CloseReason.CANCEL);

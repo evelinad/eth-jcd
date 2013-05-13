@@ -7,5 +7,5 @@ public class InvalidUserDataException extends RuntimeException {
 	public InvalidUserDataException(Throwable t) {
 		super(t);
 	}
-	
+
 }

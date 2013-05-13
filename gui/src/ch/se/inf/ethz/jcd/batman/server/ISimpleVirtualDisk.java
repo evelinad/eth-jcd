@@ -62,7 +62,7 @@ public interface ISimpleVirtualDisk extends IRemoteVirtualDisk, Remote {
 	 * @throws RemoteException
 	 * @throws VirtualDiskException
 	 */
-	boolean diskExists(String path) throws RemoteException, VirtualDiskException;
+	boolean diskExists(String path) throws RemoteException,
+			VirtualDiskException;
 
-	
 }

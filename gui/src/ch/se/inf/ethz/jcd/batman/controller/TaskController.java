@@ -48,7 +48,8 @@ public interface TaskController {
 	 *            an array of destinations inside the virtual disk
 	 * @return the task to execute the import
 	 */
-	UpdateableTask<Void> createImportTask(String[] sourcePaths, Path[] destinationPath);
+	UpdateableTask<Void> createImportTask(String[] sourcePaths,
+			Path[] destinationPath);
 
 	/**
 	 * Creates a task to export the given entries into the given destinations.
@@ -60,7 +61,8 @@ public interface TaskController {
 	 *            target of an export
 	 * @return the task to execute the export
 	 */
-	UpdateableTask<Void> createExportTask(Entry[] sourceEntries, String[] destinationPaths);
+	UpdateableTask<Void> createExportTask(Entry[] sourceEntries,
+			String[] destinationPaths);
 
 	/**
 	 * Creates a task to move entries to new locations.
@@ -75,7 +77,8 @@ public interface TaskController {
 	 *            destinations of the move
 	 * @return the task to execute the move
 	 */
-	UpdateableTask<Void> createMoveTask(Entry[] sourceEntries, Path[] destinationPaths);
+	UpdateableTask<Void> createMoveTask(Entry[] sourceEntries,
+			Path[] destinationPaths);
 
 	/**
 	 * Creates a task to copy entries.
@@ -86,7 +89,8 @@ public interface TaskController {
 	 *            an array of destinations for the copies
 	 * @return the task to execute the copy
 	 */
-	UpdateableTask<Void> createCopyTask(Entry[] sourceEntries, Path[] destinationPaths);
+	UpdateableTask<Void> createCopyTask(Entry[] sourceEntries,
+			Path[] destinationPaths);
 
 	/**
 	 * Creates a task that deletes the given entries.
@@ -185,6 +189,6 @@ public interface TaskController {
 	UpdateableTask<Entry[]> createSearchTask(String term, boolean isRegex,
 			boolean checkFiles, boolean checkFolders, boolean isCaseSensitive,
 			boolean checkChildren, Entry... parents);
-	
+
 	UpdateableTask<Void> createDeleteDiskTask();
 }

@@ -20,37 +20,37 @@ import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
  * 
  */
 public class LoadCommand implements Command {
-    private static final String[] COMMAND_STRINGS = { "load", "l" };
+	private static final String[] COMMAND_STRINGS = { "load", "l" };
 
-    @Override
-    public String[] getAliases() {
-        return LoadCommand.COMMAND_STRINGS;
-    }
+	@Override
+	public String[] getAliases() {
+		return LoadCommand.COMMAND_STRINGS;
+	}
 
-    @Override
-    public void execute(CommandLine caller, String alias, String... params) {
-        if (caller.getCurrentLocation() != null) {
-            caller.writeln("a disk is already loaded. unload first.");
-            return;
-        }
+	@Override
+	public void execute(CommandLine caller, String alias, String... params) {
+		if (caller.getCurrentLocation() != null) {
+			caller.writeln("a disk is already loaded. unload first.");
+			return;
+		}
 
-        if (params.length == 1) {
-            try {
-                Path hostPath = FileSystems.getDefault().getPath(params[0])
-                        .toAbsolutePath();
+		if (params.length == 1) {
+			try {
+				Path hostPath = FileSystems.getDefault().getPath(params[0])
+						.toAbsolutePath();
 
-                IVirtualDisk disk = VirtualDisk.load(hostPath.toString());
-                VDiskFile rootDir = new VDiskFile(
-                        String.valueOf(IVirtualDisk.PATH_SEPARATOR), disk);
+				IVirtualDisk disk = VirtualDisk.load(hostPath.toString());
+				VDiskFile rootDir = new VDiskFile(
+						String.valueOf(IVirtualDisk.PATH_SEPARATOR), disk);
 
-                caller.setCurrentLocation(rootDir);
+				caller.setCurrentLocation(rootDir);
 
-            } catch (IOException e) {
-                caller.write(e);
-            }
-        } else {
-            caller.writeln("expected one parameter, %s given", params.length);
-        }
-    }
+			} catch (IOException e) {
+				caller.write(e);
+			}
+		} else {
+			caller.writeln("expected one parameter, %s given", params.length);
+		}
+	}
 
 }

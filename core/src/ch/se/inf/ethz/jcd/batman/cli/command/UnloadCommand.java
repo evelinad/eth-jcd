@@ -11,28 +11,28 @@ import ch.se.inf.ethz.jcd.batman.io.VDiskFile;
  * 
  */
 public class UnloadCommand implements Command {
-    private static final String[] COMMAND_STRINGS = { "unload", "u" };
+	private static final String[] COMMAND_STRINGS = { "unload", "u" };
 
-    @Override
-    public String[] getAliases() {
-        return UnloadCommand.COMMAND_STRINGS;
-    }
+	@Override
+	public String[] getAliases() {
+		return UnloadCommand.COMMAND_STRINGS;
+	}
 
-    @Override
-    public void execute(CommandLine caller, String alias, String... params) {
-        VDiskFile curLocation = caller.getCurrentLocation();
+	@Override
+	public void execute(CommandLine caller, String alias, String... params) {
+		VDiskFile curLocation = caller.getCurrentLocation();
 
-        if (curLocation == null) {
-            caller.writeln("no disk loaded.");
-        } else {
-            try {
-                curLocation.getDisk().close();
-            } catch (IOException e) {
-                caller.write(e);
-            }
+		if (curLocation == null) {
+			caller.writeln("no disk loaded.");
+		} else {
+			try {
+				curLocation.getDisk().close();
+			} catch (IOException e) {
+				caller.write(e);
+			}
 
-            caller.setCurrentLocation(null);
-        }
-    }
+			caller.setCurrentLocation(null);
+		}
+	}
 
 }

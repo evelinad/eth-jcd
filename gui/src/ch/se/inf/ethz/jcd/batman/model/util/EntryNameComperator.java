@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import ch.se.inf.ethz.jcd.batman.model.Entry;
 
-public class EntryNameComperator implements Comparator<Entry>{
+public class EntryNameComperator implements Comparator<Entry> {
 
 	@Override
 	public int compare(Entry o1, Entry o2) {

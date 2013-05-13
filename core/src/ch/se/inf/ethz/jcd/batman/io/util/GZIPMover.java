@@ -12,27 +12,27 @@ import java.util.zip.GZIPOutputStream;
  * 
  */
 public class GZIPMover implements DataMover {
-    @Override
-    public void importMove(InputStream hostSource, OutputStream virtualTarget)
-            throws IOException {
-        GZIPOutputStream compressedOut = new GZIPOutputStream(virtualTarget);
+	@Override
+	public void importMove(InputStream hostSource, OutputStream virtualTarget)
+			throws IOException {
+		GZIPOutputStream compressedOut = new GZIPOutputStream(virtualTarget);
 
-        DefaultMover.move(hostSource, compressedOut);
+		DefaultMover.move(hostSource, compressedOut);
 
-        compressedOut.finish();
-        compressedOut.close();
-        hostSource.close();
-    }
+		compressedOut.finish();
+		compressedOut.close();
+		hostSource.close();
+	}
 
-    @Override
-    public void exportMove(InputStream virtualSource, OutputStream hostTarget)
-            throws IOException {
-        GZIPInputStream compressedIn = new GZIPInputStream(virtualSource);
+	@Override
+	public void exportMove(InputStream virtualSource, OutputStream hostTarget)
+			throws IOException {
+		GZIPInputStream compressedIn = new GZIPInputStream(virtualSource);
 
-        DefaultMover.move(compressedIn, hostTarget);
+		DefaultMover.move(compressedIn, hostTarget);
 
-        virtualSource.close();
-        hostTarget.close();
-    }
+		virtualSource.close();
+		hostTarget.close();
+	}
 
 }

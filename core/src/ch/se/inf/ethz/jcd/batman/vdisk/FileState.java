@@ -8,15 +8,15 @@ package ch.se.inf.ethz.jcd.batman.vdisk;
  * @see ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDiskEntry
  */
 public enum FileState {
-    /**
-     * Represents a state in which the virtual disk entry is still valid and
-     * available on disk.
-     */
-    CREATED,
+	/**
+	 * Represents a state in which the virtual disk entry is still valid and
+	 * available on disk.
+	 */
+	CREATED,
 
-    /**
-     * Represents a state in which the virtual disk entry is not valid anymore
-     * and not on disk anymore.
-     */
-    DELETED;
+	/**
+	 * Represents a state in which the virtual disk entry is not valid anymore
+	 * and not on disk anymore.
+	 */
+	DELETED;
 }

@@ -14,7 +14,7 @@ public class CreateUserDialog extends ModalDialog {
 	private final TextField hostField;
 	private final TextField userNameField;
 	private final PasswordField passwordField;
-	
+
 	public CreateUserDialog() {
 		super();
 		setTitle("Create User");
@@ -28,8 +28,8 @@ public class CreateUserDialog extends ModalDialog {
 				}
 			}
 		};
-		
-		//Create host field
+
+		// Create host field
 		Label hostLabel = new Label("Host");
 		getContainer().add(hostLabel, 0, 0);
 
@@ -37,22 +37,22 @@ public class CreateUserDialog extends ModalDialog {
 		hostField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(hostField, 1, 0);
 
-		//Create userName field
+		// Create userName field
 		Label userNameLabel = new Label("Username");
 		getContainer().add(userNameLabel, 0, 1);
 
 		userNameField = new TextField();
 		userNameField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(userNameField, 1, 1);
-		
-		//Create password field
+
+		// Create password field
 		Label passwordLabel = new Label("Password");
 		getContainer().add(passwordLabel, 0, 2);
 
 		passwordField = new PasswordField();
 		passwordField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(passwordField, 1, 2);
-		
+
 		Button okButton = new Button("Create");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -81,11 +81,11 @@ public class CreateUserDialog extends ModalDialog {
 	public String getHost() {
 		return hostField.getText();
 	}
-	
+
 	public String getUserName() {
 		return userNameField.getText();
 	}
-	
+
 	public String getPassword() {
 		return passwordField.getText();
 	}

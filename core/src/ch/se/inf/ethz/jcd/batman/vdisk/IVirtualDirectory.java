@@ -11,34 +11,34 @@ import java.io.IOException;
  * list.
  */
 public interface IVirtualDirectory extends IVirtualDiskEntry {
-    /**
-     * Removes the given member from the directory.
-     * 
-     * @param member
-     *            member to remove from the directory
-     * @throws VirtualDiskException
-     *             if the member is not part of this directory
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    void removeMember(IVirtualDiskEntry member) throws VirtualDiskException,
-            IOException;
+	/**
+	 * Removes the given member from the directory.
+	 * 
+	 * @param member
+	 *            member to remove from the directory
+	 * @throws VirtualDiskException
+	 *             if the member is not part of this directory
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	void removeMember(IVirtualDiskEntry member) throws VirtualDiskException,
+			IOException;
 
-    /**
-     * Adds the given member to the list.
-     * 
-     * @param member
-     *            member to add to the list
-     */
-    void addMember(IVirtualDiskEntry member) throws IOException;
+	/**
+	 * Adds the given member to the list.
+	 * 
+	 * @param member
+	 *            member to add to the list
+	 */
+	void addMember(IVirtualDiskEntry member) throws IOException;
 
-    /**
-     * Returns the first member of the list.
-     * 
-     * @see IVirtualDiskEntry#getNextEntry()
-     * @return the first member of the list.
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    IVirtualDiskEntry getFirstMember() throws IOException;
+	/**
+	 * Returns the first member of the list.
+	 * 
+	 * @see IVirtualDiskEntry#getNextEntry()
+	 * @return the first member of the list.
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 */
+	IVirtualDiskEntry getFirstMember() throws IOException;
 }

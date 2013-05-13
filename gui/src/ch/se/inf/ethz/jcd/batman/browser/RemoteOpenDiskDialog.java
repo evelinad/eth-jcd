@@ -5,8 +5,6 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
-import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -22,12 +20,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 
 public class RemoteOpenDiskDialog extends ModalDialog {
 
 	private final static String LOCAL = "Local  ";
 	private final static String SERVER = "Server";
-	
+
 	private final Label connectToLabel = new Label("Connect to");
 	private final ToggleGroup group;
 
@@ -52,15 +51,17 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		setTitle("Open Disk");
 
 		group = new ToggleGroup();
-		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
-		    public void changed(ObservableValue<? extends Toggle> ov,
-		        Toggle oldToggle, Toggle newToggle) {
-		            if (group.getSelectedToggle() != null) {
-		            	setToggle(group.getSelectedToggle().getUserData().toString());
-		            }                
-		        }
-		});
-		
+		group.selectedToggleProperty().addListener(
+				new ChangeListener<Toggle>() {
+					public void changed(ObservableValue<? extends Toggle> ov,
+							Toggle oldToggle, Toggle newToggle) {
+						if (group.getSelectedToggle() != null) {
+							setToggle(group.getSelectedToggle().getUserData()
+									.toString());
+						}
+					}
+				});
+
 		RadioButton localRadioButton = new RadioButton(LOCAL);
 		localRadioButton.setUserData(LOCAL);
 		localRadioButton.setToggleGroup(group);
@@ -71,12 +72,12 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		radioLayout.getChildren().add(localRadioButton);
 		radioLayout.getChildren().add(serverRadioButton);
 		getContainer().addRow(0, connectToLabel, radioLayout);
-		
+
 		localNodes.add(localHostLabel);
 		localNodes.add(localHostField);
 		localNodes.add(localDiskPathLabel);
 		localNodes.add(localDiskPathField);
-		
+
 		serverNodes.add(serverHostLabel);
 		serverNodes.add(serverHostField);
 		serverNodes.add(serverUserNameLabel);
@@ -85,7 +86,7 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 		serverNodes.add(serverPasswordField);
 		serverNodes.add(serverDiskNameLabel);
 		serverNodes.add(serverDiskNameField);
-		
+
 		EventHandler<KeyEvent> closeEventHandler = new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -95,14 +96,14 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 				}
 			}
 		};
-		
+
 		localHostField.setOnKeyPressed(closeEventHandler);
 		localDiskPathField.setOnKeyPressed(closeEventHandler);
 		serverHostField.setOnKeyPressed(closeEventHandler);
 		serverUserNameField.setOnKeyPressed(closeEventHandler);
 		serverPasswordField.setOnKeyPressed(closeEventHandler);
 		serverDiskNameField.setOnKeyPressed(closeEventHandler);
-		
+
 		Button okButton = new Button("Connect");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -146,15 +147,21 @@ public class RemoteOpenDiskDialog extends ModalDialog {
 			sizeToScene();
 		}
 	}
-	
-	public URI getUri () throws URISyntaxException {
+
+	public URI getUri() throws URISyntaxException {
 		String toggle = group.getSelectedToggle().getUserData().toString();
 		if (LOCAL.equals(toggle)) {
-			return new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + localHostField.getText() + "?" + localDiskPathField.getText());
+			return new URI(TaskControllerFactory.REMOTE_SCHEME + "://"
+					+ localHostField.getText() + "?"
+					+ localDiskPathField.getText());
 		} else if (SERVER.equals(toggle)) {
-			return new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + serverUserNameField.getText() + ":" + serverPasswordField.getText() + "@" + serverHostField.getText() + "?" + serverDiskNameField.getText());
+			return new URI(TaskControllerFactory.REMOTE_SCHEME + "://"
+					+ serverUserNameField.getText() + ":"
+					+ serverPasswordField.getText() + "@"
+					+ serverHostField.getText() + "?"
+					+ serverDiskNameField.getText());
 		}
 		return new URI("");
 	}
-	
+
 }

@@ -1,6 +1,10 @@
 package ch.se.inf.ethz.jcd.batman.vdisk;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,54 +16,58 @@ import ch.se.inf.ethz.jcd.batman.vdisk.impl.VirtualDisk;
 import ch.se.inf.ethz.jcd.batman.vdisk.util.VirtualDiskUtil;
 
 public class VirtualDiskTest extends NewDiskPerTest {
-    
-	@Test(expected=IllegalArgumentException.class)
-	public void invalidCreateAlreadyExistsTest () throws IOException {
+
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidCreateAlreadyExistsTest() throws IOException {
 		VirtualDisk.create(disk.getHostLocation().getPath());
 	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void invalidLoadDoesNotExistTest () throws IOException {
+
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidLoadDoesNotExistTest() throws IOException {
 		VirtualDisk.load("notexistingfile.vdisk");
 	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void invalidLoadCorruptDetaTest () throws IOException {
+
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidLoadCorruptDetaTest() throws IOException {
 		File corruptDisk = new File("corruptdisk.vdisk");
 		corruptDisk.createNewFile();
 		try {
-			VirtualDisk.load("corruptdisk.vdisk");	
+			VirtualDisk.load("corruptdisk.vdisk");
 		} finally {
 			corruptDisk.delete();
 		}
 	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void invalidLoadWrontTypeTest () throws IOException {
-		RandomAccessFile corruptDisk = new RandomAccessFile("wrongType.vdisk", "rw");
+
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidLoadWrontTypeTest() throws IOException {
+		RandomAccessFile corruptDisk = new RandomAccessFile("wrongType.vdisk",
+				"rw");
 		corruptDisk.setLength(1000);
 		corruptDisk.close();
 		try {
-			VirtualDisk.load("wrongType.vdisk");	
+			VirtualDisk.load("wrongType.vdisk");
 		} finally {
 			File deleteFile = new File("wrongType.vdisk");
 			deleteFile.delete();
 		}
 	}
-	
+
 	@Test()
-	public void createFileTest () throws IOException {
+	public void createFileTest() throws IOException {
 		IVirtualFile file = disk.createFile(null, "foo", 100);
 		assertEquals(null, file.getParent());
 		disk.getRootDirectory().addMember(file);
 		assertEquals(disk.getRootDirectory(), file.getParent());
 	}
-	
+
 	@Test()
-	public void freeListTest () throws IOException {
-		IVirtualFile file1 = disk.createFile(disk.getRootDirectory(), "foo1", 100);
-		IVirtualFile file2 = disk.createFile(disk.getRootDirectory(), "foo2", 150);
-		IVirtualFile file3 = disk.createFile(disk.getRootDirectory(), "foo3", 100);
+	public void freeListTest() throws IOException {
+		IVirtualFile file1 = disk.createFile(disk.getRootDirectory(), "foo1",
+				100);
+		IVirtualFile file2 = disk.createFile(disk.getRootDirectory(), "foo2",
+				150);
+		IVirtualFile file3 = disk.createFile(disk.getRootDirectory(), "foo3",
+				100);
 		disk.createFile(disk.getRootDirectory(), "foo4", 100);
 		long maxDiskSize = disk.getSize();
 		file1.delete();
@@ -68,59 +76,60 @@ public class VirtualDiskTest extends NewDiskPerTest {
 		disk.createFile(disk.getRootDirectory(), "foo5", 150);
 		assertTrue(disk.getSize() <= maxDiskSize);
 	}
-	
+
 	/**
-     * Creates a directory structure of the following form: <code>
-     * / --> /A/ --> /A/Asub/ --> /A/Asub/AsubSub/
-     *   \--> /B/ --> /B/BSub/
-     * </code>
-     * 
-     * After that the disk is closed and loaded again, to check if the directory
-     * structure is still correct.
-     * 
-     * @throws IOException
-     */
-    @Test
-    public void directoryStructureCloseLoadTest() throws IOException {
-        IVirtualDirectory dirA = disk.createDirectory(disk.getRootDirectory(),
-                "A");
-        IVirtualDirectory dirB = disk.createDirectory(disk.getRootDirectory(),
-                "B");
-        IVirtualDirectory dirASub = disk.createDirectory(dirA, "Asub");
-        IVirtualDirectory dirBSub = disk.createDirectory(dirB, "Bsub");
-        IVirtualDirectory dirASubSub = disk.createDirectory(dirASub, "AsubSub");
+	 * Creates a directory structure of the following form: <code>
+	 * / --> /A/ --> /A/Asub/ --> /A/Asub/AsubSub/
+	 *   \--> /B/ --> /B/BSub/
+	 * </code>
+	 * 
+	 * After that the disk is closed and loaded again, to check if the directory
+	 * structure is still correct.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void directoryStructureCloseLoadTest() throws IOException {
+		IVirtualDirectory dirA = disk.createDirectory(disk.getRootDirectory(),
+				"A");
+		IVirtualDirectory dirB = disk.createDirectory(disk.getRootDirectory(),
+				"B");
+		IVirtualDirectory dirASub = disk.createDirectory(dirA, "Asub");
+		IVirtualDirectory dirBSub = disk.createDirectory(dirB, "Bsub");
+		IVirtualDirectory dirASubSub = disk.createDirectory(dirASub, "AsubSub");
 
-        disk.close();
-        disk = null; // just to make sure
+		disk.close();
+		disk = null; // just to make sure
 
-        disk = VirtualDisk.load(diskFile.getPath());
-        assertNotNull(disk);
+		disk = VirtualDisk.load(diskFile.getPath());
+		assertNotNull(disk);
 
-        IVirtualDiskEntry loadedDirB = VirtualDiskUtil.getDirectoryMember(
-                disk.getRootDirectory(), dirB.getName());
-        assertNotNull(loadedDirB);
+		IVirtualDiskEntry loadedDirB = VirtualDiskUtil.getDirectoryMember(
+				disk.getRootDirectory(), dirB.getName());
+		assertNotNull(loadedDirB);
 
-        IVirtualDiskEntry loadedDirA = VirtualDiskUtil.getDirectoryMember(
-                disk.getRootDirectory(), dirA.getName());
-        assertNotNull(loadedDirA);
+		IVirtualDiskEntry loadedDirA = VirtualDiskUtil.getDirectoryMember(
+				disk.getRootDirectory(), dirA.getName());
+		assertNotNull(loadedDirA);
 
-        IVirtualDiskEntry loadedDirASub = VirtualDiskUtil.getDirectoryMember(
-                (IVirtualDirectory) loadedDirA, dirASub.getName());
-        assertNotNull(loadedDirASub);
+		IVirtualDiskEntry loadedDirASub = VirtualDiskUtil.getDirectoryMember(
+				(IVirtualDirectory) loadedDirA, dirASub.getName());
+		assertNotNull(loadedDirASub);
 
-        assertNotNull(VirtualDiskUtil.getDirectoryMember(
-                (IVirtualDirectory) loadedDirASub, dirASubSub.getName()));
+		assertNotNull(VirtualDiskUtil.getDirectoryMember(
+				(IVirtualDirectory) loadedDirASub, dirASubSub.getName()));
 
-        assertNotNull(VirtualDiskUtil.getDirectoryMember(
-                (IVirtualDirectory) loadedDirB, dirBSub.getName()));
-    }
-    
-    /**
-     * Tests if the allocated block have the required size.
-     * @throws IOException
-     */
-    @Test
-    public void blockAllocationSizeTest() throws IOException {
+		assertNotNull(VirtualDiskUtil.getDirectoryMember(
+				(IVirtualDirectory) loadedDirB, dirBSub.getName()));
+	}
+
+	/**
+	 * Tests if the allocated block have the required size.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void blockAllocationSizeTest() throws IOException {
 		IDataBlock[] allocateBlock = disk.allocateBlock(100);
 		long blockSize = 0;
 		for (IDataBlock block : allocateBlock) {
@@ -246,39 +255,41 @@ public class VirtualDiskTest extends NewDiskPerTest {
 		assertFalse(subSubDir2.exists());
 		assertNull(disk.getRootDirectory().getFirstMember());
 	}
-	
+
 	@Test
 	public void sameDirectoryNameExceptionTest() throws IOException {
-	    IVirtualDirectory dir = disk.createDirectory(disk.getRootDirectory(), "samename");
-	    
-	    boolean exceptionCatched = false;
-	    try {
-	        disk.createDirectory(disk.getRootDirectory(), "samename");
-	    } catch (VirtualDiskException ex) {
-	        exceptionCatched = true;
-	    } finally {
-	        dir.delete();
-	        
-	        assertTrue(exceptionCatched);
-	    }
+		IVirtualDirectory dir = disk.createDirectory(disk.getRootDirectory(),
+				"samename");
+
+		boolean exceptionCatched = false;
+		try {
+			disk.createDirectory(disk.getRootDirectory(), "samename");
+		} catch (VirtualDiskException ex) {
+			exceptionCatched = true;
+		} finally {
+			dir.delete();
+
+			assertTrue(exceptionCatched);
+		}
 	}
-	
+
 	@Test
 	public void freeOccupiedTest() throws IOException {
-	    long diskStartSize = disk.getSize();
+		long diskStartSize = disk.getSize();
 		assertEquals(disk.getSize(), disk.getOccupiedSpace());
-	    assertEquals(0, disk.getFreeSpace());
-	    IDataBlock[] allocateBlock = disk.allocateBlock(200);
-	    long totalAllocatedBlockSize = 0;
-	    for (IDataBlock block : allocateBlock) {
-	    	totalAllocatedBlockSize += block.getDiskSize();
-	    }
-	    assertEquals(0, disk.getFreeSpace());
-	    assertEquals(diskStartSize + totalAllocatedBlockSize, disk.getOccupiedSpace());
-	    for (IDataBlock block : allocateBlock) {
-	    	block.free();
-	    }
-	    assertEquals(diskStartSize, disk.getOccupiedSpace());
-	    assertEquals(0, disk.getFreeSpace());
+		assertEquals(0, disk.getFreeSpace());
+		IDataBlock[] allocateBlock = disk.allocateBlock(200);
+		long totalAllocatedBlockSize = 0;
+		for (IDataBlock block : allocateBlock) {
+			totalAllocatedBlockSize += block.getDiskSize();
+		}
+		assertEquals(0, disk.getFreeSpace());
+		assertEquals(diskStartSize + totalAllocatedBlockSize,
+				disk.getOccupiedSpace());
+		for (IDataBlock block : allocateBlock) {
+			block.free();
+		}
+		assertEquals(diskStartSize, disk.getOccupiedSpace());
+		assertEquals(0, disk.getFreeSpace());
 	}
 }

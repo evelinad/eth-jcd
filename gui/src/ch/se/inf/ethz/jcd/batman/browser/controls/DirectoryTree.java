@@ -72,8 +72,9 @@ public class DirectoryTree extends TreeView<String> implements
 		private ObservableList<TreeItem<String>> buildChildren(
 				final TreeItem<String> treeItem) {
 			Path path = new Path(getPath(treeItem));
-			final UpdateableTask<Entry[]> entriesTask = guiState.getController()
-					.createDirectoryEntriesTask(new Directory(path));
+			final UpdateableTask<Entry[]> entriesTask = guiState
+					.getController().createDirectoryEntriesTask(
+							new Directory(path));
 			final ObservableList<TreeItem<String>> childDirectories = FXCollections
 					.observableArrayList();
 			new TaskDialog(guiState, entriesTask) {
@@ -172,7 +173,8 @@ public class DirectoryTree extends TreeView<String> implements
 		ObservableList<TreeItem<String>> childrenList = parent.getChildren();
 		int index;
 		for (index = 0; index < childrenList.size(); index++) {
-			if (childName.compareTo(childrenList.get(index).getValue().toLowerCase()) < 0) {
+			if (childName.compareTo(childrenList.get(index).getValue()
+					.toLowerCase()) < 0) {
 				break;
 			}
 		}

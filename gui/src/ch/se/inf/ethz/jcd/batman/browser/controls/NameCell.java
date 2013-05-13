@@ -65,7 +65,8 @@ public class NameCell extends EntryCell<Entry, Entry> {
 					Entry clone = null;
 					try {
 						clone = (Entry) editingItem.clone();
-					} catch (CloneNotSupportedException e) { }
+					} catch (CloneNotSupportedException e) {
+					}
 					clone.getPath().changeName(textField.getText());
 					commitEdit(clone);
 					event.consume();
@@ -83,7 +84,8 @@ public class NameCell extends EntryCell<Entry, Entry> {
 					Entry clone = null;
 					try {
 						clone = (Entry) editingItem.clone();
-					} catch (CloneNotSupportedException e) { }
+					} catch (CloneNotSupportedException e) {
+					}
 					clone.getPath().changeName(textField.getText());
 					commitEdit(clone);
 				}
@@ -98,8 +100,8 @@ public class NameCell extends EntryCell<Entry, Entry> {
 		if (!newValue.getPath().equals(editingItem.getPath())) {
 			Entry[] sourceEntries = new Entry[] { editingItem };
 			Path[] destinationPaths = new Path[] { newValue.getPath() };
-			UpdateableTask<Void> moveTask = guiState.getController().createMoveTask(
-					sourceEntries, destinationPaths);
+			UpdateableTask<Void> moveTask = guiState.getController()
+					.createMoveTask(sourceEntries, destinationPaths);
 			new TaskDialog(guiState, moveTask);
 		}
 		createContent(editingItem);

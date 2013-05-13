@@ -34,9 +34,9 @@ public interface IVirtualDisk extends AutoCloseable, Closeable {
 	IVirtualDirectory getRootDirectory();
 
 	byte[] getAdditionalDiskInformation() throws IOException;
-	
+
 	void saveAdditionalDiskInformation(byte[] information) throws IOException;
-	
+
 	/**
 	 * Returns the size in bytes used to store the virtual disk.
 	 * 

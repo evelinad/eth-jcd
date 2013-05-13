@@ -15,7 +15,7 @@ public class LinkDiskDialog extends ModalDialog {
 	private final TextField userNameField;
 	private final PasswordField passwordField;
 	private final TextField diskNameField;
-	
+
 	public LinkDiskDialog() {
 		super();
 		setTitle("Link Disk");
@@ -29,8 +29,8 @@ public class LinkDiskDialog extends ModalDialog {
 				}
 			}
 		};
-		
-		//Create host field
+
+		// Create host field
 		Label uriLabel = new Label("Host");
 		getContainer().add(uriLabel, 0, 0);
 
@@ -38,30 +38,30 @@ public class LinkDiskDialog extends ModalDialog {
 		hostField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(hostField, 1, 0);
 
-		//Create userNname field
+		// Create userNname field
 		Label userNameLabel = new Label("Username");
 		getContainer().add(userNameLabel, 0, 1);
 
 		userNameField = new TextField();
 		userNameField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(userNameField, 1, 1);
-		
-		//Create password field
+
+		// Create password field
 		Label passwordLabel = new Label("Password");
 		getContainer().add(passwordLabel, 0, 2);
 
 		passwordField = new PasswordField();
 		passwordField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(passwordField, 1, 2);
-		
-		//Create diskName field
+
+		// Create diskName field
 		Label diskNameLabel = new Label("Diskname");
 		getContainer().add(diskNameLabel, 0, 3);
 
 		diskNameField = new TextField();
 		diskNameField.setOnKeyPressed(closeEventHandler);
 		getContainer().add(diskNameField, 1, 3);
-		
+
 		Button okButton = new Button("Connect");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -90,15 +90,15 @@ public class LinkDiskDialog extends ModalDialog {
 	public String getHost() {
 		return hostField.getText();
 	}
-	
+
 	public String getUserName() {
 		return userNameField.getText();
 	}
-	
+
 	public String getPassword() {
 		return passwordField.getText();
 	}
-	
+
 	public String getDiskName() {
 		return diskNameField.getText();
 	}

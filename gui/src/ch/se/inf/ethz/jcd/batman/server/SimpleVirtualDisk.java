@@ -13,7 +13,8 @@ import ch.se.inf.ethz.jcd.batman.vdisk.VirtualDiskException;
  * later used to identify the disk on which an operation is executed.
  * 
  */
-public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtualDisk {
+public class SimpleVirtualDisk extends RemoteVirtualDisk implements
+		ISimpleVirtualDisk {
 
 	@Override
 	public int createDisk(String path) throws RemoteException,
@@ -21,27 +22,29 @@ public class SimpleVirtualDisk extends RemoteVirtualDisk implements ISimpleVirtu
 		try {
 			return createDiskImpl(path);
 		} catch (IOException e) {
-			throw new VirtualDiskException("Could not create disk at "
-					+ path, e);
+			throw new VirtualDiskException("Could not create disk at " + path,
+					e);
 		}
 	}
 
 	@Override
-	public int loadDisk(String path) throws RemoteException, VirtualDiskException {
+	public int loadDisk(String path) throws RemoteException,
+			VirtualDiskException {
 		try {
 			return loadDiskImpl(path);
 		} catch (IOException e) {
-			throw new VirtualDiskException("Could not load disk at "
-					+ path, e);
+			throw new VirtualDiskException("Could not load disk at " + path, e);
 		}
 	}
 
 	@Override
 	public void deleteDisk(String path) throws RemoteException,
 			VirtualDiskException {
-		LoadedDisk disk = getPathToDiskMap().get(new java.io.File(path).toURI());
+		LoadedDisk disk = getPathToDiskMap()
+				.get(new java.io.File(path).toURI());
 		if (disk != null && !disk.hasNoIds()) {
-			throw new VirtualDiskException("Could not delete disk, disk still in use");
+			throw new VirtualDiskException(
+					"Could not delete disk, disk still in use");
 		}
 		try {
 			java.io.File diskFile = new java.io.File(path);

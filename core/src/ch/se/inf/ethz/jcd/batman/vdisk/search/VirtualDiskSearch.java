@@ -67,18 +67,18 @@ public class VirtualDiskSearch {
 
 		for (VDiskFile parent : parents) {
 			VDiskFile[] children = parent.listFiles();
-			for(VDiskFile child : children) {
+			for (VDiskFile child : children) {
 				boolean check = settings.isCheckFiles() && child.isFile()
 						|| settings.isCheckFolders() && child.isDirectory();
-				
-				if(check) {
-					if(term.matcher(child.getName()).find()) {
+
+				if (check) {
+					if (term.matcher(child.getName()).find()) {
 						foundEntries.add(child);
 					}
 				}
 			}
-			
-			if(settings.isCheckSubFolders()) {
+
+			if (settings.isCheckSubFolders()) {
 				foundEntries.addAll(searchName(settings, term, children));
 			}
 		}

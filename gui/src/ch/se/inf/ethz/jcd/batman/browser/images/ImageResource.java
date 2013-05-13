@@ -15,15 +15,15 @@ public final class ImageResource {
 
 	public static ImageResource getImageResource() {
 		ImageResource result = instance;
-        if (result == null) {
-            synchronized(ImageResource.class) {
-                result = instance;
-                if (result == null) {
-                    instance = result = new ImageResource();
-                }
-            }
-        }
-        return result;
+		if (result == null) {
+			synchronized (ImageResource.class) {
+				result = instance;
+				if (result == null) {
+					instance = result = new ImageResource();
+				}
+			}
+		}
+		return result;
 	}
 
 	private final Image up;

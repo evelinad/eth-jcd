@@ -23,7 +23,7 @@ public interface IRemoteVirtualDisk extends Remote {
 	 * @throws VirtualDiskException
 	 */
 	void unloadDisk(int id) throws RemoteException, VirtualDiskException;
-	
+
 	/**
 	 * Returns the amount of free space inside the virtual disk.
 	 * 
@@ -260,17 +260,22 @@ public interface IRemoteVirtualDisk extends Remote {
 			boolean checkChildren, Entry[] parents) throws RemoteException,
 			VirtualDiskException;
 
-	byte[] getAdditionalDiskInformation(int id) throws RemoteException, VirtualDiskException;
-	
-	void saveAdditionalDiskInformation(int id, byte[] information) throws RemoteException, VirtualDiskException;
-	
-	Entry updateLastModified(int id, Entry entry, long newTimestamp) throws RemoteException, VirtualDiskException;
-	
-	void registerClient(int id, IRemoteDiskClient client) throws RemoteException;
-	
-	void unregisterClient(int id, IRemoteDiskClient client) throws RemoteException;
-	
+	byte[] getAdditionalDiskInformation(int id) throws RemoteException,
+			VirtualDiskException;
+
+	void saveAdditionalDiskInformation(int id, byte[] information)
+			throws RemoteException, VirtualDiskException;
+
+	Entry updateLastModified(int id, Entry entry, long newTimestamp)
+			throws RemoteException, VirtualDiskException;
+
+	void registerClient(int id, IRemoteDiskClient client)
+			throws RemoteException;
+
+	void unregisterClient(int id, IRemoteDiskClient client)
+			throws RemoteException;
+
 	void acquireLock(int id) throws RemoteException, InterruptedException;
-	
+
 	void releaseLock(int id) throws RemoteException;
 }

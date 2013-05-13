@@ -37,7 +37,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 	private final TableColumn<Entry, Entry> nameColumn;
 	private final GuiState guiState;
 	private Directory directory;
-	
+
 	public EntryView(final GuiState guiState) {
 		this.guiState = guiState;
 		guiState.addDirectoryListener(this);
@@ -164,8 +164,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		getSortOrder().add(nameColumn);
 		nameColumn.setSortType(SortType.ASCENDING);
 	}
-	
-	public void editSelected () {
+
+	public void editSelected() {
 		Entry[] selected = getSelectedEntries();
 		if (selected.length > 0) {
 			setEditable(true);
@@ -174,7 +174,7 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		}
 
 	}
-	
+
 	protected void clear() {
 		getItems().clear();
 	}
@@ -205,9 +205,10 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 		if (directory != null) {
 			if (directory instanceof SearchDirectory) {
 				SearchDirectory search = (SearchDirectory) directory;
-				final UpdateableTask<Entry[]> searchTask = guiState.getController()
-						.createSearchTask(search.getTerm(), search.isRegex(),
-								search.isCheckFiles(), search.isCheckFolders(),
+				final UpdateableTask<Entry[]> searchTask = guiState
+						.getController().createSearchTask(search.getTerm(),
+								search.isRegex(), search.isCheckFiles(),
+								search.isCheckFolders(),
 								search.isCaseSensitive(),
 								search.isCheckChildren(),
 								new Directory(search.getPath()));
@@ -217,8 +218,8 @@ public class EntryView extends TableView<Entry> implements DirectoryListener,
 					}
 				};
 			} else {
-				final UpdateableTask<Entry[]> entriesTask = guiState.getController()
-						.createDirectoryEntriesTask(directory);
+				final UpdateableTask<Entry[]> entriesTask = guiState
+						.getController().createDirectoryEntriesTask(directory);
 				new TaskDialog(guiState, entriesTask) {
 					protected void succeeded(WorkerStateEvent event) {
 						setEntries(entriesTask.getValue());

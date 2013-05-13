@@ -52,24 +52,28 @@ public class RemoteTaskController implements TaskController {
 		}
 
 		@Override
-		public void entryAdded(Entry entry) throws RemoteException, VirtualDiskException {
+		public void entryAdded(Entry entry) throws RemoteException,
+				VirtualDiskException {
 			RemoteTaskController.this.entryAdded(entry);
 		}
 
 		@Override
-		public void entryDeleted(Entry entry) throws RemoteException, VirtualDiskException {
+		public void entryDeleted(Entry entry) throws RemoteException,
+				VirtualDiskException {
 			RemoteTaskController.this.entryDeleted(entry);
 		}
 
 		@Override
-		public void entryChanged(Entry oldEntry, Entry newEntry) throws RemoteException, VirtualDiskException {
+		public void entryChanged(Entry oldEntry, Entry newEntry)
+				throws RemoteException, VirtualDiskException {
 			RemoteTaskController.this.entryChanged(oldEntry, newEntry);
 		}
 
 		@Override
 		public void entryCopied(Entry sourceEntry, Entry destinationEntry)
 				throws RemoteException, VirtualDiskException {
-			RemoteTaskController.this.entryCopied(sourceEntry, destinationEntry);
+			RemoteTaskController.this
+					.entryCopied(sourceEntry, destinationEntry);
 		}
 
 		@Override
@@ -77,68 +81,70 @@ public class RemoteTaskController implements TaskController {
 				throws RemoteException, VirtualDiskException {
 			RemoteTaskController.this.writeToEntry(file, fileOffset, data);
 		}
-		
+
 		public void unexportRmiObject() throws NoSuchObjectException {
 			UnicastRemoteObject.unexportObject(this, false);
 		}
-		
+
 	}
-	
+
 	private static final String ACQUIRE_LOCK = "Acquiring lock...";
 	private static final String RELEASE_LOCK = "Releasing lock...";
 	private static final String TASK_DISCOVER_ITEMS = "Discover items";
 	private static final String UPDATE_TO = " to ";
-	
+
 	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
 	protected static final int BUFFER_SIZE = RemoteConnectionUtil.BUFFER_SIZE;
 
-	protected static boolean isServerUri (URI uri) {
+	protected static boolean isServerUri(URI uri) {
 		return uri.getUserInfo() != null;
 	}
-	
-	protected static String getUserName (URI uri) throws AuthenticationException {
+
+	protected static String getUserName(URI uri) throws AuthenticationException {
 		String[] splitUserInfo = uri.getUserInfo().split(":");
 		if (splitUserInfo.length != 2) {
 			throw new AuthenticationException("Invalid user info");
 		}
 		return splitUserInfo[0];
 	}
-	
-	protected static String getPassword (URI uri) throws AuthenticationException {
+
+	protected static String getPassword(URI uri) throws AuthenticationException {
 		String[] splitUserInfo = uri.getUserInfo().split(":");
 		if (splitUserInfo.length != 2) {
 			throw new AuthenticationException("Invalid user info");
 		}
 		return splitUserInfo[1];
 	}
-	
+
 	protected static String getHost(URI uri) {
 		return uri.getHost();
 	}
-	
+
 	protected static String getDiskPath(URI uri) {
 		return uri.getQuery();
 	}
-	
-	protected static IRemoteVirtualDisk getRemoteVirtualDisk(URI uri) throws RemoteException, NotBoundException {
+
+	protected static IRemoteVirtualDisk getRemoteVirtualDisk(URI uri)
+			throws RemoteException, NotBoundException {
 		Registry registry;
 		if (uri.getPort() == -1) {
 			registry = LocateRegistry.getRegistry(getHost(uri));
 		} else {
-			registry = LocateRegistry.getRegistry(getHost(uri),
-					uri.getPort());
+			registry = LocateRegistry.getRegistry(getHost(uri), uri.getPort());
 		}
 		if (isServerUri(uri)) {
 			return (IRemoteVirtualDisk) registry
 					.lookup(SYNCHRONIZE_SERVICE_NAME);
 		} else {
-			return (IRemoteVirtualDisk) registry
-					.lookup(DIKS_SERVICE_NAME);
+			return (IRemoteVirtualDisk) registry.lookup(DIKS_SERVICE_NAME);
 		}
 	}
-	
-	protected static RemoteConnection connect (URI uri, boolean createNewIfNecessary) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException {
+
+	protected static RemoteConnection connect(URI uri,
+			boolean createNewIfNecessary) throws AuthenticationException,
+			RemoteException, VirtualDiskException, ConnectionException,
+			NotBoundException {
 		IRemoteVirtualDisk remoteVirtualDisk = getRemoteVirtualDisk(uri);
 		RemoteConnection connection = new RemoteConnection();
 		if (isServerUri(uri)) {
@@ -148,32 +154,34 @@ public class RemoteTaskController implements TaskController {
 			String userName = getUserName(uri);
 			String password = getPassword(uri);
 			if (synchronizeServer.diskExists(userName, diskName)) {
-				connection.setDiskId(synchronizeServer.loadDisk(userName, password, diskName));
+				connection.setDiskId(synchronizeServer.loadDisk(userName,
+						password, diskName));
 			} else {
 				if (createNewIfNecessary) {
-					connection.setDiskId(synchronizeServer.createDisk(userName, password, diskName));
+					connection.setDiskId(synchronizeServer.createDisk(userName,
+							password, diskName));
 				} else {
-					throw new ConnectionException(
-							"Disk does not exist.");
+					throw new ConnectionException("Disk does not exist.");
 				}
 			}
 		} else {
 			ISimpleVirtualDisk simpleVirtualDisk = (ISimpleVirtualDisk) remoteVirtualDisk;
 			connection.setDisk(simpleVirtualDisk);
 			if (simpleVirtualDisk.diskExists(getDiskPath(uri))) {
-				connection.setDiskId(simpleVirtualDisk.loadDisk(getDiskPath(uri)));
+				connection.setDiskId(simpleVirtualDisk
+						.loadDisk(getDiskPath(uri)));
 			} else {
 				if (createNewIfNecessary) {
-					connection.setDiskId(simpleVirtualDisk.createDisk(getDiskPath(uri)));
+					connection.setDiskId(simpleVirtualDisk
+							.createDisk(getDiskPath(uri)));
 				} else {
-					throw new ConnectionException(
-							"Disk does not exist.");
+					throw new ConnectionException("Disk does not exist.");
 				}
 			}
 		}
 		return connection;
 	}
-	
+
 	protected final Comparator<Entry> fileBeforeDirectoryComp = new FileBeforeDirectoryComparator();
 	private final List<DiskEntryListener> diskEntryListener = new LinkedList<DiskEntryListener>();
 
@@ -181,8 +189,9 @@ public class RemoteTaskController implements TaskController {
 	protected RemoteConnection connection;
 	protected RemoteDiskClient rmiClient;
 
-	public RemoteTaskController() { }
-	
+	public RemoteTaskController() {
+	}
+
 	public RemoteTaskController(URI uri) {
 		this.uri = uri;
 	}
@@ -207,10 +216,13 @@ public class RemoteTaskController implements TaskController {
 		return connection.getDisk();
 	}
 
-	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task) throws AuthenticationException, RemoteException, VirtualDiskException, ConnectionException, NotBoundException, InterruptedException {
+	protected void connect(boolean createNewIfNecessary, UpdateableTask<?> task)
+			throws AuthenticationException, RemoteException,
+			VirtualDiskException, ConnectionException, NotBoundException,
+			InterruptedException {
 		connection = connect(uri, createNewIfNecessary);
 	}
-	
+
 	public void close() {
 		if (isConnected()) {
 			try {
@@ -223,44 +235,50 @@ public class RemoteTaskController implements TaskController {
 			}
 		}
 	}
-	
+
 	protected void registerClient() throws RemoteException {
 		if (rmiClient == null) {
 			rmiClient = new RemoteDiskClient();
-			connection.getDisk().registerClient(connection.getDiskId(), rmiClient);
+			connection.getDisk().registerClient(connection.getDiskId(),
+					rmiClient);
 		}
 	}
-	
+
 	protected void unregisterClient() throws RemoteException {
 		if (rmiClient != null) {
-			connection.getDisk().unregisterClient(connection.getDiskId(), rmiClient);
+			connection.getDisk().unregisterClient(connection.getDiskId(),
+					rmiClient);
 			rmiClient.unexportRmiObject();
 			rmiClient = null;
 		}
 	}
-	
+
 	@Override
 	public boolean isConnected() {
 		return connection != null;
 	}
-	
-	protected void unloadDisk () throws RemoteException, VirtualDiskException {
+
+	protected void unloadDisk() throws RemoteException, VirtualDiskException {
 		getRemoteDisk().unloadDisk(getDiskId());
 	}
-	
-	protected void createFile (File file) throws RemoteException, VirtualDiskException {
+
+	protected void createFile(File file) throws RemoteException,
+			VirtualDiskException {
 		getRemoteDisk().createFile(getDiskId(), file);
 	}
 
-	protected void createDirectory (Directory directory) throws RemoteException, VirtualDiskException {
+	protected void createDirectory(Directory directory) throws RemoteException,
+			VirtualDiskException {
 		getRemoteDisk().createDirectory(getDiskId(), directory);
 	}
 
-	protected void deleteEntry (Entry entry) throws RemoteException, VirtualDiskException {
+	protected void deleteEntry(Entry entry) throws RemoteException,
+			VirtualDiskException {
 		getRemoteDisk().deleteEntry(getDiskId(), entry);
 	}
 
-	protected void moveEntry (Entry oldEntry, Entry newEntry) throws RemoteException, VirtualDiskException {
+	protected void moveEntry(Entry oldEntry, Entry newEntry)
+			throws RemoteException, VirtualDiskException {
 		getRemoteDisk().moveEntry(getDiskId(), oldEntry, newEntry);
 	}
 
@@ -268,18 +286,19 @@ public class RemoteTaskController implements TaskController {
 			throws RemoteException, VirtualDiskException {
 		getRemoteDisk().copyEntry(getDiskId(), source, destination);
 	}
-	
+
 	protected Entry importFile(java.io.File file, String destination)
 			throws RemoteException, VirtualDiskException, IOException {
 		return importFile(getRemoteDisk(), getDiskId(), file, destination);
 	}
-	
-	protected Entry importFile(IRemoteVirtualDisk disk, Integer diskId, java.io.File file, String destination)
-			throws RemoteException, VirtualDiskException, IOException {
-		
+
+	protected Entry importFile(IRemoteVirtualDisk disk, Integer diskId,
+			java.io.File file, String destination) throws RemoteException,
+			VirtualDiskException, IOException {
+
 		if (file.isDirectory()) {
-			Directory newDirectory = new Directory(
-					new Path(destination), new Date().getTime());
+			Directory newDirectory = new Directory(new Path(destination),
+					new Date().getTime());
 			disk.createDirectory(diskId, newDirectory);
 			return newDirectory;
 		} else if (file.isFile()) {
@@ -297,11 +316,9 @@ public class RemoteTaskController implements TaskController {
 					int currentBytesRead = inputStream.read(buffer);
 					if (currentBytesRead < buffer.length) {
 						disk.write(diskId, diskFile, bytesRead,
-										Arrays.copyOf(buffer,
-												currentBytesRead));
+								Arrays.copyOf(buffer, currentBytesRead));
 					} else {
-						disk.write(diskId, diskFile, bytesRead,
-								buffer);
+						disk.write(diskId, diskFile, bytesRead, buffer);
 					}
 					bytesToRead -= currentBytesRead;
 					bytesRead += currentBytesRead;
@@ -315,9 +332,10 @@ public class RemoteTaskController implements TaskController {
 		}
 		return null;
 	}
-	
+
 	@Override
-	public UpdateableTask<Void> createConnectTask(final boolean createNewIfNecessary) {
+	public UpdateableTask<Void> createConnectTask(
+			final boolean createNewIfNecessary) {
 		if (isConnected()) {
 			throw new IllegalStateException("Already connected.");
 		}
@@ -325,7 +343,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws ConnectionException, AuthenticationException {
+			protected Void callImpl() throws ConnectionException,
+					AuthenticationException {
 				if (isConnected()) {
 					throw new IllegalStateException("Already connected.");
 				}
@@ -334,8 +353,10 @@ public class RemoteTaskController implements TaskController {
 					updateMessage("Connecting to virtual disk...");
 					connect(createNewIfNecessary, this);
 					registerClient();
-					//Regarding the PMD error, its important to catch all possible exceptions
-					//Because the connection has to be cleaned up if an error occurred
+					// Regarding the PMD error, its important to catch all
+					// possible exceptions
+					// Because the connection has to be cleaned up if an error
+					// occurred
 				} catch (Exception e) {
 					close();
 					throw new ConnectionException(e);
@@ -347,12 +368,14 @@ public class RemoteTaskController implements TaskController {
 	}
 
 	@Override
-	public UpdateableTask<Entry[]> createDirectoryEntriesTask(final Directory directory) {
+	public UpdateableTask<Entry[]> createDirectoryEntriesTask(
+			final Directory directory) {
 		checkIsConnected();
 		return new UpdateableTask<Entry[]>() {
 
 			@Override
-			protected Entry[] callImpl() throws RemoteException, VirtualDiskException {
+			protected Entry[] callImpl() throws RemoteException,
+					VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Retrieve directory entries");
 				updateMessage("Retrieving directory entries...");
@@ -368,7 +391,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long callImpl() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException,
+					VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate free space");
 				updateMessage("Calculating free space...");
@@ -384,7 +408,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long callImpl() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException,
+					VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate occupied space");
 				updateMessage("Calculating occupied space...");
@@ -400,7 +425,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Long>() {
 
 			@Override
-			protected Long callImpl() throws RemoteException, VirtualDiskException {
+			protected Long callImpl() throws RemoteException,
+					VirtualDiskException {
 				checkIsConnected();
 				updateTitle("Calculate used space");
 				updateMessage("Calculating used space...");
@@ -410,23 +436,25 @@ public class RemoteTaskController implements TaskController {
 		};
 	}
 
-	protected void acquireLock(UpdateableTask<?> task) throws RemoteException, InterruptedException {
+	protected void acquireLock(UpdateableTask<?> task) throws RemoteException,
+			InterruptedException {
 		task.updateMessage(ACQUIRE_LOCK);
 		getRemoteDisk().acquireLock(getDiskId());
 	}
-	
+
 	protected void releaseLock(UpdateableTask<?> task) throws RemoteException {
 		task.updateMessage(RELEASE_LOCK);
 		getRemoteDisk().releaseLock(getDiskId());
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createFileTask(final File file) {
 		checkIsConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Create file");
 				acquireLock(this);
@@ -441,14 +469,15 @@ public class RemoteTaskController implements TaskController {
 
 		};
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createDirectoryTask(final Directory directory) {
 		checkIsConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Create directory");
 				acquireLock(this);
@@ -463,14 +492,15 @@ public class RemoteTaskController implements TaskController {
 
 		};
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createDeleteEntriesTask(final Entry[] entries) {
 		checkIsConnected();
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Deleting entries");
 				acquireLock(this);
@@ -486,14 +516,14 @@ public class RemoteTaskController implements TaskController {
 							return null;
 						}
 					}
-	
+
 					int totalEntries = subEntries.size();
 					int currentEntryNumber = 0;
 					updateProgress(0, totalEntries);
 					for (Entry entry : subEntries) {
 						updateMessage("Deleting " + entry.getPath() + " ("
-								+ currentEntryNumber + 1 + " of " + totalEntries
-								+ ")");
+								+ currentEntryNumber + 1 + " of "
+								+ totalEntries + ")");
 						deleteEntry(entry);
 						currentEntryNumber++;
 						updateProgress(currentEntryNumber, totalEntries);
@@ -509,7 +539,7 @@ public class RemoteTaskController implements TaskController {
 
 		};
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createMoveTask(final Entry[] sourceEntries,
 			final Path[] destinationPaths) {
@@ -521,7 +551,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Moving entries");
 				acquireLock(this);
@@ -537,11 +568,12 @@ public class RemoteTaskController implements TaskController {
 						Entry newEntry = null;
 						try {
 							newEntry = (Entry) oldEntry.clone();
-						} catch (CloneNotSupportedException e) { }
+						} catch (CloneNotSupportedException e) {
+						}
 						newEntry.setPath(destinationPaths[i]);
 						newEntry.setTimestamp(new Date().getTime());
-						updateMessage("Moving entry " + oldEntry.getPath() + UPDATE_TO
-								+ newEntry.getPath());
+						updateMessage("Moving entry " + oldEntry.getPath()
+								+ UPDATE_TO + newEntry.getPath());
 						moveEntry(oldEntry, newEntry);
 						if (isCancelled()) {
 							return null;
@@ -560,7 +592,7 @@ public class RemoteTaskController implements TaskController {
 	private String getFilePathAsDiskPath(java.io.File file) {
 		return file.getPath().replaceAll("\\\\", "/");
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createImportTask(final String[] sourcePaths,
 			final Path[] destinationPaths) {
@@ -594,7 +626,7 @@ public class RemoteTaskController implements TaskController {
 							return null;
 						}
 					}
-	
+
 					// import all entries
 					long entriesImported = 0;
 					for (int i = 0; i < sourcePaths.length; i++) {
@@ -603,11 +635,13 @@ public class RemoteTaskController implements TaskController {
 						for (java.io.File file : importFiles[i]) {
 							String entryPath = getFilePathAsDiskPath(file);
 							String destination = destinationPaths[i]
-									+ entryPath.substring(baseFilePath.length(),
+									+ entryPath.substring(
+											baseFilePath.length(),
 											entryPath.length());
-							updateProgress(entriesImported, totalEntriesToImport);
-							updateMessage("Importing entry " + file.toString() + UPDATE_TO
-									+ destination);
+							updateProgress(entriesImported,
+									totalEntriesToImport);
+							updateMessage("Importing entry " + file.toString()
+									+ UPDATE_TO + destination);
 							importFile(file, destination);
 							entriesImported++;
 							if (isCancelled()) {
@@ -648,8 +682,8 @@ public class RemoteTaskController implements TaskController {
 						long bytesToRead = diskFile.getSize();
 						long bytesRead = 0;
 						while (bytesToRead > 0) {
-							byte[] buffer = getRemoteDisk().read(getDiskId(), diskFile,
-									bytesRead,
+							byte[] buffer = getRemoteDisk().read(getDiskId(),
+									diskFile, bytesRead,
 									(int) Math.min(bytesToRead, BUFFER_SIZE));
 							outputStream.write(buffer);
 							bytesToRead -= buffer.length;
@@ -681,13 +715,14 @@ public class RemoteTaskController implements TaskController {
 						exportFiles[i] = new LinkedList<Entry>();
 						exportFiles[i].add(sourceEntries[i]);
 						exportFiles[i].addAll(Arrays.asList(getRemoteDisk()
-								.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
+								.getAllChildrenBelow(getDiskId(),
+										sourceEntries[i])));
 						totalEntriesToImport += exportFiles[i].size();
 						if (isCancelled()) {
 							return null;
 						}
 					}
-	
+
 					// export all entries
 					long entriesExported = 0;
 					for (int i = 0; i < sourceEntries.length; i++) {
@@ -695,9 +730,11 @@ public class RemoteTaskController implements TaskController {
 						for (Entry entry : exportFiles[i]) {
 							String destination = destinationPaths[i]
 									+ entry.getPath()
-											.getRelativePath(baseEntry.getPath())
+											.getRelativePath(
+													baseEntry.getPath())
 											.getPath();
-							updateProgress(entriesExported, totalEntriesToImport);
+							updateProgress(entriesExported,
+									totalEntriesToImport);
 							exportFile(entry, destination);
 							entriesExported++;
 							if (isCancelled()) {
@@ -714,7 +751,7 @@ public class RemoteTaskController implements TaskController {
 
 		};
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createCopyTask(final Entry[] sourceEntries,
 			final Path[] destinationPaths) {
@@ -722,7 +759,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, InterruptedException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, InterruptedException {
 				checkIsConnected();
 				updateTitle("Copy entries");
 				acquireLock(this);
@@ -737,29 +775,33 @@ public class RemoteTaskController implements TaskController {
 						copyFiles[i] = new LinkedList<Entry>();
 						copyFiles[i].add(sourceEntries[i]);
 						copyFiles[i].addAll(Arrays.asList(getRemoteDisk()
-								.getAllChildrenBelow(getDiskId(), sourceEntries[i])));
+								.getAllChildrenBelow(getDiskId(),
+										sourceEntries[i])));
 						totalEntriesToCopy += copyFiles[i].size();
 						if (isCancelled()) {
 							return null;
 						}
 					}
-	
+
 					long entriesExported = 0;
 					for (int i = 0; i < sourceEntries.length; i++) {
 						Entry baseEntry = copyFiles[i].get(0);
 						for (Entry entry : copyFiles[i]) {
 							Path destination = new Path(destinationPaths[i]
 									+ entry.getPath()
-											.getRelativePath(baseEntry.getPath())
+											.getRelativePath(
+													baseEntry.getPath())
 											.getPath());
 							updateProgress(entriesExported, totalEntriesToCopy);
 							Entry newEntry = null;
 							try {
 								newEntry = (Entry) entry.clone();
-							} catch (CloneNotSupportedException e) { }
+							} catch (CloneNotSupportedException e) {
+							}
 							newEntry.setPath(destination);
 							newEntry.setTimestamp(new Date().getTime());
-							updateMessage("Copy entry " + entry.getPath() + UPDATE_TO + newEntry.getPath());
+							updateMessage("Copy entry " + entry.getPath()
+									+ UPDATE_TO + newEntry.getPath());
 							copyEntry(entry, newEntry);
 							entriesExported++;
 							if (isCancelled()) {
@@ -782,7 +824,8 @@ public class RemoteTaskController implements TaskController {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException {
 				close();
 				return null;
 			}
@@ -797,14 +840,16 @@ public class RemoteTaskController implements TaskController {
 			final boolean checkChildren, final Entry... parents) {
 		return new UpdateableTask<Entry[]>() {
 			@Override
-			protected Entry[] callImpl() throws RemoteException, VirtualDiskException {
+			protected Entry[] callImpl() throws RemoteException,
+					VirtualDiskException {
 				checkIsConnected();
 
 				updateTitle(String.format("Searching for '%s'", term));
 				updateMessage("searching...");
 
-				return getRemoteDisk().search(getDiskId(), term, isRegex, checkFiles,
-						checkFolders, isCaseSensitive, checkChildren, parents);
+				return getRemoteDisk().search(getDiskId(), term, isRegex,
+						checkFiles, checkFolders, isCaseSensitive,
+						checkChildren, parents);
 
 			}
 		};
@@ -826,7 +871,8 @@ public class RemoteTaskController implements TaskController {
 		super.finalize();
 	}
 
-	public void entryAdded(final Entry entry) throws RemoteException, VirtualDiskException {
+	public void entryAdded(final Entry entry) throws RemoteException,
+			VirtualDiskException {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -837,8 +883,9 @@ public class RemoteTaskController implements TaskController {
 			}
 		});
 	}
-	
-	public void entryDeleted(final Entry entry) throws RemoteException, VirtualDiskException {
+
+	public void entryDeleted(final Entry entry) throws RemoteException,
+			VirtualDiskException {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -850,7 +897,8 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	public void entryChanged(final Entry oldEntry, final Entry newEntry) throws RemoteException, VirtualDiskException {
+	public void entryChanged(final Entry oldEntry, final Entry newEntry)
+			throws RemoteException, VirtualDiskException {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -862,7 +910,9 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	public void entryCopied(final Entry sourceEntry, final Entry destinationEntry) throws RemoteException, VirtualDiskException {
+	public void entryCopied(final Entry sourceEntry,
+			final Entry destinationEntry) throws RemoteException,
+			VirtualDiskException {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -874,10 +924,11 @@ public class RemoteTaskController implements TaskController {
 		});
 	}
 
-	public void writeToEntry(final File file, final long fileOffset, final byte[] data) throws RemoteException, VirtualDiskException {
-		//ignore
+	public void writeToEntry(final File file, final long fileOffset,
+			final byte[] data) throws RemoteException, VirtualDiskException {
+		// ignore
 	}
-	
+
 	protected void checkIsConnected() {
 		if (!isConnected()) {
 			throw new IllegalStateException("Controller is not connected");
@@ -897,7 +948,8 @@ public class RemoteTaskController implements TaskController {
 
 	private void checkEntriesAlreadyExistOnDisk(final Path[] entries)
 			throws VirtualDiskException, RemoteException {
-		boolean[] entriesExist = getRemoteDisk().entriesExist(getDiskId(), entries);
+		boolean[] entriesExist = getRemoteDisk().entriesExist(getDiskId(),
+				entries);
 		for (int i = 0; i < entries.length; i++) {
 			if (entriesExist[i]) {
 				throw new VirtualDiskException("Destination entry "
@@ -918,12 +970,14 @@ public class RemoteTaskController implements TaskController {
 		}
 	}
 
-	protected void deleteDiskImpl(URI uri) throws VirtualDiskException, RemoteException, AuthenticationException, NotBoundException {
+	protected void deleteDiskImpl(URI uri) throws VirtualDiskException,
+			RemoteException, AuthenticationException, NotBoundException {
 		IRemoteVirtualDisk connection = getRemoteVirtualDisk(uri);
 		if (isServerUri(uri)) {
 			if (connection instanceof ISynchronizeServer) {
 				ISynchronizeServer synchronizeServer = (ISynchronizeServer) connection;
-				synchronizeServer.deleteDisk(getUserName(uri), getPassword(uri), getDiskPath(uri));
+				synchronizeServer.deleteDisk(getUserName(uri),
+						getPassword(uri), getDiskPath(uri));
 			} else {
 				throw new VirtualDiskException("Could not delete disk");
 			}
@@ -936,19 +990,22 @@ public class RemoteTaskController implements TaskController {
 			}
 		}
 	}
-	
-	protected void deleteDisk() throws VirtualDiskException, RemoteException, AuthenticationException, NotBoundException {
+
+	protected void deleteDisk() throws VirtualDiskException, RemoteException,
+			AuthenticationException, NotBoundException {
 		URI diskUri = uri;
 		close();
 		deleteDiskImpl(diskUri);
 	}
-	
+
 	@Override
 	public UpdateableTask<Void> createDeleteDiskTask() {
 		return new UpdateableTask<Void>() {
 
 			@Override
-			protected Void callImpl() throws RemoteException, VirtualDiskException, AuthenticationException, NotBoundException {
+			protected Void callImpl() throws RemoteException,
+					VirtualDiskException, AuthenticationException,
+					NotBoundException {
 				deleteDisk();
 				return null;
 			}

@@ -231,8 +231,8 @@ public class GuiState {
 
 	public void delete() {
 		Entry[] selectedEntries = getSelectedEntries();
-		UpdateableTask<Void> deleteEntriesTask = getController().createDeleteEntriesTask(
-				selectedEntries);
+		UpdateableTask<Void> deleteEntriesTask = getController()
+				.createDeleteEntriesTask(selectedEntries);
 		new TaskDialog(this, deleteEntriesTask);
 	}
 
@@ -240,7 +240,8 @@ public class GuiState {
 		if (controller == null) {
 			scheduler.shutdownNow();
 		} else {
-			UpdateableTask<Void> disconnectTask = getController().createDisconnectTask();
+			UpdateableTask<Void> disconnectTask = getController()
+					.createDisconnectTask();
 			new TaskDialog(this, disconnectTask) {
 				private void shutdownScheduler() {
 					Platform.runLater(new Runnable() {
@@ -306,7 +307,8 @@ public class GuiState {
 		}
 	}
 
-	public void addSynchronizedStateListener(SynchronizedTaskControllerStateListener listener) {
+	public void addSynchronizedStateListener(
+			SynchronizedTaskControllerStateListener listener) {
 		if (!synchronizedStateListener.contains(listener)) {
 			synchronizedStateListener.add(listener);
 			if (controller != null) {
@@ -315,15 +317,17 @@ public class GuiState {
 		}
 	}
 
-	public void removeSynchronizedStateListener(SynchronizedTaskControllerStateListener listener) {
+	public void removeSynchronizedStateListener(
+			SynchronizedTaskControllerStateListener listener) {
 		synchronizedStateListener.remove(listener);
 		if (controller != null) {
 			controller.removeStateListener(listener);
 		}
 	}
-	
+
 	public SynchronizedTaskControllerState getSynchronizedState() {
-		return (getController() == null) ? SynchronizedTaskController.DEFAULT_STATE : getController().getState();
+		return (getController() == null) ? SynchronizedTaskController.DEFAULT_STATE
+				: getController().getState();
 	}
-	
+
 }
