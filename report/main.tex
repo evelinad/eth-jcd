@@ -349,7 +349,7 @@ Our RMI based controller uses for example the ``batman" scheme (\mono{batman://}
 \subsection{Integration}
 We did not have to change any interface inside our core.
 
-While developing for the second milestone we discovered three bugs fixed them directly.
+While developing the second milestone we discovered three bugs inside the core and fixed them directly.
 
 As ``search" was a new requirement in the second milestone we added the needed and generally useable code to the core, as it belongs logically in there. However, this is purely because of the new requirement.
 
@@ -381,7 +381,7 @@ The server allows to create unique usernames with a password. The password is sa
 \subsubsection{Go Offline}
 We provide the user with a button to go online respectively offline. Either way the user operates on his local disk. If the file browser is in online mode it keeps the local disk synchronized with the remote synchronization disk. If the user connects to the server after being offline the file browser initiates a synchronization right after the connection is established.
 
-This requirement is implemented by \mono{controller.remote.createDisconnectTask()}.
+This requirement is implemented by \mono{controller.remote.\\ RemoteSynchronizedTaskController.createGoOfflineTask()} and \mono{controller.\\ remote.RemoteSynchronizedTaskController.createGoOnlineTask()}.
 
 \subsubsection{Binding a disk to an account}
 This requirement is achieved by linking a local disk to a synchronization disk on a server. If the given disk name already exists on the synchronization server, we link the local disk to it and perform a synchronization. If the name doesn't exists yet it is created and, again, a synchronization is performed.
@@ -409,12 +409,15 @@ If the application cannot resolve a conflict it will rename the local version an
 \subsubsection{Advanced: Concurrent Client/Server System}
 We implemented both requirements of this advanced requirement. Therefore it is possible to connect with multiple clients to the same synchronization disk and push changes to it. If a change occurs to the server disk, the server notifies all clients of the changes using the \mono{.server.IRemoteDiskClient} interface. After such a notification the client applies the change to the local disk and shows the change in the file browser to the user.
 
-Each client registers his implementation of \mono{.server.IRemoteDiskClient} directly after the server connection is established. The current implementation of the interface is located at \mono{.controller.remote.RemoteTaskController.RemoteDiskClient}.
+Each client registers his implementation of \mono{.server.IRemoteDiskClient} directly after the server connection is established. The current implementation of the interface is located at \mono{.controller.remote.RemoteTaskController\\.RemoteDiskClient}.
+
+\subsubsection{Additional: Connect directly to a server disk}
+Our Open Disk dialog allows to connect directly to a server disk (set ``Connect to" to ``Server"). This will connect the file browser directly to the server disk. It is now possible to do all the normal operations on the disk, without a local copy that is linked to it, and in addition a ``Download disk" button is provided to create a local disk that is in sync with the server disk.
 
 \subsection{Design}
 
 \subsubsection{Client-Server Architecture}
-As we already implemented a client-server-architecture in part two, we could just extend the client and server to support synchronization. In a typical setup one server runs on the client machine or inside the clients network to provide the user with a ``local disk" and one server instance runs on a remote server that acts as the synchronization server for multiple clients.
+As we already implemented a client-server-architecture in part two, we could just extend the client and server to support synchronization. We provide an all-in-one server class \mono{.server.VirtualDiskServer} to start the local disk server and the synchronization server at once. It is easily possible to only start one of the servers of course. We didn't write classes to start only one of the servers as it won't be used in the given environment.
 
 \subsubsection{Synchronization}
 In general the synchronization is done by traversing the file tree to find differences between the synchronization server's disk and the local disk. To help the decision making process we save a timestamp of the last synchronization on the local disk. The following cases exist and were implemented.
