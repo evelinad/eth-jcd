@@ -6,6 +6,7 @@
 \usepackage[os=win, mackeys=symbols]{menukeys}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{float}
 %\usepackage{xcolor}
 %\usepackage{hyperref}
 
@@ -364,45 +365,67 @@ The synchronization server allows to work on multiple local virtual disks and ke
 \subsection{Requirements}
 
 \subsubsection{Important Note}
-As we implemented a client-server-model in part two we don't really have a ``local disk". Every disk is in some way a remote/server disk. If we talk in the following about the ``local disk" we think about a specific disk that is located locally or at a remote location and was created as described in part two.
+As we already implemented a client-server-model in part two of this project, we don't really have a ``local disk". Every disk is in some way a remote/server disk. If we talk in the following of a ``local disk" we think about the disk on which the user works. It's also the disk that is always used for all operations without regard if the user is ``online" or ``offline". The ``synchronization disk", or how we call it in our connection dialog, the ``server disk" is the central disk that is used for synchronization while the user is ``online".
 
 % TODO: Remove this text and replace it with actual content
 \subsubsection{Creating new account / log in into existing account}
 Creating a user and logging in as an existing one is done by using the \mono{.server.ISynchronizeServer} interface. This interface is implemented by \mono{.server.SynchronizeServer}.
 
-TODO: GUI Bilder und wie wir es in der GUI dem User präsentieren.
+The server allows to create unique usernames with a password. The password is saved as a salted hash with the corresponding username inside the \mono{users.data} file. Creating a user on the server side is handled by \mono{.server.SynchronizeServer.createUser(String, String)}.
 
-The server allows to create unique usernames with a password. The password is saved as a salted hash with the corresponding username inside \mono{users.data}.
+\begin{figure}[h]\centering
+    \includegraphics[scale=0.7]{createuser.png}
+    \caption{Dialog to create a new user}
+\end{figure}
 
 \subsubsection{Go Offline}
 We provide the user with a button to go online respectively offline. Either way the user operates on his local disk. If the file browser is in online mode it keeps the local disk synchronized with the remote synchronization disk. If the user connects to the server after being offline the file browser initiates a synchronization right after the connection is established.
 
-\subsubsection{Binding a disk to an account}
-This is done by linking a local disk to a synchronization disk on a server. If the given disk name already exists on the synchronization server, we link the local disk to it and perform a synchronization. If the name doesn't yet exists it is created and, again, a synchronization is performed.
+This requirement is implemented by \mono{controller.remote.createDisconnectTask()}.
 
-We save the related information of the synchronization server on the local disk. This includes the host address, username and disk name. Therefore the user has only to provide his password while going online.
+\subsubsection{Binding a disk to an account}
+This requirement is achieved by linking a local disk to a synchronization disk on a server. If the given disk name already exists on the synchronization server, we link the local disk to it and perform a synchronization. If the name doesn't exists yet it is created and, again, a synchronization is performed.
+
+\begin{figure}[H]\centering
+    \includegraphics[scale=0.7]{link.png}
+    \caption{Dialog to link a local disk to a server disk}
+\end{figure}
+
+The provided information about the server is saved on the local disk for future connections. This way the user has only to provide his password the next time he/she goes online.
+
+\begin{figure}[H]\centering
+    \includegraphics[scale=0.7]{login.png}
+    \caption{Login dialog after linking a disk one to a server disk}
+\end{figure}
+
+Binding a disk is implemented by \mono{.controller.remote.\\ RemoteSynchronizedTaskController.createLinkDiskTask(String, String, String, String)}.
 
 \subsubsection{Track changes and Synchronize}
-The new RMI server interface \mono{.server.ISynchronizeServer} allows to synchronize local disks with a server disk. The logic behind our synchronization process is implemented client-side inside \mono{.controller.remote.SynchronizeDisks}.
+The new RMI server interface \mono{.server.ISynchronizeServer} allows to synchronize local disks with a server disk. The logic behind our synchronization process is implemented on the client-side inside \mono{.controller.remote.SynchronizeDisks}.
 
 \subsubsection{Basic: Conflict Resolution}
-If the application cannot resolve a conflict it will rename the local version and download the version on the synchronization server. This way the user can decide which one is the right one and no data is lost in any case.
+If the application cannot resolve a conflict it will rename the local version and download the version from the synchronization server. This way the user can decide which one is the right one and no data is lost in any case.
+
+\subsubsection{Advanced: Concurrent Client/Server System}
+We implemented both requirements of this advanced requirement. Therefore it is possible to connect with multiple clients to the same synchronization disk and push changes to it. If a change occurs to the server disk, the server notifies all clients of the changes using the \mono{.server.IRemoteDiskClient} interface. After such a notification the client applies the change to the local disk and shows the change in the file browser to the user.
+
+Each client registers his implementation of \mono{.server.IRemoteDiskClient} directly after the server connection is established. The current implementation of the interface is located at \mono{.controller.remote.RemoteTaskController.RemoteDiskClient}.
 
 \subsection{Design}
 
 \subsubsection{Client-Server Architecture}
-As we already implemented a client-server-model in part two we could just extend the client and server to support synchronization. Therefore in a typical setup one server runs on the client machine or inside the clients network to provide the user with a ``local disk" and one server instance runs on a remote server that acts as the synchronization server.
+As we already implemented a client-server-architecture in part two, we could just extend the client and server to support synchronization. In a typical setup one server runs on the client machine or inside the clients network to provide the user with a ``local disk" and one server instance runs on a remote server that acts as the synchronization server for multiple clients.
 
 \subsubsection{Synchronization}
-In general the synchronization is done by traversing the file tree and to search for differences between the synchronization server's one and the local disk's. To help the decision making process we save a timestamp of the last synchronization on the local disk. The following cases exist and were implemented.
+In general the synchronization is done by traversing the file tree to find differences between the synchronization server's disk and the local disk. To help the decision making process we save a timestamp of the last synchronization on the local disk. The following cases exist and were implemented.
 
-\paragraph{A file exists on both disks (same path):} If both files were changed after the last synchronization we have a conflict. This is handled by renaming the local file and downloading the server's version to the local disk.
+\paragraph{A file exists on both disks (same path):} If both files were changed after the last synchronization we have a conflict. This is handled by renaming the local file and downloading the server's version to the local disk. The user has now to decide which one should be kept.
 
 If only one of the two files were changed after the last synchronization, the older one will be replaced with the newer one.
 
-If no changes happen since the last synchronization, nothing has to be done.
+If no changes happened since the last synchronization, nothing has to be done.
 
-\paragraph{A files exists only on one disk:} If the last changed timestamp is older than the last synchronization timestamp the file was deleted and a delete command is send to the other disk. Otherwise the file was created after the last synchronization and is transferred to the other disk while synchronizing.
+\paragraph{A file exists only on one disk:} If the last changed timestamp is older than the last synchronization timestamp the file was deleted and the still existing file on the other disk is deleted. Otherwise the file was created after the last synchronization and is transferred to the other disk while synchronizing.
 
 \paragraph{A folder exists on both disks (same path):} We go inside the folder and check the files.
 
@@ -411,11 +434,17 @@ If no changes happen since the last synchronization, nothing has to be done.
 If the last changed timestamp of the folder is older than the timestamp of the last synchronization we have to check if it contains an object with a timestamp that is newer than the synchronization timestamp. If such an object exists the folder and the found object are transferred to the other disk. If no such object is found, the folder is deleted on the other disk.
 
 \subsection{Integration}
+\subsubsection{Documentation}
+As we modified some dialogs in the GUI to accommodate the new functionality of the third part of this project, we updated the ``Quick Start Guide" to reflect the changes. All other parts of the documentation were not changed.
+
+\subsubsection{Code Quality}
+Some time was taken to change some method names and to fix PMD warnings trough out the code base (part 1-3).
+
 \subsubsection{Changes to part 1}
-We used previously reserved metadata space inside our virtual disk to save information about the synchronization disk (host address, username and disk name). Otherwise everything is the same inside the core.
+We used previously reserved metadata space inside our virtual disk to save information about the synchronization disk (host address, username and disk name). Otherwise everything else is the same inside the core.
 
 \subsubsection{Changes to part 2}
-We obviously added additional buttons to the file browser GUI. In addition we added controller code to handle the synchronization process and created new code on the server side to provide the needed functionality for the mentioned task. In other words, we extended the code base built in part two but did not change the already existing functionality. This is also shown by the fact that the ``local disk" is still created and used the same way as before. It can just be synchronized with a synchronize server disk now.
+We obviously added additional buttons to the file browser GUI. In addition we added controller code to handle the synchronization process and created new code on the server side to provide the needed functionality for the mentioned tasks. In other words, we extended the code base that was built in part two. All functionality that was available in part two is still there with the addition of the new synchronization capabilities.
 
 
 % PART IV: Quick Start Guide
@@ -451,7 +480,7 @@ Following a list of available commands with a description what they do.
     \item [export] Takes two absolute or relative paths. The first one being a source (virtual disk) and the second one being a target (host system). Exports the given source file or directory into the given target. Example: \mono{export /awesome.avi /home/user/movies/}
 \end{description}
 
-\subsection{How to use the VFS Browser (second milestone)}
+\subsection{How to use the VFS Browser (second and third milestone)}
 As we implemented the second milestone based on the client-server-model there are some steps needed to get it running.
 
 In general the following steps are required:
@@ -478,31 +507,38 @@ On our Windows machine we used the following batch script to start the \mono{rmi
 set CLASSPATH=C:\Users\Benji\Documents\GitHub\eth-jcd\gui\bin;C:\Users\Benji\Documents\GitHub\eth-jcd\core\bin;C:\Program Files\Java\jdk1.7.0_17\jre\lib\jfxrt.jar"C:\Program Files\Java\jdk1.7.0_17\bin\rmiregistry.exe"
 \end{lstlisting}
 
-\subsubsection{Server connection}
-The connection to the server is done by using a correct URI. If the server runs locally and you would like to create and save the virtual disk under \mono{/var/tmp/my.vdisk} you would use the following URI to connect (and create in the same step if not yet existent): \mono{batman://localhost?/var/tmp/my.vdisk}. If you're on a Microsoft Windows machine this would be a valid URI: \mono{batman://localhost?C:/gui.vdisk}. Therefore in general the URI is built like this: \mono{batman://[SERVER]?[FILE PATH ON SERVER SYSTEM]}.
+\subsubsection{Connecting disk}
+In comparison to the version of part 2 we now provide a simpler interface for connecting to a local disk. The user has to provide the host address (e.g. \mono{localhost}) of the server and the path on the host system where the disk is located or should be created (e.g. \mono{/tmp/mydisk.vdisk}).
 
+\begin{figure}[H]\centering
+    \includegraphics[scale=0.7]{local.png}
+    \caption{Dialog to connect to a local disk}
+\end{figure}
 
+The option ``Connect to Server" allows to connect directly to a synchornization disk. This connection allows to download the disk or work directly on it without a local copy.
+
+\begin{figure}[H]\centering
+    \includegraphics[scale=0.7]{server.png}
+    \caption{Dialog to connect to a synchronization disk}
+\end{figure}
 
 
 \subsubsection{Starting the GUI}
+\paragraph{Start synchronization server on localhost:} Follow the steps described in ``How to use the VFS Browser (second and third milestone)" and it's subsections.
 
+\paragraph{Create account on synchronization server:} In the file browser GUI click on ``Create User". Use \mono{localhost} as your ``Host" and choose a username and password.
 
+\paragraph{Create two VFS disks and link them to the new account:} Open a second file browser GUI for the second disk. Do the following in both GUIs: Click on the first toolbar button (``connect"), select ``Local", use \mono{localhost} as the ``Host" and write a valid file path to the location where the new disk should be created.
 
-% TODO: Remove this line
-\noindent\textbf{[This part has to be completed by May 13th.]}
+After you created the disk click on ``Go online" to create a connection with a synchronization disk. In the dialog write \mono{localhost} as your host, put in the previously created username and password and choose a name for the synchronization disk. Repeat this with the second disk (second file browser window).
 
-% TODO: Remove this text and replace it with actual content
-\emph{Describe how to realize the following use case with your system. Describe the steps involved and how to perform each action (e.g. command line executions and arguments, menu entries, keyboard shortcuts, screenshots). The use case is the following:
-\begin{enumerate}
-\item Start synchronization server on localhost.
-\item Create account on synchronization server.
-\item Create two VFS disks (on the same machine) and link them to the new account.
-\item Import a directory (recursively) from the host file system into Disk 1.
-\item Dispose Disk 1 after the synchronization finished.
-\item Export the directory (recursively) from Disk 2 into the host file system.
-\item Stop synchronization server.
-\end{enumerate}
-}
+\paragraph{Import a directory:} Click on ``Import directory" in the toolbar and select the directory to import.
+
+\paragraph{Dispose Disk 1:} Open the file browser for the disk you choose as disk 1 and click on the ``Delete disk" button inside the toolbar.
+
+\paragraph{Export the directory:} Select the directory to export inside the file browser with a left mouse click and click after that on ``export".
+
+\paragraph{Stop synchronization server:} Close all file browsers and just kill the RMI Registry and the running \mono{.server.VirtualDiskServer}.
 
 
 \end{document}
