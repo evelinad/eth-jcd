@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
@@ -18,7 +19,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import ch.se.inf.ethz.jcd.batman.browser.CreateDirectoryDialog;
@@ -87,9 +87,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		connectButton = new Button(EMPTY_STRING, new ImageView(connectImage));
 		super.getItems().add(connectButton);
 
-		connectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		connectButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				connect();
 			}
@@ -99,9 +99,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		Image disconnectImage = ImageResource.getImageResource()
 				.disconnectImage();
 		disconnectButton = new Button(EMPTY_STRING, new ImageView(disconnectImage));
-		disconnectButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		disconnectButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				disconnect();
 			}
@@ -110,9 +110,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 
 		// onlineOffline button
 		onlineOfflineButton = new Button(EMPTY_STRING);
-		onlineOfflineButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		onlineOfflineButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				onlineOffline();
 			}
@@ -121,9 +121,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		
 		// onlineOffline button
 		Button createUserButton = new Button("Create User");
-		createUserButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		createUserButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				createUser();
 			}
@@ -137,9 +137,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		Image toParentDirImage = ImageResource.getImageResource()
 				.goToParentImage();
 		toParentDirButton = new Button(EMPTY_STRING, new ImageView(toParentDirImage));
-		toParentDirButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		toParentDirButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				toParentDir();
 			}
@@ -149,9 +149,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// go back button
 		Image goBackDirImage = ImageResource.getImageResource().goBackImage();
 		goBackButton = new Button(EMPTY_STRING, new ImageView(goBackDirImage));
-		goBackButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		goBackButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				back();
 			}
@@ -162,9 +162,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		Image goForewardDirImage = ImageResource.getImageResource()
 				.goForwardImage();
 		goForewardButton = new Button(EMPTY_STRING, new ImageView(goForewardDirImage));
-		goForewardButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		goForewardButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				forward();
 			}
@@ -174,9 +174,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// rename button
 		renameButton = new Button(EMPTY_STRING, new ImageView(ImageResource
 				.getImageResource().editImage()));
-		renameButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		renameButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				guiState.getActiveEntryView().editSelected();
 			}
 		});
@@ -185,9 +185,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// delete element button
 		Image deleteImage = ImageResource.getImageResource().deleteImage();
 		deleteButton = new Button(EMPTY_STRING, new ImageView(deleteImage));
-		deleteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				guiState.delete();
 			}
@@ -197,9 +197,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// copy element button
 		copyButton = new Button(EMPTY_STRING, new ImageView(ImageResource
 				.getImageResource().copyImage()));
-		copyButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		copyButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				guiState.copy();
 			}
@@ -209,9 +209,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// cut element button
 		cutButton = new Button(EMPTY_STRING, new ImageView(ImageResource
 				.getImageResource().cutImage()));
-		cutButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		cutButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				guiState.cut();
 			}
@@ -221,9 +221,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// paste element button
 		pasteButton = new Button(EMPTY_STRING, new ImageView(ImageResource
 				.getImageResource().pasteImage()));
-		pasteButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		pasteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				guiState.paste();
 			}
@@ -233,9 +233,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// create directory button
 		createDirButton = new Button(EMPTY_STRING, new ImageView(ImageResource
 				.getImageResource().createFolderImage()));
-		createDirButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		createDirButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				createFolder();
 			}
@@ -245,9 +245,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// import files button
 		importFilesButton = new Button("import file", new ImageView(
 				ImageResource.getImageResource().importFileImage()));
-		importFilesButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		importFilesButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				importFiles();
 			}
@@ -257,9 +257,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// import files button
 		importDirectoryButton = new Button("import directory", new ImageView(
 				ImageResource.getImageResource().importDirectoryImage()));
-		importDirectoryButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		importDirectoryButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				importDirectory();
 			}
@@ -269,9 +269,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// export button
 		exportButton = new Button("export", new ImageView(ImageResource
 				.getImageResource().exportImage()));
-		exportButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		exportButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				export();
 			}
 		});
@@ -295,9 +295,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		// advanced search button
 		advancedSearchButton = new Button("advanced search", new ImageView(
 				ImageResource.getImageResource().magnifierImage()));
-		advancedSearchButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		advancedSearchButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(MouseEvent event) {
+			public void handle(ActionEvent event) {
 				event.consume();
 				advancedSearch();
 			}
