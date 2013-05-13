@@ -98,6 +98,7 @@ public class RemoteSynchronizedTaskController extends RemoteTaskController imple
 		super.unregisterClient();
 		if (serverRmiClient != null) {
 			serverConnection.getDisk().unregisterClient(serverConnection.getDiskId(), serverRmiClient);
+			serverRmiClient.unexportRmiObject();
 			serverRmiClient = null;
 		}
 	}

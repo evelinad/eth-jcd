@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -75,6 +76,10 @@ public class RemoteTaskController implements TaskController {
 		public void writeToEntry(File file, long fileOffset, byte[] data)
 				throws RemoteException, VirtualDiskException {
 			RemoteTaskController.this.writeToEntry(file, fileOffset, data);
+		}
+		
+		public void unexportRmiObject() throws NoSuchObjectException {
+			UnicastRemoteObject.unexportObject(this, false);
 		}
 		
 	}
@@ -202,6 +207,7 @@ public class RemoteTaskController implements TaskController {
 	protected void unregisterClient() throws RemoteException {
 		if (rmiClient != null) {
 			connection.getDisk().unregisterClient(connection.getDiskId(), rmiClient);
+			rmiClient.unexportRmiObject();
 			rmiClient = null;
 		}
 	}
