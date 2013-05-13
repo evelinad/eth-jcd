@@ -9,12 +9,13 @@
 
 
 ## Documentation
+* [Milestone 3 Report](report3.pdf)
+* [JavaDoc](/eth-jcd/doc/)
+
+### Archive
 * [Milestone 2 Report](report2.pdf)
 * [Milestone 1 Report](report.pdf)
 
-
-
-* [JavaDoc](/eth-jcd/doc/)
 
 ## Other Resources
 * [Repository](https://github.com/groggi/eth-jcd/)

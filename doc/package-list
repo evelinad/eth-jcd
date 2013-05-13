@@ -1,7 +1,16 @@
+ch.se.inf.ethz.jcd.batman.browser
+ch.se.inf.ethz.jcd.batman.browser.controls
+ch.se.inf.ethz.jcd.batman.browser.images
+ch.se.inf.ethz.jcd.batman.browser.util
 ch.se.inf.ethz.jcd.batman.cli
 ch.se.inf.ethz.jcd.batman.cli.command
+ch.se.inf.ethz.jcd.batman.controller
+ch.se.inf.ethz.jcd.batman.controller.remote
 ch.se.inf.ethz.jcd.batman.io
 ch.se.inf.ethz.jcd.batman.io.util
+ch.se.inf.ethz.jcd.batman.model
+ch.se.inf.ethz.jcd.batman.model.util
+ch.se.inf.ethz.jcd.batman.server
 ch.se.inf.ethz.jcd.batman.vdisk
 ch.se.inf.ethz.jcd.batman.vdisk.impl
 ch.se.inf.ethz.jcd.batman.vdisk.util
