@@ -16,7 +16,7 @@ public class CreateDirectoryDialog extends ModalDialog {
 		super();
 		setTitle("Create Directory");
 
-		Label label = new Label("Directory Name:");
+		Label label = new Label("Directory Name");
 		getContainer().add(label, 0, 0);
 
 		inputField = new TextField();

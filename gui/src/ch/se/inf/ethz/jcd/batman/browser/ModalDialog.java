@@ -24,7 +24,7 @@ public class ModalDialog extends Stage {
 		container.setAlignment(Pos.CENTER);
 		container.setHgap(10);
 		container.setVgap(10);
-		container.setPadding(new Insets(25, 25, 25, 25));
+		container.setPadding(new Insets(20, 20, 20, 20));
 
 		super.setScene(new Scene(container));
 

@@ -11,7 +11,7 @@ import javafx.scene.input.MouseEvent;
 
 public class CreateUserDialog extends ModalDialog {
 
-	private final TextField uriField;
+	private final TextField hostField;
 	private final TextField userNameField;
 	private final PasswordField passwordField;
 	
@@ -29,16 +29,16 @@ public class CreateUserDialog extends ModalDialog {
 			}
 		};
 		
-		//Create uri field
-		Label uriLabel = new Label("Server URI:");
-		getContainer().add(uriLabel, 0, 0);
+		//Create host field
+		Label hostLabel = new Label("Host");
+		getContainer().add(hostLabel, 0, 0);
 
-		uriField = new TextField();
-		uriField.setOnKeyPressed(closeEventHandler);
-		getContainer().add(uriField, 1, 0);
+		hostField = new TextField();
+		hostField.setOnKeyPressed(closeEventHandler);
+		getContainer().add(hostField, 1, 0);
 
 		//Create userName field
-		Label userNameLabel = new Label("Username:");
+		Label userNameLabel = new Label("Username");
 		getContainer().add(userNameLabel, 0, 1);
 
 		userNameField = new TextField();
@@ -46,7 +46,7 @@ public class CreateUserDialog extends ModalDialog {
 		getContainer().add(userNameField, 1, 1);
 		
 		//Create password field
-		Label passwordLabel = new Label("Password:");
+		Label passwordLabel = new Label("Password");
 		getContainer().add(passwordLabel, 0, 2);
 
 		passwordField = new PasswordField();
@@ -75,11 +75,11 @@ public class CreateUserDialog extends ModalDialog {
 		});
 		getContainer().add(cancelButton, 1, 3);
 
-		uriField.requestFocus();
+		hostField.requestFocus();
 	}
 
-	public String getUri() {
-		return uriField.getText();
+	public String getHost() {
+		return hostField.getText();
 	}
 	
 	public String getUserName() {

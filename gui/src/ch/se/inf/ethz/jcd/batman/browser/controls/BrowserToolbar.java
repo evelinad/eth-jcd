@@ -2,6 +2,7 @@ package ch.se.inf.ethz.jcd.batman.browser.controls;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -395,10 +396,9 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			linkDiskDialog.showAndWait();
 			if (linkDiskDialog.getCloseReason() == CloseReason.OK) {
 				try {
-					UpdateableTask<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getServer(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
+					UpdateableTask<Void> linkDiskTask = guiState.getController().createLinkDiskTask(linkDiskDialog.getHost(), linkDiskDialog.getUserName(), linkDiskDialog.getPassword(), linkDiskDialog.getDiskName());
 					new TaskDialog(guiState, linkDiskTask);
-					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
-				} catch (Exception e) {
+				} catch (IllegalArgumentException e) {
 					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
 			}
@@ -412,11 +412,10 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			downloadDiskDialog.showAndWait();
 			if (downloadDiskDialog.getCloseReason() == CloseReason.OK) {
 				try {
-					URI localDiskUri = new URI(downloadDiskDialog.getLocalDiskUri());
+					URI localDiskUri = downloadDiskDialog.getLocalDiskUri();
 					UpdateableTask<Void> downloadDiskTask = guiState.getController().createDownloadDiskTask(localDiskUri);
 					new TaskDialog(guiState, downloadDiskTask);
-					//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
-				} catch (Exception e) {
+				} catch (URISyntaxException | IllegalArgumentException e) {
 					new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 				}
 			}
@@ -432,11 +431,10 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 
 		if (dialog.getCloseReason() == CloseReason.OK) {
 			try {
-				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + dialog.getUri()));
+				ServerTaskController serverController = TaskControllerFactory.getServerController(new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + dialog.getHost()));
 				UpdateableTask<Void> newUserTask = serverController.createNewUserTask(dialog.getUserName(), dialog.getPassword());
 				new TaskDialog(guiState, newUserTask);
-				//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
-			} catch (Exception e) {
+			} catch (URISyntaxException | IllegalArgumentException e) {
 				new ErrorDialog(ERROR_DIALOG_TITLE, e.getClass() + ": " + e.getMessage()).showAndWait();
 			}
 		}
@@ -528,11 +526,11 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	}
 
 	protected void connect() {
-		String uri = getUserInputOnDiskLocation();
-		if (uri != null) {
-			try {
+		try {
+			URI uri = getUserInputOnDiskLocation();	
+			if (uri != null) {
 				final SynchronizedTaskController controller = TaskControllerFactory
-						.getController(new URI(uri));
+						.getController(uri);
 				guiState.setController(controller);
 				UpdateableTask<Void> connectTask = controller.createConnectTask(true);
 				new TaskDialog(guiState, connectTask) {
@@ -541,12 +539,11 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 						guiState.setCurrentDirectory(new Directory(new Path()));
 					}
 				};
-				//This is necessary because all errors, also RuntimeErrors, need to be reported to the user
-			} catch (Exception e) {
-				guiState.setController(null);
-				new ErrorDialog(ERROR_DIALOG_TITLE, e.getMessage()).showAndWait();
-				return;
 			}
+		} catch (URISyntaxException | IllegalArgumentException e) {
+			guiState.setController(null);
+			new ErrorDialog(ERROR_DIALOG_TITLE, e.getMessage()).showAndWait();
+			return;
 		}
 	}
 
@@ -563,12 +560,12 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		};
 	}
 
-	protected String getUserInputOnDiskLocation() {
+	protected URI getUserInputOnDiskLocation() throws URISyntaxException {
 		RemoteOpenDiskDialog dialog = new RemoteOpenDiskDialog();
 		dialog.showAndWait();
 
 		if (dialog.getCloseReason() == CloseReason.OK) {
-			return dialog.getUserInput();
+			return dialog.getUri();
 		}
 		return null;
 	}

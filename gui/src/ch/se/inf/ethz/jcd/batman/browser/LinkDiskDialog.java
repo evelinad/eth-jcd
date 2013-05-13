@@ -11,7 +11,7 @@ import javafx.scene.input.MouseEvent;
 
 public class LinkDiskDialog extends ModalDialog {
 
-	private final TextField serverField;
+	private final TextField hostField;
 	private final TextField userNameField;
 	private final PasswordField passwordField;
 	private final TextField diskNameField;
@@ -30,16 +30,16 @@ public class LinkDiskDialog extends ModalDialog {
 			}
 		};
 		
-		//Create uri field
-		Label uriLabel = new Label("Server:");
+		//Create host field
+		Label uriLabel = new Label("Host");
 		getContainer().add(uriLabel, 0, 0);
 
-		serverField = new TextField();
-		serverField.setOnKeyPressed(closeEventHandler);
-		getContainer().add(serverField, 1, 0);
+		hostField = new TextField();
+		hostField.setOnKeyPressed(closeEventHandler);
+		getContainer().add(hostField, 1, 0);
 
 		//Create userNname field
-		Label userNameLabel = new Label("Username:");
+		Label userNameLabel = new Label("Username");
 		getContainer().add(userNameLabel, 0, 1);
 
 		userNameField = new TextField();
@@ -47,7 +47,7 @@ public class LinkDiskDialog extends ModalDialog {
 		getContainer().add(userNameField, 1, 1);
 		
 		//Create password field
-		Label passwordLabel = new Label("Password:");
+		Label passwordLabel = new Label("Password");
 		getContainer().add(passwordLabel, 0, 2);
 
 		passwordField = new PasswordField();
@@ -55,7 +55,7 @@ public class LinkDiskDialog extends ModalDialog {
 		getContainer().add(passwordField, 1, 2);
 		
 		//Create diskName field
-		Label diskNameLabel = new Label("Diskname:");
+		Label diskNameLabel = new Label("Diskname");
 		getContainer().add(diskNameLabel, 0, 3);
 
 		diskNameField = new TextField();
@@ -84,11 +84,11 @@ public class LinkDiskDialog extends ModalDialog {
 		});
 		getContainer().add(cancelButton, 1, 4);
 
-		serverField.requestFocus();
+		hostField.requestFocus();
 	}
 
-	public String getServer() {
-		return serverField.getText();
+	public String getHost() {
+		return hostField.getText();
 	}
 	
 	public String getUserName() {

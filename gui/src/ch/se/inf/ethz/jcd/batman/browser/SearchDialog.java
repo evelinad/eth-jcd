@@ -20,7 +20,7 @@ public class SearchDialog extends ModalDialog {
 		super();
 		setTitle("Search");
 
-		Label termLabel = new Label("Search term:");
+		Label termLabel = new Label("Search term");
 		getContainer().add(termLabel, 0, 0);
 
 		searchTermField = new TextField();

@@ -16,7 +16,7 @@ public class GoOnlineDialog extends ModalDialog {
 		super();
 		setTitle("Go online");
 
-		Label label = new Label("Password:");
+		Label label = new Label("Password");
 		getContainer().add(label, 0, 0);
 
 		passwordField = new PasswordField();

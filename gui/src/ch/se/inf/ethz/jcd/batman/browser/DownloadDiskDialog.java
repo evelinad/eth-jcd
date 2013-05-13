@@ -1,5 +1,9 @@
 package ch.se.inf.ethz.jcd.batman.browser;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -10,17 +14,16 @@ import javafx.scene.input.MouseEvent;
 
 public class DownloadDiskDialog extends ModalDialog {
 
-	private final TextField localDiskUriField;
-
+	private final Label localHostLabel = new Label("Host");
+	private final Label localDiskPathLabel = new Label("Path");
+	private final TextField localHostField = new TextField();;
+	private final TextField localDiskPathField = new TextField();;
+	
 	public DownloadDiskDialog() {
 		super();
 		setTitle("Download disk");
-
-		Label label = new Label("Local disk URI:");
-		getContainer().add(label, 0, 0);
-
-		localDiskUriField = new TextField();
-		localDiskUriField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+		
+		EventHandler<KeyEvent> closeEventHandler = new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER) {
@@ -28,9 +31,13 @@ public class DownloadDiskDialog extends ModalDialog {
 					close();
 				}
 			}
-		});
-		getContainer().add(localDiskUriField, 1, 0);
-
+		};
+		localHostField.setOnKeyPressed(closeEventHandler);
+		localDiskPathField.setOnKeyPressed(closeEventHandler);
+		
+		getContainer().addRow(0, localHostLabel, localHostField);
+		getContainer().addRow(1, localDiskPathLabel, localDiskPathField);
+		
 		Button okButton = new Button("Connect");
 		okButton.setDefaultButton(true);
 		okButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -40,7 +47,6 @@ public class DownloadDiskDialog extends ModalDialog {
 				close();
 			}
 		});
-		getContainer().add(okButton, 0, 1);
 
 		Button cancelButton = new Button("Cancel");
 		cancelButton.setCancelButton(true);
@@ -51,12 +57,12 @@ public class DownloadDiskDialog extends ModalDialog {
 				close();
 			}
 		});
-		getContainer().add(cancelButton, 1, 1);
+		getContainer().addRow(2, okButton, cancelButton);
 
-		localDiskUriField.requestFocus();
+		localHostField.requestFocus();
 	}
 
-	public String getLocalDiskUri() {
-		return localDiskUriField.getText();
+	public URI getLocalDiskUri() throws URISyntaxException {
+		return new URI(TaskControllerFactory.REMOTE_SCHEME + "://" + localHostField.getText() + "?" + localDiskPathField.getText());
 	}
 }
