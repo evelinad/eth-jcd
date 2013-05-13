@@ -376,8 +376,8 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 	}
 	
 	private void initStates () {
-		stateChanged(null, guiState.getState());
-		stateChanged(null, guiState.getSynchronizedState());
+		stateChangedImpl(guiState.getState());
+		stateChangedImpl(guiState.getSynchronizedState());
 	}
 	
 	protected void onlineOffline() {
@@ -589,8 +589,7 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 		guiState.setCurrentDirectory(search);
 	}
 
-	@Override
-	public final void stateChanged(State oldState, State newState) {
+	private final void stateChangedImpl(State newState) {
 		if (newState == State.DISCONNECTED) {
 			connectButton.setDisable(false);
 			disconnectButton.setDisable(true);
@@ -627,10 +626,13 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			renameButton.setDisable(false);
 		}
 	}
-
-
+	
 	@Override
-	public void stateChanged(SynchronizedTaskControllerState oldState, SynchronizedTaskControllerState newState) {
+	public final void stateChanged(State oldState, State newState) {
+		stateChangedImpl(newState);
+	}
+
+	private final void stateChangedImpl(SynchronizedTaskControllerState newState) {
 		synchState = newState;
 		switch (synchState) {
 		case DISCONNECTED:
@@ -658,5 +660,10 @@ public class BrowserToolbar extends ToolBar implements StateListener, Synchroniz
 			onlineOfflineButton.setText(DEFAULT_ONLINE_OFFLINE_TEXT);
 			break;
 		}
+	}
+	
+	@Override
+	public void stateChanged(SynchronizedTaskControllerState oldState, SynchronizedTaskControllerState newState) {
+		stateChangedImpl(newState);
 	}
 }

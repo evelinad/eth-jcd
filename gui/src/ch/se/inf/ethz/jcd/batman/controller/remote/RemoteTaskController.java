@@ -82,6 +82,7 @@ public class RemoteTaskController implements TaskController {
 	private static final String ACQUIRE_LOCK = "Acquiring lock...";
 	private static final String RELEASE_LOCK = "Releasing lock...";
 	private static final String TASK_DISCOVER_ITEMS = "Discover items";
+	private static final String UPDATE_TO = " to ";
 	
 	private static final String DIKS_SERVICE_NAME = VirtualDiskServer.DISK_SERVICE_NAME;
 	private static final String SYNCHRONIZE_SERVICE_NAME = VirtualDiskServer.SYNCHRONIZE_SERVICE_NAME;
@@ -506,7 +507,7 @@ public class RemoteTaskController implements TaskController {
 						} catch (CloneNotSupportedException e) { }
 						newEntry.setPath(destinationPaths[i]);
 						newEntry.setTimestamp(new Date().getTime());
-						updateMessage("Moving entry " + oldEntry.getPath() + " to "
+						updateMessage("Moving entry " + oldEntry.getPath() + UPDATE_TO
 								+ newEntry.getPath());
 						moveEntry(oldEntry, newEntry);
 						if (isCancelled()) {
@@ -572,7 +573,7 @@ public class RemoteTaskController implements TaskController {
 									+ entryPath.substring(baseFilePath.length(),
 											entryPath.length());
 							updateProgress(entriesImported, totalEntriesToImport);
-							updateMessage("Importing entry " + file.toString() + " to "
+							updateMessage("Importing entry " + file.toString() + UPDATE_TO
 									+ destination);
 							importFile(file, destination);
 							entriesImported++;
@@ -599,7 +600,7 @@ public class RemoteTaskController implements TaskController {
 
 			private void exportFile(Entry entry, String destination)
 					throws RemoteException, IOException {
-				updateMessage("Exporting entry " + entry.getPath() + " to "
+				updateMessage("Exporting entry " + entry.getPath() + UPDATE_TO
 						+ destination);
 				if (entry instanceof Directory) {
 					java.io.File directory = new java.io.File(destination);
@@ -725,7 +726,7 @@ public class RemoteTaskController implements TaskController {
 							} catch (CloneNotSupportedException e) { }
 							newEntry.setPath(destination);
 							newEntry.setTimestamp(new Date().getTime());
-							updateMessage("Copy entry " + entry.getPath() + " to " + newEntry.getPath());
+							updateMessage("Copy entry " + entry.getPath() + UPDATE_TO + newEntry.getPath());
 							copyEntry(entry, newEntry);
 							entriesExported++;
 							if (isCancelled()) {

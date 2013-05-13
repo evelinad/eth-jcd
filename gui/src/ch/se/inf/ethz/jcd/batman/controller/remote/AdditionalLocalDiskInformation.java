@@ -13,6 +13,16 @@ import ch.se.inf.ethz.jcd.batman.controller.TaskControllerFactory;
 
 public final class AdditionalLocalDiskInformation implements Serializable {
 	
+	private static final class SerializeException extends RuntimeException {
+
+		private static final long serialVersionUID = -4021594147500942823L;
+		
+		public SerializeException(Throwable t) {
+			super(t);
+		}
+		
+	}
+	
 	private static final long serialVersionUID = -2547837072567273526L;
 
 	protected static AdditionalLocalDiskInformation readFromByteArray(byte[] data) throws IOException, ClassNotFoundException {
@@ -64,7 +74,7 @@ public final class AdditionalLocalDiskInformation implements Serializable {
 		} catch (IOException e) {
 			//This should never happen, because its working on a byte stream
 			//But if for some reason an error occurred, it should not be ignored
-			throw new RuntimeException(e);
+			throw new SerializeException(e);
 		}
 	}
 	
