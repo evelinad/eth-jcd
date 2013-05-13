@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import ch.se.inf.ethz.jcd.batman.vdisk.IDataBlock;
 import ch.se.inf.ethz.jcd.batman.vdisk.IFreeBlock;
@@ -50,6 +51,8 @@ public final class VirtualDisk implements IVirtualDisk {
 		return virtualDisk;
 	}
 
+	private final static Logger LOGGER = Logger.getLogger(VirtualDisk.class.getName()); 
+	
 	private static final int SUPERBLOCK_SIZE = 192;
 	private static final int FREE_LISTS_POSITION = 24;
 	private static final int POSITION_SIZE = 8;
@@ -420,18 +423,14 @@ public final class VirtualDisk implements IVirtualDisk {
 		for (int i = 0; i < freeLists.size(); i++) {
 			Long position = freeLists.get(i);
 			if (position != 0) {
-				System.out.print("Block index: " + i  + " position: " + position);
+				LOGGER.finer("Block index: " + i  + " position: " + position);
 				for (
 					IFreeBlock freeBlock = FreeBlock.load(this, position); 
 					freeBlock.getNextBlock() != 0; 
 					freeBlock = FreeBlock.load(this, freeBlock.getNextBlock())
 				) {
-					if (freeBlock.getNextBlock() == 31) {
-						System.out.println("fuck!");
-					}
-					System.out.print("(" + freeBlock.getDiskSize() + ") " + freeBlock.getNextBlock());
+					LOGGER.finer("(" + freeBlock.getDiskSize() + ") " + freeBlock.getNextBlock());
 				}
-				System.out.println();
 			}
 			
 		}

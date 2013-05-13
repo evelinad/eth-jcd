@@ -45,7 +45,6 @@ public class VDiskFile {
      * @param disk
      *            the disk to which the path belongs
      * @throws IOException
-     *             TODO
      */
     public VDiskFile(String pathname, IVirtualDisk disk) throws IOException {
         this.pathname = pathname;
@@ -70,7 +69,7 @@ public class VDiskFile {
      * @param disk
      *            the disk to which parent and child belong
      * @throws IOException
-     *             TODO
+     *             
      */
     public VDiskFile(String parent, String child, IVirtualDisk disk)
             throws IOException {
@@ -98,7 +97,7 @@ public class VDiskFile {
      * @param child
      *            the name of the child
      * @throws IOException
-     *             TODO
+     *             
      * @throws NullPointerException
      *             if parent is null
      */
@@ -190,7 +189,7 @@ public class VDiskFile {
      * @see #isDirectory()
      * @return a collection of children. Will never return a null value!
      * @throws IOException
-     *             TODO
+     *             
      */
     private Collection<IVirtualDiskEntry> getChilds() throws IOException {
         if (exists() && pathDiskEntry instanceof IVirtualDirectory) {
@@ -461,8 +460,7 @@ public class VDiskFile {
      * 
      * @param targetFile
      *            target for the file
-     * @return true if copy was created successfully, otherwise false TODO:
-     *         implement copyTo for directories
+     * @return true if copy was created successfully, otherwise false
      */
     public boolean copyTo(VDiskFile targetFile) {
         if (targetFile.getDisk() != this.disk) {
@@ -516,7 +514,6 @@ public class VDiskFile {
      * @see #createNewFile(long)
      * @return true if file could be created in all other cases false
      * @throws IOException
-     *             TODO
      */
     public boolean createNewFile() throws IOException {
         return this.createNewFile(0);
@@ -529,7 +526,6 @@ public class VDiskFile {
      *            the size to reserve in advance. Must be greater than zero.
      * @return true if file could be created in all other cases false
      * @throws IOException
-     *             TODO
      */
     public boolean createNewFile(long size) throws IOException {
         if (size < 0L) {

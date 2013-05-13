@@ -25,7 +25,7 @@ public class Settings {
 		this.caseSensitive = caseSensitive;
 	}
 
-	public boolean checkFolders() {
+	public boolean isCheckFolders() {
 		return checkFolders;
 	}
 
@@ -33,7 +33,7 @@ public class Settings {
 		this.checkFolders = onlyFolders;
 	}
 
-	public boolean checkFiles() {
+	public boolean isCheckFiles() {
 		return checkFiles;
 	}
 
@@ -41,7 +41,7 @@ public class Settings {
 		this.checkFiles = onlyFiles;
 	}
 
-	public boolean checkSubFolders() {
+	public boolean isCheckSubFolders() {
 		return checkSubFolders;
 	}
 

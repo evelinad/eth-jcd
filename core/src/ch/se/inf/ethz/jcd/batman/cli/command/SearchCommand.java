@@ -32,7 +32,7 @@ public class SearchCommand implements Command {
 
 	@Override
 	public String[] getAliases() {
-		return COMMAND_STRINGS;
+		return SearchCommand.COMMAND_STRINGS;
 	}
 
 	@Override

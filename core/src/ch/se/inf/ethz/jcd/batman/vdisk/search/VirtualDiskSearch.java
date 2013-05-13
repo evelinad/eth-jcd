@@ -37,8 +37,8 @@ public class VirtualDiskSearch {
 		for (VDiskFile parent : parents) {
 			VDiskFile[] children = parent.listFiles();
 			for (VDiskFile child : children) {
-				boolean check = (settings.checkFiles() && child.isFile())
-						|| (settings.checkFolders() && child.isDirectory());
+				boolean check = settings.isCheckFiles() && child.isFile()
+						|| settings.isCheckFolders() && child.isDirectory();
 
 				if (check) {
 					if (settings.isCaseSensitive()) {
@@ -53,7 +53,7 @@ public class VirtualDiskSearch {
 				}
 			}
 
-			if (settings.checkSubFolders()) {
+			if (settings.isCheckSubFolders()) {
 				foundEntries.addAll(searchName(settings, term, children));
 			}
 		}
@@ -68,8 +68,8 @@ public class VirtualDiskSearch {
 		for (VDiskFile parent : parents) {
 			VDiskFile[] children = parent.listFiles();
 			for(VDiskFile child : children) {
-				boolean check = (settings.checkFiles() && child.isFile())
-						|| (settings.checkFolders() && child.isDirectory());
+				boolean check = settings.isCheckFiles() && child.isFile()
+						|| settings.isCheckFolders() && child.isDirectory();
 				
 				if(check) {
 					if(term.matcher(child.getName()).find()) {
@@ -78,7 +78,7 @@ public class VirtualDiskSearch {
 				}
 			}
 			
-			if(settings.checkSubFolders()) {
+			if(settings.isCheckSubFolders()) {
 				foundEntries.addAll(searchName(settings, term, children));
 			}
 		}
