@@ -51,7 +51,7 @@ This document describes the design and implementation of the \emph{Personal Virt
 
 \section{VFS Core}
 
-Our VFS core consists of two parts and an additional package that implements a Command Line Interface (\mono{.cli}). The first big part is \mono{.vdisk} which contains interfaces for a virtual disk implementation and an implementation of it. The other part is \mono{.io} that contains convenient classes inspired by \mono{java.io.*} to work with the virtual disk in a typical Java I/O manner.
+Our VFS core consists of two parts and an additional package that implements a Command Line Interface (\{.cli}). The first big part is \mono{.vdisk} which contains interfaces for a virtual disk implementation and an implementation of it. The other part is \mono{.io} that contains convenient classes inspired by \mono{java.io.*} to work with the virtual disk in a typical Java I/O manner.
 
 \emph{Note:} Monospaced text with a leading dot are package names of our project. As our full package name would be to long to write every time. The base for all these package names is: \mono{ch.se.inf.ethz.jcd.batman}.
 
@@ -507,7 +507,9 @@ export CLASSPATH="/Users/groggi/Projects/eth-jcd/gui/bin:/Users/groggi/Projects/
 
 On our Windows machine we used the following batch script to start the \mono{rmiregistry} (paths must be modified accordingly):
 \begin{lstlisting}[language=bash,breaklines=true,frame=single]
-set CLASSPATH=C:\Users\Benji\Documents\GitHub\eth-jcd\gui\bin;C:\Users\Benji\Documents\GitHub\eth-jcd\core\bin;C:\Program Files\Java\jdk1.7.0_17\jre\lib\jfxrt.jar"C:\Program Files\Java\jdk1.7.0_17\bin\rmiregistry.exe"
+set CLASSPATH=C:\Users\Benji\Documents\GitHub\eth-jcd\gui\bin;C:\Users\Benji\Documents\GitHub\eth-jcd\core\bin;C:\Program Files\Java\jdk1.7.0_17\jre\lib\jfxrt.jar
+
+"C:\Program Files\Java\jdk1.7.0_17\bin\rmiregistry.exe"
 \end{lstlisting}
 
 \subsubsection{Connecting disk}
